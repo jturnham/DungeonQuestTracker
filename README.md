@@ -126,18 +126,6 @@ Testers can extract that zip directly into `Interface/AddOns`.
 - Quest state detection supports both `C_QuestLog` APIs and older fallback APIs where possible.
 - Data accuracy is the main ongoing risk during beta because Forever quest rewards, availability, and custom dungeon data can change.
 
-## Validation Checklist
-
-Before sharing a build with testers:
-
-1. Copy the addon folder into the Classic Beta AddOns directory.
-2. Run `/reload` in-game.
-3. Open `/dqt` and verify the minimap button, dungeon list, checklist view, and turn-ins view.
-4. Check at least one character with completed dungeon quests and one with active/ready quests.
-5. Test `Check Party` with another player running the addon.
-6. Test `Share All` with shareable quests in your quest log.
-7. Package a fresh zip after the final tested copy is confirmed.
-
 ## License
 
 DungeonQuestTracker code is released under the MIT License. See `LICENSE`.
