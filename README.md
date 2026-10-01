@@ -18,6 +18,26 @@ The current target is the level 30 beta wave, including dungeon quests available
 - Party quest status checking through addon messages when party members also have DQT installed.
 - Share All button for the selected dungeon, using the game client's built-in quest sharing API for quests that are in your log and shareable.
 
+## Screenshots
+
+### Dungeon List
+
+Browse dungeon cards with level ranges, locations, quest totals, and party status. Search narrows the list, and party quest-data sync is opt-in.
+
+![Dungeon list showing dungeon cards, quest totals, search, and the party data sync checkbox](images/dungeon-list.png)
+
+### Quest Checklist
+
+See completed and ready quests at a glance. Expand rows for pickup, turn-in, and prerequisite details; use the party and sharing controls for the selected dungeon.
+
+![Ragefire Chasm checklist showing completed and ready quest states, expandable rows, and sharing controls](images/quest-checklist.png)
+
+### Turn-In Priority
+
+Plan turn-ins across all tracked dungeons using current level and XP, reward estimates, and quests at risk of changing color after leveling.
+
+![Global turn-in priority list showing XP rewards, turn-in locations, and next-level quest color warnings](images/turn-in-priority.png)
+
 ## Tracked Dungeons
 
 Current tracked dungeon data includes:
@@ -141,6 +161,10 @@ DungeonQuestTracker/
     MinimapButton.lua
 Docs/
   DATA_VERIFICATION.md
+images/
+  dungeon-list.png
+  quest-checklist.png
+  turn-in-priority.png
 Tools/
   validate-data.ps1
 ```
