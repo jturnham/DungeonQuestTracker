@@ -66,7 +66,9 @@ Excavation Site and City of Dalaran remain visible with empty checklists until r
 
 ## Install
 
-Download or build the addon folder so the final path looks like this:
+Download `DungeonQuestTracker-0.2.0.zip` from the [GitHub release](https://github.com/jturnham/DungeonQuestTracker/releases/tag/v0.2.0) and extract it into your World of Warcraft client's `Interface/AddOns` directory. The ZIP already contains the `DungeonQuestTracker` folder; do not add an extra enclosing folder.
+
+After extraction, the addon path should look like this:
 
 ```text
 World of Warcraft/_classic_beta_/Interface/AddOns/DungeonQuestTracker/DungeonQuestTracker.toc
