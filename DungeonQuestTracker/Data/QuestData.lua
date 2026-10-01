@@ -683,7 +683,6 @@ DQT.quests = {
         source = "WoW Forever multiplied dungeon quest XP references",
         verifiedForever = false,
     },
-    -- Non-Horde sample data retained for UI smoke testing only.
     [214] = {
         name = "Red Silk Bandanas",
         faction = "Alliance",
@@ -694,7 +693,7 @@ DQT.quests = {
         pickup = { name = "Scout Riell", zone = "Westfall", coordinates = "56.3, 47.5" },
         turnIn = { name = "Scout Riell", zone = "Westfall" },
         prerequisites = {},
-        source = "Sample data",
+        source = "Classic Red Silk Bandanas record; Forever reward needs confirmation",
         verifiedForever = false,
     },
     [168] = {
@@ -707,7 +706,7 @@ DQT.quests = {
         pickup = { name = "Wilder Thistlenettle", zone = "Stormwind City", coordinates = "65.2, 21.2" },
         turnIn = { name = "Wilder Thistlenettle", zone = "Stormwind City" },
         prerequisites = {},
-        source = "Sample data",
+        source = "Classic Collecting Memories record; Forever reward needs confirmation",
         verifiedForever = false,
     },
 }

@@ -2,12 +2,13 @@
 
 DungeonQuestTracker is a World of Warcraft: Forever addon for tracking dungeon quest readiness during beta leveling. It shows which dungeon quests your character has completed, has ready to turn in, is actively working on, or is still missing, along with pickup locations, turn-in locations, prerequisite notes, and turn-in priority.
 
-The current target is the first beta wave up to roughly level 20, with extra support for the early Forever dungeon additions.
+The current target is the level 30 beta wave, including dungeon quests available to pick up through level 35. Some quests require a higher-level group to finish.
 
 ## Features
 
-- Dungeon checklist UI with collapsible quest rows.
+- Scrollable dungeon checklist with collapsible quest rows and status icons.
 - Dungeon selection screen with scrollable activity-style dungeon cards.
+- Dungeon search by name, key, or location, with party summaries on cards.
 - Global turn-in planner for all tracked dungeon quests.
 - Turn-in priority based on quest XP, current player level, current XP, and whether a quest may drop to green or gray after leveling.
 - Ready-for-turn-in detection for active quest-log quests.
@@ -28,8 +29,20 @@ Current tracked dungeon data includes:
 - Hall of Thanes
 - Shadowfang Keep
 - The Stockade
+- Excavation Site: Wetlands (no quests recorded yet)
+- Blackfathom Deeps
+- City of Dalaran (no quests recorded yet)
+- Scarlet Monastery: Graveyard
+- Gnomeregan
+- Scarlet Monastery: Library
+- Razorfen Kraul
+- Scarlet Monastery: Armory
 
 Quest data is curated locally because the WoW API does not expose a complete dungeon quest catalog with pickup locations and prerequisite chains. XP values are intended to use Forever beta dungeon quest rewards where verified.
+
+The new classic dungeon checklists use [Forever quest listings](https://www.wowhead.com/forever/guide/dungeons/every-dungeon-quest-location) and quest database records. Reported beta XP is sourced from [WCLBox](https://wowforever.wclbox.com/en/fuben). Rewards without a confirmed Forever value use base XP estimates, labelled `Classic` in the turn-in list; priority for those quests is provisional. Pickup locations and prerequisites also need confirmation in the beta.
+
+Excavation Site and City of Dalaran remain visible with empty checklists until reliable quest IDs and pickup details are available. Scarlet Monastery wings share relevant quests, but the global turn-in planner counts each quest once. The boss quests require Cathedral as well as Library and Armory.
 
 ## Install
 
@@ -70,6 +83,8 @@ Useful commands:
 /dqt debug
 ```
 
+Use `/dqt dungeon <key>` for any dungeon, including `blackfathom-deeps`, `gnomeregan`, `razorfen-kraul`, `excavation-site-wetlands`, `city-of-dalaran`, and `scarlet-monastery-graveyard`, `scarlet-monastery-library`, or `scarlet-monastery-armory`. `/dqt list` prints all keys.
+
 The minimap button also opens the addon:
 
 - Left-click: dungeon list
@@ -82,11 +97,31 @@ Open a dungeon checklist and press `Check Party` to request quest status from pa
 
 Party checking works through WoW addon messages, so party members need DungeonQuestTracker installed and enabled to respond. Expanded quest rows show a summary of how many responding party members have each quest completed, ready, active, or missing/locked.
 
+Checks have a five-second cooldown per dungeon. Status is cleared when the group roster changes and expires after two minutes. Realm-qualified sender names are normalized against your current group. Large checklists are split into messages within the client's size limit.
+
 ## Quest Sharing
 
 Open a dungeon checklist and press `Share All` to attempt sharing every active or ready quest for that dungeon.
 
+Each quest row also has a share arrow, enabled when grouped and the client marks that active or ready quest shareable. Hover over the sharing and party controls for availability details.
+
 The client only allows sharing quests that are currently in your quest log and marked pushable by the game. Some quests cannot be shared because they start from drops, objects, class chains, prerequisite chains, or other restricted sources.
+
+Share All reports requests sent to the client, rather than whether another player accepted. Skipped quests are grouped by reason, and missing sharing APIs produce feedback instead of a Lua error.
+
+## Party Quest-Data Sync
+
+Enable **Party data sync** on the dungeon list, or run `/dqt sync on`, on both clients. Check Party and successful quest-share requests offer the sender's bundled quest IDs. An opted-in recipient requests only missing records and adds them to the appropriate known dungeon, independently of accepting the actual game quest.
+
+Received records are labelled **Party supplied**, with sender and addon version. They live in a separate saved-variable cache; bundled records always win. Party-supplied XP is excluded from ranking (shown as zero/unknown), and received records are never forwarded. Sync cannot discover quests absent from both catalogs or add unknown dungeons. Older DQT clients without this protocol cannot exchange records.
+
+Transfers use validated fields, messages under 255 bytes, a five-message-per-second queue, at most 16 pending records, and a 200-record cache. Incomplete transfers expire after three minutes; changing groups cancels transfers. The sync update frame sleeps when idle. Record requests/replies use whispers to normalized group members; client messaging restrictions may prevent transfer, especially across instance realms. Check Party can retry an incomplete transfer.
+
+Use `/dqt sync off` to disable exchange and hide received quests without deleting them. `/dqt sync clear` deletes the received cache. Data is party-supplied, not trusted or automatically verified.
+
+## Data Verification
+
+Bundled quests include source links, source notes, confidence, and pending verification notes for XP, pickup, turn-in, and prerequisites. Source discrepancies appear in expanded quest rows. See [data verification notes](Docs/DATA_VERIFICATION.md). No unverified record is promoted to in-game verified merely because it was sourced or synced.
 
 ## Project Layout
 
@@ -98,11 +133,14 @@ DungeonQuestTracker/
   Data/
     DungeonData.lua
     QuestData.lua
+    QuestDataLevel35.lua
+    QuestMetadata.lua
+  QuestDataSync.lua
   UI/
     MainFrame.lua
     MinimapButton.lua
 Docs/
-  IMPLEMENTATION_CHECKLIST.md
+  DATA_VERIFICATION.md
 Tools/
   validate-data.ps1
 ```
@@ -112,19 +150,30 @@ Tools/
 From the repository root, create a tester zip that contains the `DungeonQuestTracker/` folder at the archive root:
 
 ```powershell
-Compress-Archive -LiteralPath .\DungeonQuestTracker -DestinationPath .\DungeonQuestTracker-0.1.0.zip -Force
+.\Tools\package-release.ps1
 ```
 
-Testers can extract that zip directly into `Interface/AddOns`.
+This produces `release/DungeonQuestTracker-0.2.0.zip` and checks its version and folder layout. Testers can extract that zip directly into `Interface/AddOns`.
 
 ## Development Notes
 
-- Current addon version: `0.1.0`.
+- Current addon version: `0.2.0`.
 - Current TOC interface: `16001`.
 - Saved variables live in `DungeonQuestTrackerDB`.
 - The UI intentionally uses native WoW frames and templates only, with no external addon library dependency yet.
 - Quest state detection supports both `C_QuestLog` APIs and older fallback APIs where possible.
+- `/dqt debug <questID>` reports the resolved quest state, ID/title log matches, completion/readiness, availability, and the last caught API error. `/dqt debug` reports client API support.
 - Data accuracy is the main ongoing risk during beta because Forever quest rewards, availability, and custom dungeon data can change.
+
+The level 35 wave has a Lua smoke test for data references, quest restrictions and states, shared turn-ins, empty checklists, and scrolling/navigation. Install `fengari` and `luaparse` in a separate development directory, then run `node Tools/test-level35.cjs <development-directory>`. These tools are not addon dependencies. UI tests use mocked WoW frames; the real layout and client APIs still need in-game testing.
+
+Append `Tools/test-stability.lua` to that command to also test missing/throwing APIs, legacy quest completion, failed quests, party cooldowns and message splitting, sender normalization, sharing failures, and minimap guards.
+
+Append `Tools/test-ui.lua` before the stability tests to check search, empty results, long text sizing, and scroll preservation during refresh.
+
+For all suites, run `node Tools/test-level35.cjs <development-directory> Tools/test-ui.lua Tools/test-sync.lua Tools/test-stability.lua`. Sync tests cover safe parsing, opt-in behavior, missing records, chunk reassembly, saved cache validation, bundled precedence, dungeon overlays, and throttling.
+
+Run `./Tools/validate-data.ps1 -DependencyDirectory <development-directory>` for the full release audit and all regression suites. The audit detects duplicate quest/table keys before Lua evaluation, unresolved dungeon and prerequisite references, prerequisite cycles, invalid restriction enums, incomplete locations, and invalid XP/level values. Structural validation does not prove beta data accuracy.
 
 ## License
 

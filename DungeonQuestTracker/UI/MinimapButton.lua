@@ -4,18 +4,19 @@ DQT.Minimap = DQT.Minimap or {}
 local MinimapButton = DQT.Minimap
 
 local function GetAngle()
-    local db = DungeonQuestTrackerDB or DQT.db or {}
-    db.minimap = db.minimap or {}
-    return db.minimap.angle or 225
+    local db = type(DungeonQuestTrackerDB) == "table" and DungeonQuestTrackerDB or type(DQT.db) == "table" and DQT.db or {}
+    db.minimap = type(db.minimap) == "table" and db.minimap or {}
+    return type(db.minimap.angle) == "number" and db.minimap.angle or 225
 end
 
 local function SetAngle(angle)
-    local db = DungeonQuestTrackerDB or DQT.db or {}
-    db.minimap = db.minimap or {}
+    local db = type(DungeonQuestTrackerDB) == "table" and DungeonQuestTrackerDB or type(DQT.db) == "table" and DQT.db or {}
+    db.minimap = type(db.minimap) == "table" and db.minimap or {}
     db.minimap.angle = angle
 end
 
 local function UpdatePosition(button)
+    if not Minimap then return end
     local angle = math.rad(GetAngle())
     local radius = 80
     button:ClearAllPoints()
@@ -33,9 +34,11 @@ local function GetCursorAngle(y, x)
 end
 
 local function UpdateDragPosition(button)
+    if not Minimap or type(GetCursorPosition) ~= "function" then return end
     local mx, my = Minimap:GetCenter()
     local px, py = GetCursorPosition()
     local scale = Minimap:GetEffectiveScale()
+    if not mx or not my or not px or not py or not scale or scale <= 0 then return end
     px, py = px / scale, py / scale
 
     local angle = math.deg(GetCursorAngle(py - my, px - mx))
@@ -45,6 +48,7 @@ end
 
 function MinimapButton:Create()
     if self.button then return end
+    if not Minimap or type(CreateFrame) ~= "function" then return end
 
     local button = CreateFrame("Button", "DungeonQuestTrackerMinimapButton", Minimap)
     button:SetSize(32, 32)
@@ -72,6 +76,7 @@ function MinimapButton:Create()
     end)
 
     button:SetScript("OnEnter", function(self)
+        if not GameTooltip then return end
         GameTooltip:SetOwner(self, "ANCHOR_LEFT")
         GameTooltip:SetText("DungeonQuestTracker")
         GameTooltip:AddLine("Left-click: open dungeon list", 1, 1, 1)
@@ -79,7 +84,7 @@ function MinimapButton:Create()
         GameTooltip:AddLine("Drag: move button", 0.75, 0.75, 0.75)
         GameTooltip:Show()
     end)
-    button:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    button:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
     button:SetScript("OnDragStart", function(self)
         self:SetScript("OnUpdate", UpdateDragPosition)
     end)
@@ -94,8 +99,9 @@ end
 
 function MinimapButton:Refresh()
     self:Create()
-    local db = DungeonQuestTrackerDB or DQT.db or {}
-    if db.minimap and db.minimap.hide then self.button:Hide() else self.button:Show() end
+    if not self.button then return end
+    local db = type(DungeonQuestTrackerDB) == "table" and DungeonQuestTrackerDB or type(DQT.db) == "table" and DQT.db or {}
+    if type(db.minimap) == "table" and db.minimap.hide then self.button:Hide() else self.button:Show() end
 end
 
 local eventFrame = CreateFrame("Frame")
