@@ -1,12 +1,13 @@
 local addonName, DQT = ...
 
 DQT.name = addonName
-DQT.version = "0.3.1"
+DQT.version = "0.4.0"
 
 DQT.defaults = {
     partyDataSync = false,
     partyQuestCache = {},
     display = { compact = false },
+    lootReminders = { enabled = true },
     minimap = { hide = false, angle = 225 },
     party = { respond = true, autoBroadcast = false, confirmShareAll = false },
     filters = {

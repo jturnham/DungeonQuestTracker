@@ -315,9 +315,9 @@ local quests = {
         turnIn = { name = "Master Apothecary Faranell", zone = "Undercity", subzone = "Apothecarium" },
         objectives = "Collect Kraul Guano from bats. This unlocks Hearts of Zeal for Scarlet Monastery.",
     },
-    [6521] = {
+    [6522] = {
         name = "An Unholy Alliance", faction = "Horde", minLevel = 28, questLevel = 36,
-        classicXp = 3500, dungeon = "razorfen-kraul",
+        dungeon = "razorfen-kraul",
         pickup = { name = "Small Scroll (Charlga Razorflank drop)", zone = "Razorfen Kraul" },
         turnIn = { name = "Varimathras", zone = "Undercity", subzone = "Royal Quarter", coordinates = "56, 92" },
         objectives = "Deliver Charlga's scroll to Varimathras; the next step requires Razorfen Downs.",

@@ -1,4 +1,5 @@
 DQT = {}
+DQTForbiddenEventRegistrations = 0
 local player = { faction = "Horde", class = "WARRIOR", race = "Orc", level = 30 }
 local completed, ready = {}, {}
 local methods = {}
@@ -22,6 +23,8 @@ function methods:SetSize(width, height) self.width, self.height = width, height 
 function methods:SetHeight(height) self.height = height end
 function methods:GetHeight() return self.height end
 function methods:SetWidth(width) self.width = width end
+function methods:SetAlpha(alpha) self.alpha = alpha end
+function methods:GetAlpha() return self.alpha or 1 end
 function methods:GetWidth() return self.width end
 function methods:ClearAllPoints() self.points = {} end
 function methods:SetPoint(...) self.points = self.points or {}; self.points[#self.points+1] = {...} end
@@ -45,6 +48,13 @@ end
 function methods:SetVerticalScroll(value) self.scroll = value end
 function methods:GetVerticalScroll() return self.scroll end
 function methods:SetScript(event, callback) self.scripts[event] = callback end
+function methods:RegisterEvent(event)
+    if event == "COMBAT_LOG_EVENT_UNFILTERED" or event == "COMBAT_LOG_EVENT" then
+        DQTForbiddenEventRegistrations = DQTForbiddenEventRegistrations + 1
+    end
+    self.events = self.events or {}
+    self.events[event] = true
+end
 function methods:SetScrollChild(child) self.child = child end
 function CreateFrame() local frame = widget(); frame.TitleBg = widget(); return frame end
 UIParent = widget()

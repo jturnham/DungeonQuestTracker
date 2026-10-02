@@ -25,6 +25,12 @@ for id, quest in pairs(DQT.quests) do
         turnIn = "Pending in-game NPC and coordinate confirmation.",
         prerequisites = "Pending in-game chain confirmation; source notes may be incomplete.",
     }
+    if quest.followUpOf then
+        quest.verification.sourceReview = "2026-10-02: dungeon continuation linked by quest ID; beta-client confirmation remains pending."
+        if quest.questLevelUnverified then
+            quest.verification.level = "Quest and minimum levels are provisional values from the preceding chain step; exact continuation levels need confirmation."
+        end
+    end
     quest.shareability = { assumption="clientDetermined", note="The client's pushable flag is authoritative; recipient eligibility can still block acceptance." }
     local pickup = ((quest.pickup and quest.pickup.subzone) or ""):lower()
     quest.pickupType = quest.pickupType or (pickup:find("drop", 1, true) and "drop" or "npc")
@@ -34,7 +40,7 @@ for id, quest in pairs(DQT.quests) do
 end
 
 for _, id in ipairs({95204, 95189, 92415, 98423, 2951, 2947, 2949, 1100}) do DQT.quests[id].pickupType = "object" end
-for _, id in ipairs({373, 6981, 97288, 95195, 6564, 6922, 6521, 2945}) do DQT.quests[id].pickupType = "drop" end
+for _, id in ipairs({373, 6981, 97288, 95195, 6564, 6922, 6522, 2945}) do DQT.quests[id].pickupType = "drop" end
 for _, id in ipairs({1489, 1490, 1198, 2842}) do DQT.quests[id].breadcrumbOnly = true end
 
 -- Replace the old UI samples with sourced quest records, retaining provisional base XP.

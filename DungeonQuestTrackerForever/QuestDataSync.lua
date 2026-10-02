@@ -135,7 +135,8 @@ function DQT:TickQuestData(elapsed)
     state.elapsed = state.elapsed + elapsed
     if state.elapsed < 0.2 then return end
     state.elapsed = 0
-    for key, pending in pairs(state.pending) do if Now() - pending.time > 180 then state.pending[key] = nil end end
+    local now = Now()
+    for key, pending in pairs(state.pending) do if now - pending.time > 180 then state.pending[key] = nil end end
     local item = table.remove(state.queue, 1)
     if item then self:SendQuestDataMessage(item.message, item.target) end
     if #state.queue == 0 and not next(state.pending) and self.syncFrame then self.syncFrame:Hide() end
@@ -227,7 +228,7 @@ function DQT:HandleQuestDataMessage(command, rest, sender)
             quest.partySupplied, quest.confidence, quest.source = true, "needsReview", sender
             self.db.partyQuestCache[id] = quest
             state.received = state.received + 1
-            if self.UI then self.UI:RefreshCurrentDungeon() end
+            self:RequestUIRefresh()
         end
     end
     return true

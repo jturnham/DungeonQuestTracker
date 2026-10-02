@@ -7,6 +7,7 @@ The current target is the level 30 beta wave, including dungeon quests available
 ## Features
 
 - Scrollable dungeon checklist with collapsible quest rows and status icons.
+- Dungeon quest follow-ups grouped beneath their originating quests, with indented labels in full and compact modes.
 - Dungeon selection screen with scrollable activity-style dungeon cards.
 - Dungeon search by name, key, or location, with party summaries on cards.
 - Global turn-in planner for all tracked dungeon quests.
@@ -19,6 +20,9 @@ The current target is the level 30 beta wave, including dungeon quests available
 - Share All button for the selected dungeon, using the game client's built-in quest sharing API for quests that are in your log and shareable.
 - Scrollable Options view for filters, minimap controls, party behavior, and sharing confirmation.
 - Saved compact/full display modes with a title-bar toggle beside Close.
+- Boss quest-item loot alerts with a notification sound, a 15-second display, and a fade-out during the final second.
+- Preview Alert button in Options to test the loot banner and sound without killing a boss.
+- Opt-in party quest-data sync for missing catalog records, with received data clearly marked as unverified.
 
 ## Screenshots
 
@@ -30,7 +34,7 @@ Browse dungeon cards with level ranges, locations, quest totals, and party statu
 
 ### Quest Checklist
 
-See completed and ready quests at a glance. Expand rows for pickup, turn-in, and prerequisite details; use the party and sharing controls for the selected dungeon.
+See completed and ready quests at a glance. Follow-ups are grouped beneath their parent quests instead of mixed into a flat list. Expand rows for pickup, turn-in, and prerequisite details; use the party and sharing controls for the selected dungeon.
 
 ![Ragefire Chasm checklist showing completed and ready quest states, expandable rows, and sharing controls](images/quest-checklist.png)
 
@@ -66,7 +70,7 @@ Quest data is curated locally because the WoW API does not expose a complete dun
 
 For example, The New Plague uses an assumed 1750 XP baseline and estimates 5035 XP, rather than its old 8320 XP. Baseline assumptions and sources are recorded in [data verification notes](Docs/DATA_VERIFICATION.md). Reports should include quest ID, client build, character level, exact reward and applicable bonuses.
 
-Dungeon chains include catalogued follow-ups outside the instance. Ragefire Chasm includes both Hidden Enemies return steps (Thrall to Neeru, then back to Thrall), and Wailing Caverns includes each faction's In Nightmares follow-up. These retain the originating dungeon in checklists and Turn-ins, with required predecessors, completion history and readiness tracked independently by quest ID. Normal level/faction filters still apply. Follow-up XP without a confirmed current Forever reward uses a labelled Classic fallback. This is curated coverage, not automatic discovery of unknown follow-ups.
+Dungeon chains include catalogued follow-ups outside the instance: Hidden Enemies, In Nightmares, all five Unending Torment steps, the Deadmines/Stockade chain through An Audience with the King, Gnomeregan ring returns, Library book/class-quest returns, shared Paladin forging rewards, and Razorfen Kraul Warrior armor branches. Each continuation joins its originating dungeon automatically, with completion and readiness tracked independently by quest ID. Ready follow-ups remain in the global Turn-ins list even when checklist or dungeon display filters hide their rows; the separate gray-turn-in option still applies. Rewards use a labelled Classic fallback only where available; otherwise XP stays unknown. This is curated coverage, not automatic discovery of unknown follow-ups.
 
 Quest records use [Forever quest listings](https://www.wowhead.com/forever/guide/dungeons/every-dungeon-quest-location) and database pages; old beta XP is sourced from [WCLBox](https://wowforever.wclbox.com/en/fuben). The [October 1 bonus reduction](https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-1/2360696) is modeled as normal XP plus half the previous bonus, not half the whole reward. Rewards, rounding, pickup locations and prerequisites still need beta-client confirmation.
 
@@ -74,7 +78,7 @@ Excavation Site now includes seven quests from the [October 2 dungeon guide](htt
 
 ## Install
 
-Download `DungeonQuestTrackerForever-0.3.1.zip` from the [GitHub release](https://github.com/jturnham/DungeonQuestTracker/releases/tag/v0.3.1) and extract it into your World of Warcraft client's `Interface/AddOns` directory. The ZIP already contains the `DungeonQuestTrackerForever` folder; do not add an extra enclosing folder.
+Download `DungeonQuestTrackerForever-0.4.0.zip` from the [GitHub release](https://github.com/jturnham/DungeonQuestTracker/releases/tag/v0.4.0) and extract it into your World of Warcraft client's `Interface/AddOns` directory. The ZIP already contains the `DungeonQuestTrackerForever` folder; do not add an extra enclosing folder.
 
 When upgrading to the renamed addon, remove the old `DungeonQuestTracker` folder from `Interface/AddOns` before installing `DungeonQuestTrackerForever`, so only one copy loads. With WoW closed, copy `WTF/Account/<account>/SavedVariables/DungeonQuestTracker.lua` to `DungeonQuestTrackerForever.lua` to retain settings. Do not overwrite an existing new-name saved file. The internal `DungeonQuestTrackerDB` variable and `/dqt` command are retained for compatibility. The GitHub repository URL is unchanged.
 
@@ -124,6 +128,7 @@ Switching back restores dungeon artwork, quest IDs, sharing buttons, and expande
 Use the gear button in the title bar or `/dqt options`. Settings apply immediately, persist in `DungeonQuestTrackerDB` after reload, and Back returns to the previous view.
 
 - Checklist: show completed/unavailable/low-level locked quests, hide gray/red quests, and include or exclude class, breadcrumb-only, and drop/object-start quests.
+- Display: switch compact mode, enable or disable boss quest-loot reminders, and use Preview Alert to check the banner and notification sound.
 - Dungeon list: hide gray/red dungeons, set upper/lower level gaps (0-60), or show only missing/locked quests or ready turn-ins. Enabling both list-only filters requires both to match.
 - Turn-ins: explicitly exclude gray ready quests from priority. Other checklist and dungeon filters do not suppress the global planner.
 - Minimap/party: toggle the minimap button, status responses, automatic broadcasts on dungeon open, Share All confirmation, and party data sync.
@@ -170,6 +175,18 @@ Use `/dqt sync off` to disable exchange and hide received quests without deletin
 
 Bundled quests include source links, source notes, confidence, and pending verification notes for XP, pickup, turn-in, and prerequisites. Source discrepancies appear in expanded quest rows. See [data verification notes](Docs/DATA_VERIFICATION.md). No unverified record is promoted to in-game verified merely because it was sourced or synced.
 
+## Boss Quest-Loot Reminders
+
+Don't leave a quest item on a boss! Known boss drops trigger a **Quest Loot** banner near the top of the screen, even with the checklist closed. The banner shows the boss, item, and associated quest, plays a notification sound, and stays visible for 15 seconds, fading out during the final second. Close it with the X to dismiss it sooner. Duplicate boss notifications and updates to the remaining items do not replay the sound.
+
+![Quest Loot preview showing Witherfang's Highly Toxic Strain for The New Plague, above the Options view with its Preview Alert button](images/loot-alert.png)
+
+Open **Options > Display** to toggle reminders or click **Preview Alert** to test the same banner, sound, and fade-out. The preview works even when reminders are disabled and does not change your quest status. Sound follows the client's master sound settings; if sound playback is unavailable, the visual alert still works.
+
+Reminders use the public boss-kill notification, not restricted combat-log access; bosses that do not emit this notification cannot trigger a reminder. An alert reminds you to check the corpse, but does not guarantee a drop or loot eligibility. Completed/ready quests, unavailable quests and items already in your bags are suppressed. Objective drops require an active quest; quest-starting items can be highlighted before you accept their quest. Looting the item or accepting its starting quest clears the reminder.
+
+Initial coverage includes VanCleef's Unsent Letter, Mutanus' Glowing Shard, Charlga Razorflank's Small Scroll, Witherfang's Highly Toxic Strain, and The Baron's faction-specific heads. The Baron's English-name fallback is restricted to Ruins of Lordaeron until its NPC ID is confirmed. Random trash drops and ground objects are not inferred from boss deaths. Toggle reminders under Options > Display.
+
 ## Project Layout
 
 ```text
@@ -178,10 +195,12 @@ DungeonQuestTrackerForever/
   Config.lua
   Core.lua
   Options.lua
+  LootReminders.lua
   Data/
     DungeonData.lua
     QuestData.lua
     QuestDataLevel35.lua
+    QuestFollowUps.lua
     QuestMetadata.lua
   QuestDataSync.lua
   UI/
@@ -192,6 +211,7 @@ Docs/
   DATA_VERIFICATION.md
 images/
   dungeon-list.png
+  loot-alert.png
   quest-checklist.png
   turn-in-priority.png
 Tools/
@@ -206,17 +226,18 @@ From the repository root, create a tester zip that contains the `DungeonQuestTra
 .\Tools\package-release.ps1
 ```
 
-This produces `release/DungeonQuestTrackerForever-0.3.1.zip` and checks its version and folder layout. Testers can extract that zip directly into `Interface/AddOns`.
+This produces `release/DungeonQuestTrackerForever-0.4.0.zip` and checks its version and folder layout. Testers can extract that zip directly into `Interface/AddOns`.
 
 ## Development Notes
 
-- Current addon version: `0.3.1`.
+- Current addon version: `0.4.0`.
 - Current TOC interface: `16001`.
 - Saved variables live in `DungeonQuestTrackerDB`.
 - The UI intentionally uses native WoW frames and templates only, with no external addon library dependency yet.
 - Quest state detection supports both `C_QuestLog` APIs and older fallback APIs where possible.
 - `/dqt debug <questID>` reports the resolved quest state, ID/title log matches, completion/readiness, availability, and the last caught API error. `/dqt debug` reports client API support.
 - Data accuracy is the main ongoing risk during beta because Forever quest rewards, availability, and custom dungeon data can change.
+- Dungeon scans reuse player context and avoid unused turn-in rankings. Search skips nonmatching dungeon scans, while rapid quest/XP and incoming party updates are combined into one refresh. No refresh update callback runs while idle.
 
 The level 35 wave has a Lua smoke test for data references, quest restrictions and states, shared turn-ins, empty checklists, and scrolling/navigation. Install `fengari` and `luaparse` in a separate development directory, then run `node Tools/test-level35.cjs <development-directory>`. These tools are not addon dependencies. UI tests use mocked WoW frames; the real layout and client APIs still need in-game testing.
 
@@ -224,7 +245,7 @@ Append `Tools/test-stability.lua` to that command to also test missing/throwing 
 
 Append `Tools/test-ui.lua` before the stability tests to check search, empty results, long text sizing, and scroll preservation during refresh.
 
-For all suites, run `node Tools/test-level35.cjs <development-directory> Tools/test-ui.lua Tools/test-sync.lua Tools/test-options.lua Tools/test-compact.lua Tools/test-level-range.lua Tools/test-stability.lua`. Tests cover sync, filters, color boundaries, defaults migration, compact/full transitions, wrapping, persistence, sharing confirmation, party settings, and throttling.
+The regression suites cover sync, filters, color boundaries, defaults migration, compact/full transitions, wrapping, persistence, sharing confirmation, party settings, throttling, XP estimates, follow-up grouping and state tracking, loot-alert previews/sound/fading, and performance call counts. Use the full validation command below to run them all.
 
 Run `./Tools/validate-data.ps1 -DependencyDirectory <development-directory>` for the full release audit and all regression suites. The audit detects duplicate quest/table keys before Lua evaluation, unresolved dungeon and prerequisite references, prerequisite cycles, invalid restriction enums, incomplete locations, and invalid XP/level values. Structural validation does not prove beta data accuracy.
 

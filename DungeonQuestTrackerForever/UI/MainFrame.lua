@@ -490,6 +490,52 @@ function UI:ClearRows()
     for _, card in ipairs(self.frame.dungeonCards) do card:Hide() end
     for _, row in ipairs(self.frame.turnInRows) do row:Hide() end
 end
+function UI:GroupChecklistQuests(quests)
+    local groups, roots, result = {}, {}, {}
+    for _, entry in ipairs(quests or {}) do
+        local root, depth, visited = entry.questID, 0, {}
+        local quest = entry.quest
+        while quest and quest.followUpOf and not visited[root] do
+            visited[root] = true
+            root, depth = quest.followUpOf, depth + 1
+            quest = DQT:GetQuest(root)
+        end
+        if not groups[root] then groups[root] = {}; roots[#roots + 1] = root end
+        local copy = {}
+        for key, value in pairs(entry) do copy[key] = value end
+        copy.chainRoot, copy.chainDepth = root, depth
+        groups[root][#groups[root] + 1] = copy
+    end
+    for _, root in ipairs(roots) do
+        local entries = groups[root]
+        local children, byID, emitted = {}, {}, {}
+        for _, entry in ipairs(entries) do byID[entry.questID] = entry end
+        for _, entry in ipairs(entries) do
+            local parent = entry.quest.followUpOf
+            local visited = {}
+            while parent and not byID[parent] and not visited[parent] do
+                visited[parent] = true
+                local quest = DQT:GetQuest(parent)
+                parent = quest and quest.followUpOf
+            end
+            entry.visibleParent = parent and byID[parent] and parent or nil
+            if entry.visibleParent then
+                children[parent] = children[parent] or {}
+                children[parent][#children[parent] + 1] = entry
+            end
+        end
+        local function Append(entry)
+            if emitted[entry.questID] then return end
+            emitted[entry.questID] = true
+            result[#result + 1] = entry
+            for _, child in ipairs(children[entry.questID] or {}) do Append(child) end
+        end
+        for _, entry in ipairs(entries) do if not entry.visibleParent then Append(entry) end end
+        for _, entry in ipairs(entries) do Append(entry) end
+    end
+    return result
+end
+
 function UI:PositionChecklistRows(status)
     local y = 0
     for index, questStatus in ipairs(status.quests or {}) do
@@ -506,7 +552,7 @@ function UI:PositionChecklistRows(status)
             end
             row:SetHeight(height)
             row:ClearAllPoints()
-            row:SetPoint("TOPLEFT", self.frame.checklistContent, "TOPLEFT", 0, -y)
+            row:SetPoint("TOPLEFT", self.frame.checklistContent, "TOPLEFT", row.chainIndent or 0, -y)
             row.detail:SetShown(expanded)
             row.reason:SetShown(expanded)
             if row.party then row.party:SetShown(expanded) end
@@ -527,6 +573,10 @@ function UI:ShowDungeon(status)
 end
 
 function UI:RenderChecklist(status)
+    local grouped = {}
+    for key, value in pairs(status) do grouped[key] = value end
+    grouped.quests = self:GroupChecklistQuests(status.quests)
+    status = grouped
     self:ClearRows()
     self:UpdateNav()
     local counts = status.counts or {}
@@ -568,10 +618,20 @@ function UI:RenderChecklist(status)
         row.icon:SetTexture(stateIcons[questStatus.state] or stateIcons.missing)
         row.status:SetText(statusText)
         local compact = self:IsCompact()
-        row:SetWidth(contentWidth)
-        row.detail:SetWidth(contentWidth-30)
-        row.reason:SetWidth(contentWidth-30)
-        row.party:SetWidth(contentWidth-30)
+        row.chainIndent = math.min(questStatus.chainDepth or 0, 3) * 16
+        local width = contentWidth - row.chainIndent
+        local name = quest.name
+        if quest.followUpOf then
+            name = "Follow-up: " .. name
+            if not questStatus.visibleParent then
+                local root = DQT:GetQuest(questStatus.chainRoot)
+                name = (root and root.name or "Quest chain") .. " > " .. name
+            end
+        end
+        row:SetWidth(width)
+        row.detail:SetWidth(width-30)
+        row.reason:SetWidth(width-30)
+        row.party:SetWidth(width-30)
         row.toggle:SetShown(not compact)
         row.icon:SetShown(not compact)
         row.status:SetShown(not compact)
@@ -579,12 +639,12 @@ function UI:RenderChecklist(status)
         row.title:ClearAllPoints()
         if compact then
             row.title:SetPoint("TOPLEFT", row, "TOPLEFT", 0, -2)
-            row.title:SetWidth(contentWidth-8)
-            row.title:SetText((statusText:match("^(|c%x%x%x%x%x%x%x%x)") or "") .. quest.name .. "|r")
+            row.title:SetWidth(width-8)
+            row.title:SetText((statusText:match("^(|c%x%x%x%x%x%x%x%x)") or "") .. name .. "|r")
         else
             row.title:SetPoint("TOPLEFT", row.status, "TOPRIGHT", 10, 0)
-            row.title:SetWidth(490)
-            row.title:SetText(string.format("%s (#%d)", quest.name, questStatus.questID))
+            row.title:SetWidth(490-row.chainIndent)
+            row.title:SetText(string.format("%s (#%d)", name, questStatus.questID))
         end
         row.detail:SetText("Pickup: " .. FormatLocation(quest.pickup) .. " | Turn in: " .. FormatLocation(quest.turnIn) .. prereqText)
         local chainNotes = {}
@@ -746,12 +806,14 @@ function UI:ShowDungeonList(preserveScroll)
 
     local y = 0
     local cardIndex, hidden = 0, 0
+    local context = DQT:GetPlayerContext()
     local query = string.lower(self.searchText or ""):match("^%s*(.-)%s*$")
     for _, key in ipairs(DQT:GetOrderedDungeonKeys()) do
-        local status = DQT:GetDisplayDungeonStatus(key)
-        local dungeon = status and status.dungeon or DQT.dungeons[key]
+        local dungeon = DQT.dungeons[key]
         local matches = string.find(string.lower(dungeon.name .. " " .. key .. " " .. (dungeon.location or "")), query, 1, true)
-        if status and DQT:ShouldShowDungeon(status) and matches then
+        local status = matches and DQT:GetDisplayDungeonStatus(key, context)
+        dungeon = status and status.dungeon or dungeon
+        if status and DQT:ShouldShowDungeon(status, context) and matches then
             cardIndex = cardIndex + 1
             local counts = status.counts or {}
             local card = self.frame.dungeonCards[cardIndex]

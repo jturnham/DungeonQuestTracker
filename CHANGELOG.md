@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.4.0 - 2026-10-02
+
+- Play a notification sound for new loot alerts and previews; fade the banner during its final second. Updating remaining loot does not replay the sound.
+
+- Add a Preview Alert button beside the loot-reminder setting, showing the real dismissible banner with sample quest information without changing quest state.
+
+- Reduce redundant turn-in rankings and reuse player context within dungeon scans. Search skips nonmatching dungeon scans; quest/XP and incoming party updates coalesce into a single UI refresh with no idle update callback. Added regression tests for scan/ranking counts and refresh batching.
+
+- Remove restricted combat-log registration from loot reminders to prevent Blizzard-only action warnings on reload. Use public boss-kill notifications instead; reminder coverage depends on client encounter notifications.
+
+- Group dungeon checklist follow-ups beneath their originating quests with indented labels in full and compact modes; retain chain names when ancestors are filtered out. Turn-in priority order is unchanged.
+
+- Added optional, dismissible boss quest-loot banners with completion/faction/bag checks, active-objective and missing-starter handling, boss-notification deduplication and automatic dismissal after loot or 15 seconds. Initial known-drop coverage includes VanCleef, Mutanus, Charlga Razorflank, Witherfang and The Baron.
+
+- Added every sourced Unending Torment continuation under Ruins of Lordaeron, using distinct quest IDs for same-title steps.
+- Added Deadmines/Stockade continuations through the Seal of Wrynn reward, Scarlet Library Test of Lore and Mage's Wand returns, the shared Paladin forging reward, and Razorfen Kraul Warrior armor branches.
+- Corrected An Unholy Alliance's scroll step to quest 6522 and linked its 6521 continuation to Razorfen Kraul.
+- Catalogued follow-ups automatically join their originating dungeon lists, including shared class-quest origins, and appear once in the global ready turn-in planner independently of checklist filters.
+- Continuation XP without confirmed data remains unknown; provisional inherited levels are explicitly noted. Automated coverage checks every catalogued continuation's ready/completed state and same-title isolation.
+
+### Validation And Limitations
+
+- XP values remain in flux during the Forever beta and are updated as new information becomes available. Turn-in priorities and predicted level-ups are provisional.
+- Loot reminders depend on public boss-kill notifications and known drop mappings; they do not guarantee a drop or loot eligibility.
+- Two-client party/sync testing remains deferred; quest-data sync is off by default.
+
 ## 0.3.1 - 2026-10-02
 
 ### Addon Rename

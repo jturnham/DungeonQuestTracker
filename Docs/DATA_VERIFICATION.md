@@ -2,6 +2,19 @@
 
 The beta catalog is provisional. `Data/QuestMetadata.lua` adds provenance and review notes without claiming that source-backed values were observed in the game.
 
+## Dungeon Follow-Up Review - 2026-10-02
+
+`Data/QuestFollowUps.lua` registers sourced continuations by exact quest ID and automatically includes them in each applicable originating dungeon. Shared Paladin continuations appear under Deadmines, Shadowfang Keep and Blackfathom Deeps, while the Stockade leg of the Defias chain keeps its explicit Stockade association. Global turn-ins deduplicate these IDs and do not use checklist visibility to select ready quests.
+
+- Ruins of Lordaeron: [Unending Torment](https://www.wowhead.com/forever/quest=97288/unending-torment) has five steps, 97288 through 97292. All four city continuations are recorded, with distinct pickup/turn-in contacts and required predecessors. Newly added rewards remain unknown, not copied from the first dungeon step.
+- Deadmines and Stockade: [The Unsent Letter](https://www.wowhead.com/forever/quest=373/the-unsent-letter) continues through Bazil Thredd and The Stockade Riots to the city investigation and Seal of Wrynn reward. All listed continuation IDs are recorded.
+- Scarlet Library: [Test of Lore](https://www.wowhead.com/forever/quest=1160/test-of-lore) continues through 6628 to Final Passage 1394. Rituals of Power continues to Mage's Wand 1952, with the additional Items of Power prerequisite retained.
+- Shared Paladin chain: [The Test of Righteousness](https://www.wowhead.com/forever/quest=1654/the-test-of-righteousness) continues to the forging/reward step 1806 and retains all three dungeon origins.
+- Razorfen Kraul: Warrior armor crafting, referral, collection and final reward branches are recorded for both factions. [An Unholy Alliance 6522](https://www.wowhead.com/forever/quest=6522/an-unholy-alliance) is the scroll delivery, not 6521; [6521](https://www.wowhead.com/forever/quest=6521/an-unholy-alliance) is the Ambassador Malcin continuation outside Razorfen Downs.
+- Existing Ragefire Chasm, Wailing Caverns and Gnomeregan returns remain covered. No new follow-up IDs were established for Hall of Thanes, the remaining standalone dungeon quests, or the newer Wetlands chains. Wetlands guide mentions without confirmed IDs remain explicit data gaps; City of Dalaran still has no sourced quest catalog.
+
+New continuation levels without explicit values are provisional inherited levels, flagged to prevent gray/red checklist filtering. Exact rewards, optional/race-specific referral requirements and Forever contact changes need client confirmation. Tests cover every catalogued follow-up's ready/completed state, deduplication and same-title ID isolation; this review does not establish exhaustive coverage of undocumented beta content.
+
 ## Record Fields
 
 - `source`, `sourceNotes`, `sourceURLs`: original attribution and reference links. A link alone does not mean the record is verified.

@@ -251,10 +251,10 @@ function DQT:QuestMatchesPlayerClass(quest, context)
     return not quest.classes or not context.class or ContainsValue(quest.classes, context.class)
 end
 
-function DQT:DungeonHasVisibleQuests(dungeonKey)
+function DQT:DungeonHasVisibleQuests(dungeonKey, context)
     local dungeon = self:GetDungeon(dungeonKey)
     if not dungeon then return false end
-    local context = self:GetPlayerContext()
+    context = context or self:GetPlayerContext()
     if #(dungeon.quests or {}) == 0 then
         return not dungeon.factions or not context.faction or ContainsValue(dungeon.factions, context.faction)
     end
@@ -288,7 +288,7 @@ function DQT:GetOrderedDungeonKeys()
     return keys
 end
 
-function DQT:GetQuestState(questID, quest)
+function DQT:GetQuestState(questID, quest, context)
     if self:IsQuestComplete(questID) then
         return "completed", "Completed"
     end
@@ -301,7 +301,7 @@ function DQT:GetQuestState(questID, quest)
         return "active", "In progress"
     end
 
-    local availability, reason = self:GetQuestAvailability(quest)
+    local availability, reason = self:GetQuestAvailability(quest, context)
     if availability == "locked" then return "locked", reason end
     if availability == "unavailable" then return "unavailable", reason end
     return "missing", reason or "Missing"
@@ -415,8 +415,8 @@ function DQT:SortTurnIns(turnIns)
     end)
 end
 
-function DQT:GetTurnInPriority(status)
-    local context = self:GetPlayerContext()
+function DQT:GetTurnInPriority(status, context)
+    context = context or self:GetPlayerContext()
     local xpToLevel = 0
     if context.maxXp and context.maxXp > 0 then
         xpToLevel = math.max(0, context.maxXp - SafeNumber(context.currentXp, 0))
@@ -441,12 +441,13 @@ function DQT:GetGlobalTurnInPriority()
     end
 
     local turnIns, seenQuests = {}, {}
+    local ignoreGray = self:GetOption("filters.ignoreGrayTurnIns")
     local dungeonKeys = self:GetOrderedDungeonKeys()
     for _, dungeonKey in ipairs(dungeonKeys) do
-        local status = self:GetDungeonQuestStatus(dungeonKey)
+        local status = self:GetDungeonQuestStatus(dungeonKey, false, true, context)
         if status then
             for _, row in ipairs(status.quests or {}) do
-                if row.state == "ready" and not seenQuests[row.questID] and not (self:GetOption("filters.ignoreGrayTurnIns") and self:IsQuestGray(row.quest, context)) then
+                if row.state == "ready" and not seenQuests[row.questID] and not (ignoreGray and self:IsQuestGray(row.quest, context)) then
                     seenQuests[row.questID] = true
                     table.insert(turnIns, self:BuildTurnInItem(row, dungeonKey, status.dungeon, context, xpToLevel))
                 end
@@ -458,17 +459,18 @@ function DQT:GetGlobalTurnInPriority()
     return { context = context, xpToLevel = xpToLevel, quests = turnIns }
 end
 
-function DQT:GetDungeonQuestStatus(dungeonKey, includeUnavailable)
+function DQT:GetDungeonQuestStatus(dungeonKey, includeUnavailable, skipTurnIns, context)
     local dungeon = self:GetDungeon(dungeonKey)
     if not dungeon then return nil end
+    context = context or self:GetPlayerContext()
 
     local rows = {}
     local counts = { completed = 0, ready = 0, active = 0, missing = 0, locked = 0, unavailable = 0 }
 
     for _, questID in ipairs(dungeon.quests or {}) do
         local quest = self:GetQuest(questID)
-        if quest and (includeUnavailable or (self:QuestMatchesPlayerFaction(quest) and self:QuestMatchesPlayerClass(quest))) then
-            local state, stateReason = self:GetQuestState(questID, quest)
+        if quest and (includeUnavailable or (self:QuestMatchesPlayerFaction(quest, context) and self:QuestMatchesPlayerClass(quest, context))) then
+            local state, stateReason = self:GetQuestState(questID, quest, context)
             counts[state] = (counts[state] or 0) + 1
             table.insert(rows, {
                 questID = questID,
@@ -482,7 +484,7 @@ function DQT:GetDungeonQuestStatus(dungeonKey, includeUnavailable)
     end
 
     local status = { key = dungeonKey, dungeon = dungeon, quests = rows, counts = counts }
-    status.turnIns = self:GetTurnInPriority(status)
+    if not skipTurnIns then status.turnIns = self:GetTurnInPriority(status, context) end
     return status
 end
 
@@ -657,11 +659,12 @@ end
 function DQT:GetPartyQuestSummary(dungeonKey, questID)
     local entries = self.partyStatus and self.partyStatus[dungeonKey]
     if not entries then return "Party: not checked" end
+    local now = Now()
 
     local total, completed, ready, active, missing, locked = 0, 0, 0, 0, 0, 0
     for _, entry in pairs(entries) do
         local state = entry.quests and entry.quests[questID]
-        if Now() - entry.time <= 120 and state and state ~= "unavailable" then
+        if now - entry.time <= 120 and state and state ~= "unavailable" then
         total = total + 1
         if state == "completed" then completed = completed + 1
         elseif state == "ready" then ready = ready + 1
@@ -682,8 +685,9 @@ end
 function DQT:GetPartyDungeonSummary(dungeonKey)
     local entries = self.partyStatus and self.partyStatus[dungeonKey]
     local checked, ready, missing = 0, 0, 0
+    local now = Now()
     for _, entry in pairs(entries or {}) do
-        if Now() - entry.time <= 120 then
+        if now - entry.time <= 120 then
             checked = checked + 1
             for _, state in pairs(entry.quests or {}) do
                 if state == "ready" then ready = ready + 1 end
@@ -740,7 +744,7 @@ function DQT:HandleAddonMessage(prefix, message, channel, sender)
     if command == "STATUS" then
         local dungeonKey, encodedQuests = rest:match("^([^|]+)|?(.*)$")
         self:StorePartyDungeonStatus(sender, dungeonKey, encodedQuests)
-        if self.UI and self.UI.RefreshCurrentDungeon then self.UI:RefreshCurrentDungeon() end
+        self:RequestUIRefresh()
     end
 end
 
@@ -875,6 +879,20 @@ local function HandleSlashCommand(input)
     if DQT.UI and DQT.UI.Toggle then DQT.UI:Toggle() else DQT:ShowHelp() end
 end
 
+local refreshElapsed
+local function FlushUIRefresh(_, elapsed)
+    refreshElapsed = refreshElapsed + elapsed
+    if refreshElapsed < 0.05 then return end
+    DQT.events:SetScript("OnUpdate", nil)
+    refreshElapsed = nil
+    if DQT.UI and DQT.UI.RefreshCurrentDungeon then DQT.UI:RefreshCurrentDungeon() end
+end
+function DQT:RequestUIRefresh()
+    if refreshElapsed or not self.UI or not self.UI.frame or not self.UI.frame:IsShown() then return end
+    refreshElapsed = 0
+    self.events:SetScript("OnUpdate", FlushUIRefresh)
+end
+
 DQT.events:RegisterEvent("ADDON_LOADED")
 DQT.events:RegisterEvent("QUEST_LOG_UPDATE")
 DQT.events:RegisterEvent("PLAYER_XP_UPDATE")
@@ -910,9 +928,7 @@ DQT.events:SetScript("OnEvent", function(_, event, ...)
         if DQT.ResetQuestDataTransfers then DQT:ResetQuestDataTransfers() end
     end
 
-    if DQT.UI and DQT.UI.RefreshCurrentDungeon then
-        DQT.UI:RefreshCurrentDungeon()
-    end
+    DQT:RequestUIRefresh()
 end)
 
 

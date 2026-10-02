@@ -84,6 +84,15 @@ function UI:CreateOptions()
             label:SetJustifyH("LEFT")
             if label.SetWordWrap then label:SetWordWrap(true) end
             label:SetText(option.label)
+            if option.key == "lootReminders.enabled" then
+                label:SetWidth(490)
+                local preview = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
+                preview:SetSize(130, 24)
+                preview:SetPoint("TOPRIGHT", row, "TOPRIGHT", -8, -2)
+                preview:SetText("Preview Alert")
+                preview:SetScript("OnClick", function() DQT:PreviewQuestLootReminder() end)
+                frame.lootReminderPreview = preview
+            end
             if option.tip then UI.AddTooltip(control, option.label, option.tip) end
             y=y+42
         end

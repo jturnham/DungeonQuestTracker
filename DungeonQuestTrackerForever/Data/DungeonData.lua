@@ -65,7 +65,7 @@ DQT.dungeons = {
         factions = { "Alliance" },
         art = "Interface\\LFGFrame\\UI-LFG-BACKGROUND-Deadmines",
         notes = "Prepare in Stormwind and Westfall before heading into the mines. The Defias Brotherhood and Red Silk Bandanas need the Westfall quest chain; some objectives are in the tunnels before the instance entrance.",
-        quests = { 166, 214, 168, 167, 2040, 373 },
+        quests = { 166, 214, 168, 167, 2040, 373, 1654 },
     },
     ["excavation-site-wetlands"] = {
         name = "Excavation Site: Wetlands",
@@ -135,7 +135,7 @@ DQT.dungeons = {
         location = "Southern Barrens, west of the road to Thousand Needles",
         art = "Interface\\LFGFrame\\UI-LFG-BACKGROUND-RazorfenKraul",
         notes = "Check your faction's quests before travelling to the southern Barrens. Warriors have class objectives here too, and an item found inside starts a quest that leads to Razorfen Downs.",
-        quests = { 1221, 1144, 1100, 1101, 1142, 1102, 1109, 6521, 1701, 1838 },
+        quests = { 1221, 1144, 1100, 1101, 1142, 1102, 1109, 6522, 1701, 1838 },
     },
     ["scarlet-monastery-armory"] = {
         name = "Scarlet Monastery: Armory",

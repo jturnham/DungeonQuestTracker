@@ -3,6 +3,7 @@ local _, DQT = ...
 DQT.optionDefinitions = {
     {section="Display"},
     {key="display.compact", label="Use compact mode", tip="Text-only dungeon and quest lists in a smaller window. Options always uses the full window width."},
+    {key="lootReminders.enabled", label="Show boss quest-loot reminders", tip="Brief on-screen reminder to check a defeated boss for known quest items. A reminder does not guarantee the item dropped."},
     {section="Quest Checklist"},
     {key="filters.showCompleted", label="Show completed quests"},
     {key="filters.showUnavailable", label="Show quests unavailable to my faction, class or race"},
@@ -91,6 +92,7 @@ function DQT:SetOption(key, value)
     self.db.optionOverrides = type(self.db.optionOverrides) == "table" and self.db.optionOverrides or {}
     self.db.optionOverrides[key] = true
     if key == "partyDataSync" and self.ResetQuestDataTransfers then self:ResetQuestDataTransfers() end
+    if key == "lootReminders.enabled" and not value and self.lootReminderFrame then self.lootReminderFrame:Hide() end
     self:ApplyOptions()
     return true
 end
@@ -124,10 +126,11 @@ function DQT:GetQuestPickupType(quest)
     if text:find("sparklematic", 1, true) or text:find("vault", 1, true) or text:find("spawn points", 1, true) then return "object" end
     return "unknown"
 end
-function DQT:GetDisplayDungeonStatus(key)
-    local raw = self:GetDungeonQuestStatus(key, true)
+function DQT:GetDisplayDungeonStatus(key, context)
+    context = context or self:GetPlayerContext()
+    local raw = self:GetDungeonQuestStatus(key, true, true, context)
     if not raw then return nil end
-    local context, blocking = self:GetPlayerContext(), {}
+    local blocking = {}
     local function MarkPrerequisites(quest, seen)
         for _, prerequisite in ipairs(quest.prerequisites or {}) do
             local id = prerequisite.questID
@@ -163,22 +166,23 @@ function DQT:GetDisplayDungeonStatus(key)
     end
     return result
 end
-function DQT:ShouldShowDungeon(status)
+function DQT:ShouldShowDungeon(status, context)
+    context = context or self:GetPlayerContext()
     local counts, raw = status.counts, status.raw
     if self:GetOption("filters.onlyMissing") and counts.missing+counts.locked == 0 then return false end
     if self:GetOption("filters.onlyReady") and counts.ready == 0 then return false end
     local relevant, tracked = false, false
     for _, row in ipairs(raw.quests) do
-        if self:GetQuestAvailability(row.quest) ~= "unavailable" then
+        if self:GetQuestAvailability(row.quest, context) ~= "unavailable" then
             relevant=true
             if row.state == "active" or row.state == "ready" then tracked=true end
         end
     end
     if #status.dungeon.quests > 0 and #status.quests == 0 then return false end
-    if #status.quests == 0 and not self:DungeonHasVisibleQuests(status.key) then return false end
+    if #status.quests == 0 and not self:DungeonHasVisibleQuests(status.key, context) then return false end
     if not relevant and #status.quests > 0 and not self:GetOption("filters.showUnavailable") then return false end
     if tracked and not self:GetOption("filters.hideTrackedDungeons") then return true end
-    local level = self:GetPlayerContext().level
+    local level = context.level
     local low, high = tostring(status.dungeon.recommendedLevel):match("(%d+)%D+(%d+)")
     low, high = tonumber(low) or status.dungeon.minLevel, tonumber(high) or status.dungeon.minLevel
     if level > 0 then
