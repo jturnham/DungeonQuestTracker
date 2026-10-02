@@ -1,15 +1,32 @@
 local addonName, DQT = ...
 
 DQT.name = addonName
-DQT.version = "0.2.0"
+DQT.version = "0.3.0"
 
 DQT.defaults = {
     partyDataSync = false,
     partyQuestCache = {},
-    minimap = { hide = false },
+    display = { compact = false },
+    minimap = { hide = false, angle = 225 },
+    party = { respond = true, autoBroadcast = false, confirmShareAll = false },
     filters = {
-        showCompleted = false,
-        showUnavailable = true,
+        showCompleted = true,
+        showUnavailable = false,
         showClassRestricted = true,
+        showLowLevelLocked = true,
+        ignoreGrayChecklist = true,
+        ignoreRedChecklist = true,
+        ignoreGrayTurnIns = false,
+        hideGrayDungeons = true,
+        hideRedDungeons = true,
+        hideLowDungeons = false,
+        lowLevelGap = 5,
+        hideHighDungeons = false,
+        highLevelGap = 5,
+        hideTrackedDungeons = true,
+        onlyMissing = false,
+        onlyReady = false,
+        includeBreadcrumbs = true,
+        includeItemQuests = true,
     },
 }

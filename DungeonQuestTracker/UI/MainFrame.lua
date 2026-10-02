@@ -16,6 +16,7 @@ local collapsedHeight = 32
 local expandedHeight = 104
 local rowGap = 8
 local contentWidth = 690
+local viewportHeight = 470
 local stateIcons = {
     completed = "Interface\\RaidFrame\\ReadyCheck-Ready",
     ready = "Interface\\GossipFrame\\ActiveQuestIcon",
@@ -36,6 +37,7 @@ local function AddTooltip(widget, title, body)
     end)
     widget:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
 end
+UI.AddTooltip = AddTooltip
 
 local function WrapText(text)
     if text.SetWordWrap then text:SetWordWrap(true) end
@@ -175,6 +177,8 @@ local function CreateTurnInRow(parent, index)
     row.detail:SetWidth(620)
     row.detail:SetJustifyH("LEFT")
     WrapText(row.detail)
+    row:EnableMouse(true)
+    AddTooltip(row, function() return row.tooltipTitle or "Turn-in" end, function() return row.tooltipText or "" end)
 
     return row
 end
@@ -233,6 +237,7 @@ function UI:Create()
     frame:SetPoint("CENTER")
     frame:Hide()
     frame:SetMovable(true)
+    frame:SetClampedToScreen(true)
     frame:EnableMouse(true)
     frame:RegisterForDrag("LeftButton")
     frame:SetScript("OnDragStart", frame.StartMoving)
@@ -243,9 +248,26 @@ function UI:Create()
     frame.title:SetText("DungeonQuestTracker")
 
     frame.version = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-    frame.version:SetPoint("RIGHT", frame.TitleBg, "RIGHT", -28, 0)
     frame.version:SetJustifyH("RIGHT")
     frame.version:SetText("v" .. tostring(DQT.version or "0.2.0"))
+    frame.optionsButton = CreateFrame("Button", nil, frame)
+    frame.optionsButton:SetSize(16, 16)
+    frame.optionsButton:SetNormalTexture("Interface\\Icons\\INV_Misc_Gear_01")
+    frame.optionsButton:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
+    frame.optionsButton:SetScript("OnClick", function() UI:ShowOptions() end)
+    AddTooltip(frame.optionsButton, "Options")
+    frame.compactButton = CreateFrame("Button", nil, frame)
+    frame.compactButton:SetSize(24, 24)
+    if frame.CloseButton then
+        frame.compactButton:SetPoint("RIGHT", frame.CloseButton, "LEFT", -2, 0)
+    else
+        frame.compactButton:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -30, -2)
+    end
+    frame.optionsButton:SetPoint("RIGHT", frame.compactButton, "LEFT", -6, 0)
+    frame.version:SetPoint("RIGHT", frame.optionsButton, "LEFT", -8, 0)
+    frame.compactButton:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
+    frame.compactButton:SetScript("OnClick", function() DQT:SetOption("display.compact", not DQT:GetOption("display.compact")) end)
+    AddTooltip(frame.compactButton, function() return DQT:GetOption("display.compact") and "Switch to full mode" or "Switch to compact mode" end)
 
     frame.nav = CreateFrame("Frame", nil, frame)
     frame.nav:SetSize(730, 30)
@@ -254,7 +276,8 @@ function UI:Create()
     frame.primaryButton = CreateButton(frame.nav, "Dungeons", 118)
     frame.primaryButton:SetPoint("LEFT", frame.nav, "LEFT", 0, 0)
     frame.primaryButton:SetScript("OnClick", function()
-        if UI.currentView == "list" then
+        if UI.currentView == "options" then UI:CloseOptions()
+        elseif UI.currentView == "list" then
             if UI.currentDungeonKey then DQT:OpenDungeon(UI.currentDungeonKey) end
         else
             UI:ShowDungeonList()
@@ -274,7 +297,7 @@ function UI:Create()
     frame.shareButton = CreateButton(frame.nav, "Share All", 118)
     frame.shareButton:SetPoint("LEFT", frame.partyButton, "RIGHT", 8, 0)
     frame.shareButton:SetScript("OnClick", function()
-        if UI.currentDungeonKey then DQT:ShareDungeonQuests(UI.currentDungeonKey) end
+        if UI.currentDungeonKey then UI:RequestShareAll(UI.currentDungeonKey) end
     end)
     AddTooltip(frame.partyButton, "Check Party", "Requests this dungeon's quest status from party members running DQT. Checks have a five-second cooldown; responses expire after two minutes.")
     AddTooltip(frame.shareButton, "Share All", "Requests sharing of active or ready quests the client marks shareable. Requires a group; drop, object and prerequisite quests may not be shareable.")
@@ -360,18 +383,61 @@ function UI:Create()
     frame.rows = {}
     frame.dungeonCards = {}
     frame.turnInRows = {}
+    frame.filterSummary = CreateFrame("Button", nil, frame)
+    frame.filterSummary:SetSize(690, 20)
+    frame.filterSummary:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 24, 8)
+    frame.filterSummary.text = frame.filterSummary:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+    frame.filterSummary.text:SetAllPoints()
+    frame.filterSummary.text:SetJustifyH("LEFT")
+    frame.filterSummary:SetScript("OnClick", function() UI:ShowOptions() end)
+    AddTooltip(frame.filterSummary, "Filters", function() return DQT:GetFilterSummary() end)
 
     self.frame = frame
 end
 
+function UI:IsCompact()
+    return DQT:GetOption("display.compact") and self.currentView ~= "options"
+end
+
+function UI:ApplyLayout()
+    local frame, compact = self.frame, self:IsCompact()
+    contentWidth = compact and 430 or 690
+    viewportHeight = compact and 350 or 470
+    frame:SetSize(compact and 520 or 780, compact and 500 or 620)
+    frame.nav:SetWidth(compact and 470 or 730)
+    frame.content:SetSize(contentWidth+30, viewportHeight)
+    frame.subtitle:SetWidth(contentWidth+30)
+    frame.emptyMessage:SetWidth(contentWidth-10)
+    frame.listEmpty:SetWidth(contentWidth-24)
+    frame.filterSummary:SetWidth(contentWidth)
+    for _, child in ipairs({frame.checklistContent, frame.dungeonContent, frame.turnInContent}) do child:SetWidth(contentWidth) end
+    for _, button in ipairs({frame.primaryButton, frame.turnInsButton, frame.partyButton, frame.shareButton}) do button:SetWidth(compact and 100 or 118) end
+    frame.searchLabel:ClearAllPoints()
+    frame.searchLabel:SetPoint("LEFT", frame.nav, "LEFT", compact and 140 or 370, 0)
+    frame.search:SetWidth(compact and 215 or 235)
+    local texture = DQT:GetOption("display.compact") and "UI-Panel-BiggerButton" or "UI-Panel-SmallerButton"
+    frame.compactButton:SetNormalTexture("Interface\\Buttons\\" .. texture .. "-Up")
+    frame.compactButton:SetPushedTexture("Interface\\Buttons\\" .. texture .. "-Down")
+end
+
+function UI:FitContent()
+    local top = math.max(112, 76+self.frame.subtitle:GetStringHeight()+14)
+    viewportHeight = math.max(120, self.frame:GetHeight()-top-38)
+    self.frame.content:ClearAllPoints()
+    self.frame.content:SetPoint("TOPLEFT", self.frame, "TOPLEFT", 24, -top)
+    self.frame.content:SetHeight(viewportHeight)
+end
+
 function UI:UpdateNav()
     if not self.frame then return end
+    self:ApplyLayout()
     local listView = self.currentView == "list"
+    self.frame.filterSummary:SetShown(self.currentView ~= "options")
     self.frame.search:SetShown(listView)
     self.frame.searchLabel:SetShown(listView)
     self.frame.clearSearch:SetShown(listView)
-    self.frame.syncOption:SetShown(listView)
-    self.frame.syncLabel:SetShown(listView)
+    self.frame.syncOption:SetShown(listView and not self:IsCompact())
+    self.frame.syncLabel:SetShown(listView and not self:IsCompact())
     self.frame.syncOption:SetChecked(DQT.db and DQT.db.partyDataSync or false)
     if not listView then self.frame.search:ClearFocus() end
     self.frame.primaryButton:ClearAllPoints()
@@ -411,6 +477,7 @@ function UI:ClearRows()
     self.frame.checklistScroll:Hide()
     self.frame.emptyMessage:Hide()
     self.frame.listEmpty:Hide()
+    if self.frame.optionsScroll then self.frame.optionsScroll:Hide() end
     if self.frame.dungeonScroll then
         self.frame.dungeonScroll:Hide()
         self.frame.dungeonScroll:SetVerticalScroll(0)
@@ -428,8 +495,9 @@ function UI:PositionChecklistRows(status)
     for index, questStatus in ipairs(status.quests or {}) do
         local row = self.frame.rows[index]
         if row then
-            local expanded = QuestIsExpanded(questStatus.questID)
-            local headerHeight = math.max(collapsedHeight, row.title:GetStringHeight() + 12)
+            local compact = self:IsCompact()
+            local expanded = not compact and QuestIsExpanded(questStatus.questID)
+            local headerHeight = math.max(compact and 24 or collapsedHeight, row.title:GetStringHeight() + (compact and 8 or 12))
             local height = headerHeight
             row.detail:ClearAllPoints()
             row.detail:SetPoint("TOPLEFT", row, "TOPLEFT", 22, -headerHeight)
@@ -443,11 +511,11 @@ function UI:PositionChecklistRows(status)
             row.reason:SetShown(expanded)
             if row.party then row.party:SetShown(expanded) end
             row.toggle:SetText(expanded and "-" or "+")
-            y = y + height + rowGap
+            y = y + height + (compact and 4 or rowGap)
         end
     end
-    self.frame.checklistContent:SetHeight(math.max(470, y))
-    self.frame.checklistScroll:SetVerticalScroll(math.min(self.frame.checklistScroll:GetVerticalScroll(), math.max(0, y - 470)))
+    self.frame.checklistContent:SetHeight(math.max(viewportHeight, y))
+    self.frame.checklistScroll:SetVerticalScroll(math.min(self.frame.checklistScroll:GetVerticalScroll(), math.max(0, y - viewportHeight)))
 end
 
 function UI:ShowDungeon(status)
@@ -465,6 +533,7 @@ function UI:RenderChecklist(status)
     self.frame.checklistScroll:Show()
     if #status.quests == 0 then
         local message = #(status.dungeon.quests or {}) == 0 and "No quests recorded yet." or "No quests recorded for your faction."
+        if status.hidden and status.hidden > 0 then message = "No quests match your filters." end
         self.frame.emptyMessage:SetText(message .. "\n\n" .. (status.dungeon.notes or ""))
         self.frame.emptyMessage:Show()
     end
@@ -478,6 +547,9 @@ function UI:RenderChecklist(status)
         counts.active or 0,
         counts.missing or 0
     ))
+    if self:IsCompact() then self.frame.subtitle:SetText(status.dungeon.name) end
+    self:FitContent()
+    self:UpdateFilterSummary(status.hidden or 0)
 
     for index, questStatus in ipairs(status.quests) do
         local row = self.frame.rows[index]
@@ -495,19 +567,42 @@ function UI:RenderChecklist(status)
         row.fullTitle = quest.name .. " (#" .. questStatus.questID .. ")"
         row.icon:SetTexture(stateIcons[questStatus.state] or stateIcons.missing)
         row.status:SetText(statusText)
-        row.title:SetText(string.format("%s (#%d)", quest.name, questStatus.questID))
+        local compact = self:IsCompact()
+        row:SetWidth(contentWidth)
+        row.detail:SetWidth(contentWidth-30)
+        row.reason:SetWidth(contentWidth-30)
+        row.party:SetWidth(contentWidth-30)
+        row.toggle:SetShown(not compact)
+        row.icon:SetShown(not compact)
+        row.status:SetShown(not compact)
+        row.share:SetShown(not compact)
+        row.title:ClearAllPoints()
+        if compact then
+            row.title:SetPoint("TOPLEFT", row, "TOPLEFT", 0, -2)
+            row.title:SetWidth(contentWidth-8)
+            row.title:SetText((statusText:match("^(|c%x%x%x%x%x%x%x%x)") or "") .. quest.name .. "|r")
+        else
+            row.title:SetPoint("TOPLEFT", row.status, "TOPRIGHT", 10, 0)
+            row.title:SetWidth(490)
+            row.title:SetText(string.format("%s (#%d)", quest.name, questStatus.questID))
+        end
         row.detail:SetText("Pickup: " .. FormatLocation(quest.pickup) .. " | Turn in: " .. FormatLocation(quest.turnIn) .. prereqText)
         local chainNotes = {}
         for _, prereq in ipairs(quest.prerequisites or {}) do
             if prereq.note then table.insert(chainNotes, prereq.note) end
         end
         local reason = (questStatus.stateReason or "") .. " | " .. (quest.objectives or "")
+        if quest.followUpOf then
+            local parent = DQT:GetQuest(quest.followUpOf)
+            reason = reason .. "\nDungeon follow-up: " .. (parent and parent.name or "Quest") .. " (#" .. quest.followUpOf .. ")."
+        end
         if quest.partySupplied then reason = reason .. "\nParty supplied: " .. tostring(quest.source) .. " (v" .. tostring(quest.sourceVersion or "unknown") .. "); needs review, XP excluded."
         elseif quest.confidence == "needsReview" then reason = reason .. "\nBeta data: needs in-game verification." end
         if quest.verification and quest.verification.conflict then reason = reason .. "\nSource conflict: " .. quest.verification.conflict end
         if #chainNotes > 0 then reason = reason .. "\nChain: " .. table.concat(chainNotes, " ") end
         row.reason:SetText(reason)
         row.tooltipText = (questStatus.stateReason or "") .. "\nPickup: " .. FormatLocation(quest.pickup) .. "\nTurn in: " .. FormatLocation(quest.turnIn)
+        if #chainNotes > 0 then row.tooltipText = row.tooltipText .. "\nChain: " .. table.concat(chainNotes, " ") end
         local canShare, shareReason = false, "Only active or ready quests can be shared."
         if questStatus.state == "active" or questStatus.state == "ready" then
             if DQT:IsGrouped() then
@@ -524,6 +619,7 @@ function UI:RenderChecklist(status)
         end)
         if row.party then row.party:SetText(DQT:GetPartyQuestSummary(status.key, questStatus.questID)) end
         row:SetScript("OnClick", function()
+            if UI:IsCompact() then return end
             UI.expandedQuests = UI.expandedQuests or {}
             UI.expandedQuests[questStatus.questID] = not UI.expandedQuests[questStatus.questID]
             UI:PositionChecklistRows(status)
@@ -545,6 +641,7 @@ function UI:ShowTurnIns(preserveScroll)
     self.frame.content:Hide()
     self.frame.turnInScroll:Show()
     self.frame.turnInScroll:SetVerticalScroll(0)
+    self.frame.filterSummary.text:SetText(DQT:GetOption("filters.ignoreGrayTurnIns") and "Turn-in filter: gray quests excluded" or "Turn-in filters: none")
 
     local turnIns = DQT:GetGlobalTurnInPriority() or { quests = {}, context = {}, xpToLevel = 0 }
     local context = turnIns.context or {}
@@ -555,6 +652,8 @@ function UI:ShowTurnIns(preserveScroll)
         tostring(context.maxXp or 0),
         tostring(turnIns.xpToLevel or 0)
     ))
+    if self:IsCompact() then self.frame.subtitle:SetText("Turn-ins | Level " .. tostring(context.level or "?") .. " | To level " .. tostring(turnIns.xpToLevel or 0)) end
+    self:FitContent()
 
     if not turnIns.quests or #turnIns.quests == 0 then
         local row = self.frame.turnInRows[1]
@@ -565,11 +664,15 @@ function UI:ShowTurnIns(preserveScroll)
         row.rank:SetText("-")
         row.title:SetText("No ready-to-turn-in dungeon quests detected yet.")
         row.detail:SetText("")
+        row:SetWidth(contentWidth)
+        row.title:SetWidth(self:IsCompact() and contentWidth-50 or 620)
+        row.detail:SetShown(not self:IsCompact())
+        row.tooltipTitle, row.tooltipText = "No ready turn-ins", ""
         row:ClearAllPoints()
         row:SetPoint("TOPLEFT", self.frame.turnInContent, "TOPLEFT", 0, 0)
-        row:SetHeight(56)
+        row:SetHeight(math.max(32, row.title:GetStringHeight()+12))
         row:Show()
-        self.frame.turnInContent:SetHeight(56)
+        self.frame.turnInContent:SetHeight(viewportHeight)
         self.frame:Show()
         return
     end
@@ -599,24 +702,33 @@ function UI:ShowTurnIns(preserveScroll)
             lossText = " | loses " .. tostring(item.xpLossOnLevel) .. " XP after level"
         end
         row.detail:SetText("[" .. dungeonName .. "] Turn in: " .. FormatLocation(item.quest.turnIn) .. " | Quest level " .. tostring(item.quest.questLevel or "?") .. " | " .. tostring(item.currentColor or "unknown") .. " now -> " .. tostring(item.nextColor or "unknown") .. " next" .. lossText .. " | XP source " .. tostring(item.xpSource or "unknown"))
-        local height = math.max(56, row.title:GetStringHeight() + row.detail:GetStringHeight() + 17)
+        row.tooltipTitle = item.quest.name .. " - " .. tostring(item.effectiveXp or 0) .. " XP" .. dingText .. riskText
+        row.tooltipText = "[" .. dungeonName .. "] Turn in: " .. FormatLocation(item.quest.turnIn) .. lossText .. " | XP source " .. tostring(item.xpSource or "unknown")
+        local compact = self:IsCompact()
+        row:SetWidth(contentWidth)
+        row.title:SetWidth(compact and contentWidth-50 or 620)
+        row.detail:SetWidth(compact and contentWidth-50 or 620)
+        row.detail:SetShown(not compact)
+        if compact then row.title:SetText(item.quest.name) end
+        local height = compact and math.max(24, row.title:GetStringHeight()+8) or math.max(56, row.title:GetStringHeight() + row.detail:GetStringHeight() + 17)
         row:SetHeight(height)
         row:ClearAllPoints()
         row:SetPoint("TOPLEFT", self.frame.turnInContent, "TOPLEFT", 0, -y)
-        y = y + height + 8
+        y = y + height + (compact and 4 or 8)
         row:Show()
     end
 
-    self.frame.turnInContent:SetHeight(math.max(470, y))
-    self.frame.turnInScroll:SetVerticalScroll(math.min(scroll, math.max(0, y - 470)))
+    self.frame.turnInContent:SetHeight(math.max(viewportHeight, y))
+    self.frame.turnInScroll:SetVerticalScroll(math.min(scroll, math.max(0, y - viewportHeight)))
     self.frame:Show()
 end
 function UI:RefreshCurrentDungeon()
     if not self.frame or not self.frame:IsShown() then return end
+    if self.currentView == "options" then self:RefreshOptions(); return end
     if self.currentView == "list" then self:ShowDungeonList(true); return end
     if self.currentView == "turnins" then self:ShowTurnIns(true); return end
     if not self.currentDungeonKey then return end
-    local status = DQT:GetDungeonQuestStatus(self.currentDungeonKey)
+    local status = DQT:GetDisplayDungeonStatus(self.currentDungeonKey)
     if status then self:RenderChecklist(status) end
 end
 
@@ -627,18 +739,19 @@ function UI:ShowDungeonList(preserveScroll)
     self.currentView = "list"
     self:UpdateNav()
     self.frame.subtitle:SetText("Dungeons")
+    self:FitContent()
     self.frame.content:Hide()
     self.frame.dungeonScroll:Show()
     self.frame.dungeonScroll:SetVerticalScroll(0)
 
     local y = 0
-    local cardIndex = 0
+    local cardIndex, hidden = 0, 0
     local query = string.lower(self.searchText or ""):match("^%s*(.-)%s*$")
     for _, key in ipairs(DQT:GetOrderedDungeonKeys()) do
-        local status = DQT:GetDungeonQuestStatus(key)
+        local status = DQT:GetDisplayDungeonStatus(key)
         local dungeon = status and status.dungeon or DQT.dungeons[key]
         local matches = string.find(string.lower(dungeon.name .. " " .. key .. " " .. (dungeon.location or "")), query, 1, true)
-        if status and DQT:DungeonHasVisibleQuests(key) and matches then
+        if status and DQT:ShouldShowDungeon(status) and matches then
             cardIndex = cardIndex + 1
             local counts = status.counts or {}
             local card = self.frame.dungeonCards[cardIndex]
@@ -657,20 +770,30 @@ function UI:ShowDungeonList(preserveScroll)
             card.summary:SetText(string.format("Ready %d | Active %d | Missing %d | Done %d / %d", counts.ready or 0, counts.active or 0, counts.missing or 0, counts.completed or 0, #(status.quests or {})))
             if #(dungeon.quests or {}) == 0 then card.summary:SetText("No quests recorded yet") end
             card.party:SetText(DQT:GetPartyDungeonSummary(key))
-            local height = math.max(124, card.name:GetStringHeight() + card.meta:GetStringHeight() + card.summary:GetStringHeight() + card.party:GetStringHeight() + 54)
+            local compact = self:IsCompact()
+            card:SetWidth(contentWidth)
+            for _, region in ipairs({card.bg, card.art, card.shade, card.borderTop, card.borderBottom, card.borderLeft, card.borderRight, card.meta, card.summary, card.party}) do region:SetShown(not compact) end
+            card.name:ClearAllPoints()
+            card.name:SetPoint("TOPLEFT", card, "TOPLEFT", compact and 0 or 18, compact and -4 or -16)
+            card.name:SetWidth(compact and contentWidth-8 or 650)
+            card.name:SetFontObject(compact and "GameFontNormal" or "GameFontNormalLarge")
+            if compact then card.notes = card.meta:GetText() .. "\n" .. card.summary:GetText() .. "\n" .. card.party:GetText() .. "\n" .. (dungeon.notes or "") end
+            local height = compact and math.max(28, card.name:GetStringHeight()+12) or math.max(124, card.name:GetStringHeight() + card.meta:GetStringHeight() + card.summary:GetStringHeight() + card.party:GetStringHeight() + 54)
             card:SetHeight(height)
             card:SetScript("OnClick", function() DQT:OpenDungeon(key) end)
             card:Show()
-            y = y + height + 8
+            y = y + height + (compact and 4 or 8)
+        elseif matches then hidden = hidden+1
         end
     end
 
-    self.frame.dungeonContent:SetHeight(math.max(470, y))
-    self.frame.dungeonScroll:SetVerticalScroll(math.min(scroll, math.max(0, y - 470)))
+    self.frame.dungeonContent:SetHeight(math.max(viewportHeight, y))
+    self.frame.dungeonScroll:SetVerticalScroll(math.min(scroll, math.max(0, y - viewportHeight)))
     if cardIndex == 0 then
-        self.frame.listEmpty:SetText(query ~= "" and "No dungeons match your search." or "No dungeons available for your character's faction.")
+        self.frame.listEmpty:SetText(query ~= "" and "No dungeons match your search and filters." or "No dungeons match your filters.")
         self.frame.listEmpty:Show()
     end
+    self:UpdateFilterSummary(hidden, true)
 
     self.frame:Show()
 end

@@ -4,7 +4,12 @@ local completed, ready = {}, {}
 local methods = {}
 local function widget()
     return setmetatable({ shown = true, height = 470, scroll = 0, scripts = {} }, {
-        __index = function(_, key) return methods[key] or function() end end,
+        __index = function(_, key)
+            if methods[key] then return methods[key] end
+            for _, prefix in ipairs({"Set", "Get", "Clear", "Enable", "Disable", "Register", "Start", "Stop", "Has", "Create", "Is"}) do
+                if key:sub(1, #prefix) == prefix then return function() end end
+            end
+        end,
     })
 end
 function methods:CreateTexture() return widget() end
@@ -16,8 +21,27 @@ function methods:SetShown(value) self.shown = value end
 function methods:SetSize(width, height) self.width, self.height = width, height end
 function methods:SetHeight(height) self.height = height end
 function methods:GetHeight() return self.height end
-function methods:SetText(text) self.text = text end
-function methods:GetStringHeight() return math.max(12, math.ceil(#(self.text or "") / 80) * 12) end
+function methods:SetWidth(width) self.width = width end
+function methods:GetWidth() return self.width end
+function methods:ClearAllPoints() self.points = {} end
+function methods:SetPoint(...) self.points = self.points or {}; self.points[#self.points+1] = {...} end
+function methods:SetText(text)
+    self.text = text
+    if self.scripts.OnTextChanged then self.scripts.OnTextChanged(self) end
+end
+function methods:GetText() return self.text or "" end
+function methods:SetChecked(value) self.checked = value end
+function methods:GetChecked() return self.checked end
+function methods:HasFocus() return self.focused or false end
+function methods:ClearFocus() self.focused = false end
+function methods:SetEnabled(value) self.enabled = value end
+function methods:IsEnabled() return self.enabled ~= false end
+function methods:GetStringHeight()
+    local text = (self.text or ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
+    local columns, lines = math.max(1, math.floor((self.width or 640)/8)), 0
+    for line in (text .. "\n"):gmatch("(.-)\n") do lines = lines+math.max(1, math.ceil(#line/columns)) end
+    return lines*12
+end
 function methods:SetVerticalScroll(value) self.scroll = value end
 function methods:GetVerticalScroll() return self.scroll end
 function methods:SetScript(event, callback) self.scripts[event] = callback end
@@ -65,7 +89,12 @@ for _, faction in ipairs({ "Alliance", "Horde" }) do
         assert(DQT:DungeonHasVisibleQuests(keys[index]), "New dungeon hidden for " .. faction .. ": " .. keys[index])
         assert(DQT:GetDungeonQuestStatus(keys[index]), "Missing status")
     end
-    assert(#DQT:GetDungeonQuestStatus("excavation-site-wetlands").quests == 0)
+    local wetlands = DQT:GetDungeonQuestStatus("excavation-site-wetlands")
+    assert(#wetlands.quests == (faction == "Horde" and 2 or 5), "Wetlands faction coverage")
+    for _, row in ipairs(wetlands.quests) do
+        assert(DQT:GetQuestRewardXP(row.quest) == 0, "Unknown Wetlands XP not fabricated")
+        assert(not DQT:IsQuestGray(row.quest, {level=30}) and not DQT:IsQuestRed(row.quest, {level=18}), "Provisional quest level not used for color exclusion")
+    end
     assert(#DQT:GetDungeonQuestStatus("city-of-dalaran").quests == 0)
 end
 player.faction = "Horde"
@@ -91,7 +120,7 @@ for _, item in ipairs(plan.quests) do
     assert(not seen[item.questID], "Duplicate turn-in")
     seen[item.questID] = true
 end
-assert(DQT:GetQuestRewardXP(DQT:GetQuest(1221)) == 7875, "Reported Forever XP")
+assert(DQT:GetQuestRewardXP(DQT:GetQuest(1221)) == 4988, "October 1 bonus reduction estimate")
 local _, source = DQT:GetQuestRewardXP(DQT:GetQuest(2841))
 assert(source == "Classic", "Unconfirmed reward must be labelled as an estimate")
 player.class = "WARRIOR"

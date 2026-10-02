@@ -1,4 +1,6 @@
 local ui = DQT.UI
+local oldDB = DQT.db
+DQT.db = {filters={ignoreGrayChecklist=false, ignoreRedChecklist=false, hideGrayDungeons=false, hideRedDungeons=false}}
 ui.searchText = "  wAiLiNg  "
 ui:ShowDungeonList()
 assert(ui.frame.dungeonCards[1].name.text == "Wailing Caverns", "Case-insensitive search")
@@ -38,3 +40,4 @@ assert(ui.frame.turnInScroll:GetVerticalScroll() == 100, "Turn-in refresh preser
 DQT.GetGlobalTurnInPriority = originalPlanner
 ui:ShowDungeonList()
 print("Passed UI: search, pooled cards, empty states, long text and refresh scroll preservation.")
+DQT.db = oldDB

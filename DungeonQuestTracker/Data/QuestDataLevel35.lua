@@ -3,6 +3,57 @@ local _, DQT = ...
 -- Minimum pickup levels define this wave; some objectives need a higher-level group.
 -- Base rewards remain estimates unless a Forever beta reward is reported separately.
 local quests = {
+    [95697] = {
+        name="Changing Tastes", faction="Horde", minLevel=24, questLevel=24,
+        dungeon="excavation-site-wetlands", newInForever=true,
+        pickup={name="Borstan (confirm in beta)",zone="Orgrimmar",subzone="Borstan's Firepit"},
+        turnIn={name="Borstan (confirm in beta)",zone="Orgrimmar"},
+        objectives="Collect 4 Thicket Raptor Meat in the Excavation Site. The published description points to Borstan; confirm the giver and reward in-game.",
+    },
+    [95664] = {
+        name="Elder Knowledge", faction="Horde", minLevel=24, questLevel=24,
+        dungeon="excavation-site-wetlands", newInForever=true, pickupType="drop",
+        pickup={name="Titan Relic",zone="Excavation Site: Wetlands",subzone="found inside the dungeon"},
+        turnIn={name="Unknown Elder Rise contact (confirm in beta)",zone="Thunder Bluff",subzone="Elder Rise"},
+        objectives="Take the Titan Relic to Elder Rise and find someone who can identify it. The final contact and follow-up are not yet confirmed.",
+    },
+    [98815] = {
+        name="Highland Hides", faction="Alliance", minLevel=24, questLevel=24,
+        dungeon="excavation-site-wetlands", newInForever=true,
+        pickup={name="James Halloran",zone="Wetlands",subzone="Menethil Harbor",coordinates="8, 55"},
+        turnIn={name="James Halloran",zone="Wetlands",subzone="Menethil Harbor",coordinates="8, 55"},
+        objectives="Collect 4 Thicket Raptor Hides inside the dungeon and return them to James Halloran.",
+        prerequisites={{questID=469,external=true,relationship="required",note="Complete Daily Delivery from Einar Stonegrip in Wetlands to James Halloran in Menethil Harbor first."}},
+    },
+    [95772] = {
+        name="Songblade Search", faction="Alliance", minLevel=24, questLevel=24,
+        dungeon="excavation-site-wetlands", newInForever=true,
+        pickup={name="Dorin Songblade",zone="Redridge Mountains",subzone="Lakeshire",coordinates="25.6, 46.6"},
+        turnIn={name="Daewyn Songblade (confirm contact in beta)",zone="Excavation Site: Wetlands"},
+        objectives="Find Dorin's brother Daewyn with the excavation crew. Confirm the final contact and any continuation in-game.",
+    },
+    [95646] = {
+        name="Horrors in the Highland", faction="Alliance", minLevel=24, questLevel=24,
+        dungeon="excavation-site-wetlands", newInForever=true,
+        pickup={name="Rethiel the Greenwarden",zone="Wetlands",coordinates="56.2, 40.6"},
+        turnIn={name="Rethiel the Greenwarden",zone="Wetlands",coordinates="56.2, 40.6"},
+        objectives="Kill a Highland Horror inside the dungeon and bring its Horrible Rootcore to Rethiel.",
+    },
+    [95647] = {
+        name="Lost in the Thicket Things", faction="Alliance", minLevel=24, questLevel=24,
+        dungeon="excavation-site-wetlands", newInForever=true,
+        pickup={name="Caitlin (confirm location after Seeking Caitlin)",zone="Wetlands"},
+        turnIn={name="Ardin Grassman (confirm contact in beta)",zone="Excavation Site: Wetlands"},
+        objectives="Learn what happened to Ardin Grassman inside the dungeon. The guide lists a Reed-woven Heart continuation, but its quest ID and final contact are unconfirmed.",
+        prerequisites={{questID=95737,external=true,relationship="required",note="Begin Seeking Caitlin with Llana in Ashenvale at 35.0, 48.6, then follow the chain to Caitlin. Exact intervening steps need beta confirmation."}},
+    },
+    [95810] = {
+        name="Lost Relic Carry", faction="Alliance", minLevel=24, questLevel=24,
+        dungeon="excavation-site-wetlands", newInForever=true, pickupType="drop",
+        pickup={name="Titan Relic",zone="Excavation Site: Wetlands",subzone="found inside the dungeon"},
+        turnIn={name="Prospector Whelgar",zone="Wetlands",subzone="Whelgar's Excavation Site"},
+        objectives="Bring the Titan Relic to Prospector Whelgar. The guide lists a follow-up whose quest ID and details are not yet confirmed.",
+    },
     [971] = {
         name = "Knowledge in the Deeps", faction = "Alliance", minLevel = 10, questLevel = 23,
         classicXp = 2750, foreverXp = 10313, dungeon = "blackfathom-deeps",

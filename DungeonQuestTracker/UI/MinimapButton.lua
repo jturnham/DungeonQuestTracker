@@ -18,9 +18,12 @@ end
 local function UpdatePosition(button)
     if not Minimap then return end
     local angle = math.rad(GetAngle())
-    local radius = 80
+    local width = type(Minimap.GetWidth) == "function" and Minimap:GetWidth() or 140
+    local height = type(Minimap.GetHeight) == "function" and Minimap:GetHeight() or 140
+    local radiusX = (tonumber(width) or 140) / 2 + 20
+    local radiusY = (tonumber(height) or 140) / 2 + 20
     button:ClearAllPoints()
-    button:SetPoint("CENTER", Minimap, "CENTER", math.cos(angle) * radius, math.sin(angle) * radius)
+    button:SetPoint("CENTER", Minimap, "CENTER", math.cos(angle) * radiusX, math.sin(angle) * radiusY)
 end
 
 local function GetCursorAngle(y, x)
@@ -101,7 +104,11 @@ function MinimapButton:Refresh()
     self:Create()
     if not self.button then return end
     local db = type(DungeonQuestTrackerDB) == "table" and DungeonQuestTrackerDB or type(DQT.db) == "table" and DQT.db or {}
-    if type(db.minimap) == "table" and db.minimap.hide then self.button:Hide() else self.button:Show() end
+    UpdatePosition(self.button)
+    if type(db.minimap) == "table" and db.minimap.hide then
+        self.button:SetScript("OnUpdate", nil)
+        self.button:Hide()
+    else self.button:Show() end
 end
 
 local eventFrame = CreateFrame("Frame")

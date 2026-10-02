@@ -45,10 +45,20 @@ for id, quest in pairs(DQT.quests) do
         if quest[field] ~= nil then assert(Integer(quest[field], 0, 1000000), "Invalid XP: " .. id) end
     end
     assert(Text(quest.objectives), "Missing objectives: " .. id)
+    assert(quest.pickupType == "npc" or quest.pickupType == "drop" or quest.pickupType == "object", "Invalid pickup type: " .. id)
+    assert(quest.breadcrumbOnly == nil or type(quest.breadcrumbOnly) == "boolean", "Invalid breadcrumb flag: " .. id)
     assert(quest.confidence == "needsReview" or quest.confidence == "verifiedSource" or quest.confidence == "verifiedInGame", "Invalid confidence: " .. id)
     assert(type(quest.sourceURLs) == "table" and #quest.sourceURLs > 0, "Missing sources: " .. id)
     for _, url in ipairs(quest.sourceURLs) do assert(url:match("^https://"), "Invalid source URL: " .. id) end
     assert(type(quest.prerequisites) == "table", "Missing prerequisites: " .. id)
+    if quest.followUpOf then
+        assert(DQT.quests[quest.followUpOf] and quest.followUpOf ~= id, "Unresolved follow-up origin: " .. id)
+        local linked = false
+        for _, prerequisite in ipairs(quest.prerequisites) do
+            if prerequisite.questID == quest.followUpOf and prerequisite.relationship == "required" then linked = true end
+        end
+        assert(linked, "Follow-up missing required predecessor: " .. id)
+    end
     for _, prerequisite in ipairs(quest.prerequisites) do
         assert(prerequisite.relationship == "required" or prerequisite.relationship == "breadcrumb", "Invalid prerequisite relationship: " .. id)
         assert(prerequisite.questID or Text(prerequisite.note), "Empty prerequisite: " .. id)

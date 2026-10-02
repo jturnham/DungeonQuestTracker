@@ -1,8 +1,8 @@
 ﻿# DungeonQuestTracker
 
-DungeonQuestTracker is a World of Warcraft: Forever addon for tracking dungeon quest readiness during beta leveling. It shows which dungeon quests your character has completed, has ready to turn in, is actively working on, or is still missing, along with pickup locations, turn-in locations, prerequisite notes, and turn-in priority.
+DungeonQuestTracker is a World of Warcraft: Forever addon for tracking dungeon questsduring beta. It shows which dungeon quests your character has completed, has ready to turn in, is actively working on, or is still missing, along with pickup locations, turn-in locations, prerequisite notes, and turn-in priority.
 
-The current target is the level 30 beta wave, including dungeon quests available to pick up through level 35. Some quests require a higher-level group to finish.
+The current target is the level 30 beta wave, including dungeon quests available to pick up through level 35.
 
 ## Features
 
@@ -17,6 +17,8 @@ The current target is the level 30 beta wave, including dungeon quests available
 - Minimap button with left-click to open DQT, right-click to open turn-ins, and drag-to-move support.
 - Party quest status checking through addon messages when party members also have DQT installed.
 - Share All button for the selected dungeon, using the game client's built-in quest sharing API for quests that are in your log and shareable.
+- Scrollable Options view for filters, minimap controls, party behavior, and sharing confirmation.
+- Saved compact/full display modes with a title-bar toggle beside Close.
 
 ## Screenshots
 
@@ -49,7 +51,7 @@ Current tracked dungeon data includes:
 - Hall of Thanes
 - Shadowfang Keep
 - The Stockade
-- Excavation Site: Wetlands (no quests recorded yet)
+- Excavation Site: Wetlands (seven provisional quest records)
 - Blackfathom Deeps
 - City of Dalaran (no quests recorded yet)
 - Scarlet Monastery: Graveyard
@@ -60,13 +62,19 @@ Current tracked dungeon data includes:
 
 Quest data is curated locally because the WoW API does not expose a complete dungeon quest catalog with pickup locations and prerequisite chains. XP values are intended to use Forever beta dungeon quest rewards where verified.
 
-The new classic dungeon checklists use [Forever quest listings](https://www.wowhead.com/forever/guide/dungeons/every-dungeon-quest-location) and quest database records. Reported beta XP is sourced from [WCLBox](https://wowforever.wclbox.com/en/fuben). Rewards without a confirmed Forever value use base XP estimates, labelled `Classic` in the turn-in list; priority for those quests is provisional. Pickup locations and prerequisites also need confirmation in the beta.
+**XP values are in flux during the Forever beta and are being updated as soon as new information becomes available.** All 56 positive old Forever rewards use the bonus-reduction model, with a quest-specific baseline where known or a labelled same-level assumption otherwise. Small rewards with no inferred positive bonus stay unchanged. Classic-only and unknown rewards remain provisional fallbacks/unknowns; turn-in priority and predicted level-ups are not guarantees.
 
-Excavation Site and City of Dalaran remain visible with empty checklists until reliable quest IDs and pickup details are available. Scarlet Monastery wings share relevant quests, but the global turn-in planner counts each quest once. The boss quests require Cathedral as well as Library and Armory.
+For example, The New Plague uses an assumed 1750 XP baseline and estimates 5035 XP, rather than its old 8320 XP. Baseline assumptions and sources are recorded in [data verification notes](Docs/DATA_VERIFICATION.md). Reports should include quest ID, client build, character level, exact reward and applicable bonuses.
+
+Dungeon chains include catalogued follow-ups outside the instance. Ragefire Chasm includes both Hidden Enemies return steps (Thrall to Neeru, then back to Thrall), and Wailing Caverns includes each faction's In Nightmares follow-up. These retain the originating dungeon in checklists and Turn-ins, with required predecessors, completion history and readiness tracked independently by quest ID. Normal level/faction filters still apply. Follow-up XP without a confirmed current Forever reward uses a labelled Classic fallback. This is curated coverage, not automatic discovery of unknown follow-ups.
+
+Quest records use [Forever quest listings](https://www.wowhead.com/forever/guide/dungeons/every-dungeon-quest-location) and database pages; old beta XP is sourced from [WCLBox](https://wowforever.wclbox.com/en/fuben). The [October 1 bonus reduction](https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-1/2360696) is modeled as normal XP plus half the previous bonus, not half the whole reward. Rewards, rounding, pickup locations and prerequisites still need beta-client confirmation.
+
+Excavation Site now includes seven quests from the [October 2 dungeon guide](https://www.wowhead.com/forever/guide/excavation-site-wetlands-dungeon-overview-location-rewards). XP is unknown and some contacts, exact levels and follow-up IDs remain unconfirmed. City of Dalaran remains an empty placeholder. Scarlet Monastery wings share relevant quests, but the global turn-in planner counts each quest once.
 
 ## Install
 
-Download `DungeonQuestTracker-0.2.0.zip` from the [GitHub release](https://github.com/jturnham/DungeonQuestTracker/releases/tag/v0.2.0) and extract it into your World of Warcraft client's `Interface/AddOns` directory. The ZIP already contains the `DungeonQuestTracker` folder; do not add an extra enclosing folder.
+Download `DungeonQuestTracker-0.3.0.zip` from the [GitHub release](https://github.com/jturnham/DungeonQuestTracker/releases/tag/v0.3.0) and extract it into your World of Warcraft client's `Interface/AddOns` directory. The ZIP already contains the `DungeonQuestTracker` folder; do not add an extra enclosing folder.
 
 ## Usage
 
@@ -89,6 +97,8 @@ Useful commands:
 /dqt stocks
 /dqt turnins
 /dqt debug
+/dqt options
+/dqt minimap
 ```
 
 Use `/dqt dungeon <key>` for any dungeon, including `blackfathom-deeps`, `gnomeregan`, `razorfen-kraul`, `excavation-site-wetlands`, `city-of-dalaran`, and `scarlet-monastery-graveyard`, `scarlet-monastery-library`, or `scarlet-monastery-armory`. `/dqt list` prints all keys.
@@ -98,6 +108,33 @@ The minimap button also opens the addon:
 - Left-click: dungeon list
 - Right-click: global turn-ins
 - Drag: reposition button
+
+## Options
+
+### Compact Mode
+
+The compact/full toggle sits beside Close in the title bar. Compact mode uses a smaller window, plain dungeon names, and quest names colored by status. Hover over entries for status, locations, and prerequisite notes. Turn-ins keep their priority order but show only rank and quest name, with reward details on hover.
+
+Switching back restores dungeon artwork, quest IDs, sharing buttons, and expanded quest details. Search and filters work in both modes, and the choice persists after reload. Options stays full-width so settings remain readable; its Display section also controls compact mode.
+
+### Settings
+
+Use the gear button in the title bar or `/dqt options`. Settings apply immediately, persist in `DungeonQuestTrackerDB` after reload, and Back returns to the previous view.
+
+- Checklist: show completed/unavailable/low-level locked quests, hide gray/red quests, and include or exclude class, breadcrumb-only, and drop/object-start quests.
+- Dungeon list: hide gray/red dungeons, set upper/lower level gaps (0-60), or show only missing/locked quests or ready turn-ins. Enabling both list-only filters requires both to match.
+- Turn-ins: explicitly exclude gray ready quests from priority. Other checklist and dungeon filters do not suppress the global planner.
+- Minimap/party: toggle the minimap button, status responses, automatic broadcasts on dungeon open, Share All confirmation, and party data sync.
+
+Gray/red filtering is on by default. Green, yellow, and orange quests remain visible. Ready quests are exempt from quest color filtering, and required gray prerequisites blocking an in-range quest remain visible. Out-of-range dungeons are hidden even when they have current quests; turn off the active/ready override in Options to keep those dungeons in the list. The global turn-in planner still includes their ready quests.
+
+Dungeon colors use the recommended range: the upper level for gray and the lower level for red. Red means at least five levels above you; gray uses the client's green range when available. A dungeon whose visible quests are all gray is also hidden. These rules apply to empty placeholders too. Unknown player or quest levels are not treated as gray/red.
+
+Level gaps use the recommended range: its upper end for dungeons below you and lower end for dungeons above you. Unknown pickup types stay visible; known drop/object starts and identified breadcrumb-only quests can be excluded. The footer shows filter status and hidden counts; hover for details or click for Options.
+
+Reset Filters restores filter defaults, including gray/red filtering. Reset Minimap Position restores the button position without changing visibility. `/dqt minimap` toggles visibility directly. Completed in-range quests stay visible by default and unavailable quests are hidden. The earlier inactive range defaults are upgraded once; subsequent explicit choices persist across reloads.
+
+Party responses are on by default; automatic broadcasts and Share All confirmation are off. Automatic broadcasts have a five-second per-dungeon cooldown and do not request replies. Disabling status responses does not disable separately opted-in quest-data sync. If confirmation is enabled but its dialog is unavailable, Share All sends nothing.
 
 ## Party Checking
 
@@ -138,6 +175,7 @@ DungeonQuestTracker/
   DungeonQuestTracker.toc
   Config.lua
   Core.lua
+  Options.lua
   Data/
     DungeonData.lua
     QuestData.lua
@@ -146,6 +184,7 @@ DungeonQuestTracker/
   QuestDataSync.lua
   UI/
     MainFrame.lua
+    Options.lua
     MinimapButton.lua
 Docs/
   DATA_VERIFICATION.md
@@ -165,11 +204,11 @@ From the repository root, create a tester zip that contains the `DungeonQuestTra
 .\Tools\package-release.ps1
 ```
 
-This produces `release/DungeonQuestTracker-0.2.0.zip` and checks its version and folder layout. Testers can extract that zip directly into `Interface/AddOns`.
+This produces `release/DungeonQuestTracker-0.3.0.zip` and checks its version and folder layout. Testers can extract that zip directly into `Interface/AddOns`.
 
 ## Development Notes
 
-- Current addon version: `0.2.0`.
+- Current addon version: `0.3.0`.
 - Current TOC interface: `16001`.
 - Saved variables live in `DungeonQuestTrackerDB`.
 - The UI intentionally uses native WoW frames and templates only, with no external addon library dependency yet.
@@ -183,7 +222,7 @@ Append `Tools/test-stability.lua` to that command to also test missing/throwing 
 
 Append `Tools/test-ui.lua` before the stability tests to check search, empty results, long text sizing, and scroll preservation during refresh.
 
-For all suites, run `node Tools/test-level35.cjs <development-directory> Tools/test-ui.lua Tools/test-sync.lua Tools/test-stability.lua`. Sync tests cover safe parsing, opt-in behavior, missing records, chunk reassembly, saved cache validation, bundled precedence, dungeon overlays, and throttling.
+For all suites, run `node Tools/test-level35.cjs <development-directory> Tools/test-ui.lua Tools/test-sync.lua Tools/test-options.lua Tools/test-compact.lua Tools/test-level-range.lua Tools/test-stability.lua`. Tests cover sync, filters, color boundaries, defaults migration, compact/full transitions, wrapping, persistence, sharing confirmation, party settings, and throttling.
 
 Run `./Tools/validate-data.ps1 -DependencyDirectory <development-directory>` for the full release audit and all regression suites. The audit detects duplicate quest/table keys before Lua evaluation, unresolved dungeon and prerequisite references, prerequisite cycles, invalid restriction enums, incomplete locations, and invalid XP/level values. Structural validation does not prove beta data accuracy.
 

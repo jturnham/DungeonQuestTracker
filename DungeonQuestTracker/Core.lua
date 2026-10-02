@@ -96,14 +96,25 @@ function DQT:GetQuestLogIndexByQuestID(questID)
     return nil
 end
 
-function DQT:GetQuestLogIndexByQuestName(questName)
+function DQT:GetQuestLogIndexByQuestName(questName, questID)
     if not questName then return nil end
     local wanted = NormalizeQuestTitle(questName)
+    local ambiguous = false
+    if questID then
+        for id, quest in pairs(self.quests or {}) do
+            if id ~= questID and NormalizeQuestTitle(quest.name) == wanted then ambiguous = true; break end
+        end
+    end
+    local function Matches(title, id, isHeader)
+        if isHeader or NormalizeQuestTitle(title) ~= wanted then return false end
+        if questID and type(id) == "number" and id > 0 then return id == questID end
+        return not ambiguous
+    end
 
     if C_QuestLog and C_QuestLog.GetInfo and C_QuestLog.GetNumQuestLogEntries then
         for index = 1, CallAPI(C_QuestLog.GetNumQuestLogEntries) or 0 do
             local info = CallAPI(C_QuestLog.GetInfo, index)
-            if type(info) == "table" and NormalizeQuestTitle(info.title) == wanted then
+            if type(info) == "table" and Matches(info.title, info.questID, info.isHeader) then
                 return index
             end
         end
@@ -111,8 +122,8 @@ function DQT:GetQuestLogIndexByQuestName(questName)
 
     if GetQuestLogTitle and GetNumQuestLogEntries then
         for index = 1, CallAPI(GetNumQuestLogEntries) or 0 do
-            local title = CallAPI(GetQuestLogTitle, index)
-            if NormalizeQuestTitle(title) == wanted then return index end
+            local title, _, _, isHeader, _, _, _, id = CallAPI(GetQuestLogTitle, index)
+            if Matches(title, id, isHeader) then return index end
         end
     end
 
@@ -126,7 +137,7 @@ function DQT:IsQuestActive(questID, questName)
     end
 
     if questID and self:GetQuestLogIndexByQuestID(questID) then return true end
-    if questName and self:GetQuestLogIndexByQuestName(questName) then return true end
+    if questName and self:GetQuestLogIndexByQuestName(questName, questID) then return true end
 
     return false
 end
@@ -139,7 +150,7 @@ function DQT:IsQuestReadyForTurnIn(questID, questName)
         if IsFinished(ready) then return true end
     end
 
-    local index = self:GetQuestLogIndexByQuestID(questID) or self:GetQuestLogIndexByQuestName(questName)
+    local index = self:GetQuestLogIndexByQuestID(questID) or self:GetQuestLogIndexByQuestName(questName, questID)
     if index then
         if C_QuestLog and C_QuestLog.GetInfo then
             local info = CallAPI(C_QuestLog.GetInfo, index)
@@ -299,7 +310,11 @@ end
 function DQT:GetQuestRewardXP(quest)
     if not quest then return 0, "none" end
     if quest.partySupplied then return 0, "Party supplied (XP unverified)" end
-    if quest.foreverXp then return quest.foreverXp, "Forever" end
+    if quest.foreverXp then
+        if quest.xpEstimate then return quest.foreverXp, "Forever (Oct 1 estimate)" end
+        if quest.xpOutdated then return quest.foreverXp, "Forever (outdated; unverified)" end
+        return quest.foreverXp, "Forever"
+    end
     if quest.classicXp then return quest.classicXp, "Classic" end
     return 0, "unknown"
 end
@@ -431,7 +446,7 @@ function DQT:GetGlobalTurnInPriority()
         local status = self:GetDungeonQuestStatus(dungeonKey)
         if status then
             for _, row in ipairs(status.quests or {}) do
-                if row.state == "ready" and not seenQuests[row.questID] then
+                if row.state == "ready" and not seenQuests[row.questID] and not (self:GetOption("filters.ignoreGrayTurnIns") and self:IsQuestGray(row.quest, context)) then
                     seenQuests[row.questID] = true
                     table.insert(turnIns, self:BuildTurnInItem(row, dungeonKey, status.dungeon, context, xpToLevel))
                 end
@@ -443,7 +458,7 @@ function DQT:GetGlobalTurnInPriority()
     return { context = context, xpToLevel = xpToLevel, quests = turnIns }
 end
 
-function DQT:GetDungeonQuestStatus(dungeonKey)
+function DQT:GetDungeonQuestStatus(dungeonKey, includeUnavailable)
     local dungeon = self:GetDungeon(dungeonKey)
     if not dungeon then return nil end
 
@@ -452,7 +467,7 @@ function DQT:GetDungeonQuestStatus(dungeonKey)
 
     for _, questID in ipairs(dungeon.quests or {}) do
         local quest = self:GetQuest(questID)
-        if quest and self:QuestMatchesPlayerFaction(quest) and self:QuestMatchesPlayerClass(quest) then
+        if quest and (includeUnavailable or (self:QuestMatchesPlayerFaction(quest) and self:QuestMatchesPlayerClass(quest))) then
             local state, stateReason = self:GetQuestState(questID, quest)
             counts[state] = (counts[state] or 0) + 1
             table.insert(rows, {
@@ -708,6 +723,7 @@ function DQT:HandleAddonMessage(prefix, message, channel, sender)
     local command, rest = message:match("^(%w+)|?(.*)$")
     if self.HandleQuestDataMessage and self:HandleQuestDataMessage(command, rest, sender) then return end
     if command == "REQ" then
+        if not self:GetOption("party.respond") then return end
         local dungeonKey = rest
         if self:GetDungeon(dungeonKey) then
             self.partyResponseTimes = self.partyResponseTimes or {}
@@ -744,7 +760,7 @@ function DQT:Print(message)
 end
 
 function DQT:OpenDungeon(dungeonKey)
-    local status = self:GetDungeonQuestStatus(dungeonKey)
+    local status = self:GetDisplayDungeonStatus(dungeonKey)
     if not status then
         self:Print("Unknown dungeon: " .. tostring(dungeonKey))
         return
@@ -756,6 +772,14 @@ function DQT:OpenDungeon(dungeonKey)
         self:Print(status.dungeon.name)
         for _, row in ipairs(status.quests) do
             self:Print(string.format("[%s] %s - %s", row.stateReason, row.quest.name, row.quest.pickup and row.quest.pickup.name or "Unknown"))
+        end
+    end
+    if self:GetOption("party.autoBroadcast") and self:IsGrouped() then
+        self.autoBroadcastTimes = self.autoBroadcastTimes or {}
+        local last = self.autoBroadcastTimes[dungeonKey]
+        if not last or Now()-last >= 5 then
+            self.autoBroadcastTimes[dungeonKey] = Now()
+            self:SendDungeonStatus(dungeonKey)
         end
     end
 end
@@ -788,6 +812,8 @@ function DQT:ShowHelp()
     self:Print("  /dqt stocks - open The Stockade")
     self:Print("  /dqt turnins - print global dungeon turn-in priority")
     self:Print("  /dqt debug [questID] - client/API checks and quest state details")
+    self:Print("  /dqt options - open Options")
+    self:Print("  /dqt minimap - toggle the minimap button")
     self:Print("  /dqt sync on|off|clear - opt-in party quest data or clear received records")
 end
 
@@ -841,6 +867,8 @@ local function HandleSlashCommand(input)
     end
 
     if command == "debug" then DQT:Debug(tonumber(rest)); return end
+    if command == "options" then DQT.UI:ShowOptions(); return end
+    if command == "minimap" then DQT:SetOption("minimap.hide", not DQT:GetOption("minimap.hide")); return end
     if command == "sync" and DQT.SetQuestDataSync then DQT:SetQuestDataSync(rest); return end
     if command == "help" or command == "?" then DQT:ShowHelp(); return end
 
@@ -859,6 +887,7 @@ DQT.events:SetScript("OnEvent", function(_, event, ...)
         if loadedAddon ~= addonName then return end
         DungeonQuestTrackerDB = CopyDefaults(DQT.defaults, DungeonQuestTrackerDB)
         DQT.db = DungeonQuestTrackerDB
+        DQT:InitializeOptions()
         if DQT.InitializeQuestDataSync then DQT:InitializeQuestDataSync() end
         DQT.loaded = true
         DQT:InitializeComms()
@@ -877,6 +906,7 @@ DQT.events:SetScript("OnEvent", function(_, event, ...)
     if event == "GROUP_ROSTER_UPDATE" then
         DQT.partyStatus = {}
         DQT.partyResponseTimes = {}
+        DQT.autoBroadcastTimes = {}
         if DQT.ResetQuestDataTransfers then DQT:ResetQuestDataTransfers() end
     end
 
