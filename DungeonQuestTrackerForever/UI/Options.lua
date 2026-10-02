@@ -22,7 +22,7 @@ end
 function UI:CreateOptions()
     if self.frame.optionsScroll then return end
     local frame = self.frame
-    frame.optionsScroll = CreateFrame("ScrollFrame", "DungeonQuestTrackerOptionsScrollFrame", frame, "UIPanelScrollFrameTemplate")
+    frame.optionsScroll = CreateFrame("ScrollFrame", "DungeonQuestTrackerForeverOptionsScrollFrame", frame, "UIPanelScrollFrameTemplate")
     frame.optionsScroll:SetPoint("TOPLEFT", frame.content, "TOPLEFT", 0, 0)
     frame.optionsScroll:SetPoint("BOTTOMRIGHT", frame.content, "BOTTOMRIGHT", -28, 0)
     frame.optionsContent = CreateFrame("Frame", nil, frame.optionsScroll)

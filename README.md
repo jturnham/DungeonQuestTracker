@@ -1,6 +1,6 @@
-﻿# DungeonQuestTracker
+# DungeonQuestTrackerForever
 
-DungeonQuestTracker is a World of Warcraft: Forever addon for tracking dungeon questsduring beta. It shows which dungeon quests your character has completed, has ready to turn in, is actively working on, or is still missing, along with pickup locations, turn-in locations, prerequisite notes, and turn-in priority.
+DungeonQuestTrackerForever is a World of Warcraft: Forever addon for tracking dungeon quests during beta. It shows which dungeon quests your character has completed, has ready to turn in, is actively working on, or is still missing, along with pickup locations, turn-in locations, prerequisite notes, and turn-in priority.
 
 The current target is the level 30 beta wave, including dungeon quests available to pick up through level 35.
 
@@ -74,7 +74,9 @@ Excavation Site now includes seven quests from the [October 2 dungeon guide](htt
 
 ## Install
 
-Download `DungeonQuestTracker-0.3.0.zip` from the [GitHub release](https://github.com/jturnham/DungeonQuestTracker/releases/tag/v0.3.0) and extract it into your World of Warcraft client's `Interface/AddOns` directory. The ZIP already contains the `DungeonQuestTracker` folder; do not add an extra enclosing folder.
+Download `DungeonQuestTrackerForever-0.3.1.zip` from the [GitHub release](https://github.com/jturnham/DungeonQuestTracker/releases/tag/v0.3.1) and extract it into your World of Warcraft client's `Interface/AddOns` directory. The ZIP already contains the `DungeonQuestTrackerForever` folder; do not add an extra enclosing folder.
+
+When upgrading to the renamed addon, remove the old `DungeonQuestTracker` folder from `Interface/AddOns` before installing `DungeonQuestTrackerForever`, so only one copy loads. With WoW closed, copy `WTF/Account/<account>/SavedVariables/DungeonQuestTracker.lua` to `DungeonQuestTrackerForever.lua` to retain settings. Do not overwrite an existing new-name saved file. The internal `DungeonQuestTrackerDB` variable and `/dqt` command are retained for compatibility. The GitHub repository URL is unchanged.
 
 ## Usage
 
@@ -140,7 +142,7 @@ Party responses are on by default; automatic broadcasts and Share All confirmati
 
 Open a dungeon checklist and press `Check Party` to request quest status from party members.
 
-Party checking works through WoW addon messages, so party members need DungeonQuestTracker installed and enabled to respond. Expanded quest rows show a summary of how many responding party members have each quest completed, ready, active, or missing/locked.
+Party checking works through WoW addon messages, so party members need DungeonQuestTrackerForever installed and enabled to respond. Expanded quest rows show a summary of how many responding party members have each quest completed, ready, active, or missing/locked.
 
 Checks have a five-second cooldown per dungeon. Status is cleared when the group roster changes and expires after two minutes. Realm-qualified sender names are normalized against your current group. Large checklists are split into messages within the client's size limit.
 
@@ -171,8 +173,8 @@ Bundled quests include source links, source notes, confidence, and pending verif
 ## Project Layout
 
 ```text
-DungeonQuestTracker/
-  DungeonQuestTracker.toc
+DungeonQuestTrackerForever/
+  DungeonQuestTrackerForever.toc
   Config.lua
   Core.lua
   Options.lua
@@ -198,17 +200,17 @@ Tools/
 
 ## Packaging
 
-From the repository root, create a tester zip that contains the `DungeonQuestTracker/` folder at the archive root:
+From the repository root, create a tester zip that contains the `DungeonQuestTrackerForever/` folder at the archive root:
 
 ```powershell
 .\Tools\package-release.ps1
 ```
 
-This produces `release/DungeonQuestTracker-0.3.0.zip` and checks its version and folder layout. Testers can extract that zip directly into `Interface/AddOns`.
+This produces `release/DungeonQuestTrackerForever-0.3.1.zip` and checks its version and folder layout. Testers can extract that zip directly into `Interface/AddOns`.
 
 ## Development Notes
 
-- Current addon version: `0.3.0`.
+- Current addon version: `0.3.1`.
 - Current TOC interface: `16001`.
 - Saved variables live in `DungeonQuestTrackerDB`.
 - The UI intentionally uses native WoW frames and templates only, with no external addon library dependency yet.
@@ -228,6 +230,6 @@ Run `./Tools/validate-data.ps1 -DependencyDirectory <development-directory>` for
 
 ## License
 
-DungeonQuestTracker code is released under the MIT License. See `LICENSE`.
+DungeonQuestTrackerForever code is released under the MIT License. See `LICENSE`.
 
 World of Warcraft names, quests, NPCs, locations, and related game content are trademarks and/or copyright of Blizzard Entertainment. Quest data in this addon is factual, curated, and written for addon functionality.

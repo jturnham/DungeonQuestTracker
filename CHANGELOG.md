@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.3.1 - 2026-10-02
+
+### Addon Rename
+
+- Renamed the addon, UI, folder, TOC and release ZIP to DungeonQuestTrackerForever. The GitHub repository URL is unchanged.
+- Updated documentation, packaging and validation tools for the new name. The `/dqt` command, party messaging and internal `DungeonQuestTrackerDB` variable remain compatible.
+- When upgrading, remove the old `DungeonQuestTracker` folder from `Interface/AddOns` before extracting the new ZIP. With WoW closed, copy `WTF/Account/<account>/SavedVariables/DungeonQuestTracker.lua` to `DungeonQuestTrackerForever.lua` to retain settings; do not overwrite an existing new-name file. Only one addon copy should be installed.
+
+### Validation And Limitations
+
+- Automated syntax, data, UI, Options, compact-mode, party sync, compatibility, XP and follow-up tests pass; the renamed ZIP layout is verified.
+- XP values are still in flux during the Forever beta and are being updated as soon as new information becomes available. Turn-in priorities and predicted level-ups remain provisional.
+- Two-client party/sync testing remains deferred; quest-data sync is off by default.
+
 ## 0.3.0 - 2026-10-02
 
 ### XP Values Are In Flux

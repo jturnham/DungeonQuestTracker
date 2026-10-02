@@ -1,8 +1,8 @@
-﻿## Interface: 16001
-## Title: DungeonQuestTracker
+## Interface: 16001
+## Title: DungeonQuestTrackerForever
 ## Notes: Shows missing dungeon quests, pickup locations, and prerequisite chains for World of Warcraft: Forever.
 ## Author: James
-## Version: 0.3.0
+## Version: 0.3.1
 ## SavedVariables: DungeonQuestTrackerDB
 
 Config.lua

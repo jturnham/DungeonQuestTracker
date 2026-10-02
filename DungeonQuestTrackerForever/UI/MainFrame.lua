@@ -1,4 +1,4 @@
-﻿local _, DQT = ...
+local _, DQT = ...
 
 DQT.UI = DQT.UI or {}
 local UI = DQT.UI
@@ -232,7 +232,7 @@ end
 function UI:Create()
     if self.frame then return end
 
-    local frame = CreateFrame("Frame", "DungeonQuestTrackerFrame", UIParent, "BasicFrameTemplateWithInset")
+    local frame = CreateFrame("Frame", "DungeonQuestTrackerForeverFrame", UIParent, "BasicFrameTemplateWithInset")
     frame:SetSize(780, 620)
     frame:SetPoint("CENTER")
     frame:Hide()
@@ -245,7 +245,7 @@ function UI:Create()
 
     frame.title = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     frame.title:SetPoint("LEFT", frame.TitleBg, "LEFT", 6, 0)
-    frame.title:SetText("DungeonQuestTracker")
+    frame.title:SetText("DungeonQuestTrackerForever")
 
     frame.version = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     frame.version:SetJustifyH("RIGHT")
@@ -341,7 +341,7 @@ function UI:Create()
     frame.content:SetSize(720, 470)
     frame.content:SetPoint("TOPLEFT", frame, "TOPLEFT", 24, -112)
 
-    frame.checklistScroll = CreateFrame("ScrollFrame", "DungeonQuestTrackerChecklistScrollFrame", frame, "UIPanelScrollFrameTemplate")
+    frame.checklistScroll = CreateFrame("ScrollFrame", "DungeonQuestTrackerForeverChecklistScrollFrame", frame, "UIPanelScrollFrameTemplate")
     frame.checklistScroll:SetPoint("TOPLEFT", frame.content, "TOPLEFT", 0, 0)
     frame.checklistScroll:SetPoint("BOTTOMRIGHT", frame.content, "BOTTOMRIGHT", -28, 0)
     frame.checklistScroll:Hide()
@@ -355,7 +355,7 @@ function UI:Create()
     frame.emptyMessage:SetJustifyH("LEFT")
     frame.emptyMessage:Hide()
 
-    frame.dungeonScroll = CreateFrame("ScrollFrame", "DungeonQuestTrackerDungeonScrollFrame", frame, "UIPanelScrollFrameTemplate")
+    frame.dungeonScroll = CreateFrame("ScrollFrame", "DungeonQuestTrackerForeverDungeonScrollFrame", frame, "UIPanelScrollFrameTemplate")
     frame.dungeonScroll:SetPoint("TOPLEFT", frame.content, "TOPLEFT", 0, 0)
     frame.dungeonScroll:SetPoint("BOTTOMRIGHT", frame.content, "BOTTOMRIGHT", -28, 0)
     frame.dungeonScroll:Hide()
@@ -364,7 +364,7 @@ function UI:Create()
     frame.dungeonContent:SetSize(contentWidth, 470)
     frame.dungeonScroll:SetScrollChild(frame.dungeonContent)
 
-    frame.turnInScroll = CreateFrame("ScrollFrame", "DungeonQuestTrackerTurnInScrollFrame", frame, "UIPanelScrollFrameTemplate")
+    frame.turnInScroll = CreateFrame("ScrollFrame", "DungeonQuestTrackerForeverTurnInScrollFrame", frame, "UIPanelScrollFrameTemplate")
     frame.turnInScroll:SetPoint("TOPLEFT", frame.content, "TOPLEFT", 0, 0)
     frame.turnInScroll:SetPoint("BOTTOMRIGHT", frame.content, "BOTTOMRIGHT", -28, 0)
     frame.turnInScroll:Hide()

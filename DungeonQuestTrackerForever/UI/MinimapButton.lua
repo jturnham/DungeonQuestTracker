@@ -1,4 +1,4 @@
-﻿local _, DQT = ...
+local _, DQT = ...
 
 DQT.Minimap = DQT.Minimap or {}
 local MinimapButton = DQT.Minimap
@@ -53,7 +53,7 @@ function MinimapButton:Create()
     if self.button then return end
     if not Minimap or type(CreateFrame) ~= "function" then return end
 
-    local button = CreateFrame("Button", "DungeonQuestTrackerMinimapButton", Minimap)
+    local button = CreateFrame("Button", "DungeonQuestTrackerForeverMinimapButton", Minimap)
     button:SetSize(32, 32)
     button:SetFrameStrata("MEDIUM")
     button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
@@ -81,7 +81,7 @@ function MinimapButton:Create()
     button:SetScript("OnEnter", function(self)
         if not GameTooltip then return end
         GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-        GameTooltip:SetText("DungeonQuestTracker")
+        GameTooltip:SetText("DungeonQuestTrackerForever")
         GameTooltip:AddLine("Left-click: open dungeon list", 1, 1, 1)
         GameTooltip:AddLine("Right-click: open turn-ins", 1, 1, 1)
         GameTooltip:AddLine("Drag: move button", 0.75, 0.75, 0.75)

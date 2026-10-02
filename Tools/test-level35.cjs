@@ -7,13 +7,13 @@ const requireTool = createRequire(path.resolve(process.argv[2] || '.', 'package.
 const parser = requireTool('luaparse');
 const { lua, lauxlib, lualib, to_luastring, to_jsstring } = requireTool('fengari');
 const root = path.resolve(__dirname, '..');
-const addon = path.join(root, 'DungeonQuestTracker');
-const files = fs.readFileSync(path.join(addon, 'DungeonQuestTracker.toc'), 'utf8')
+const addon = path.join(root, 'DungeonQuestTrackerForever');
+const files = fs.readFileSync(path.join(addon, 'DungeonQuestTrackerForever.toc'), 'utf8')
   .split(/\r?\n/).filter(line => line.endsWith('.lua'));
 const sources = files.map(file => {
   const source = fs.readFileSync(path.join(addon, file), 'utf8').replace(/^\uFEFF/, '');
   parser.parse(source, { luaVersion: '5.1' });
-  return `(function(...)\n${source}\nend)("DungeonQuestTracker", DQT);`;
+  return `(function(...)\n${source}\nend)("DungeonQuestTrackerForever", DQT);`;
 });
 const prelude = fs.readFileSync(path.join(__dirname, 'test-level35.lua'), 'utf8');
 const split = prelude.indexOf('-- RUN TESTS');
