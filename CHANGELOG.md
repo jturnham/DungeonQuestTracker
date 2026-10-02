@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.1 - 2026-10-02
+
+- Add single-copy loot-window reminders for Mad Magglish's port, Thistlenettle's badge, Techbot's core and Roogug's vial (both Warrior quests), including entrance-area zone scopes. Multi-item collection drops remain excluded.
+- Add Stockade reminders for Bazil Thredd's head, Targorr's head, Dextren Ward's hand and Deepfury's head; make their quest objectives explicitly mention looting.
+- Support successful ENCOUNTER_END notifications alongside BOSS_KILL, with cross-trigger duplicate suppression.
+- Add a read-only, instance-scoped loot-window fallback for known item IDs, without corpse GUIDs or combat-log access. Briefly delay auto-loot checks, suppress collected items and guard unavailable/secret loot data. Runtime client verification remains required.
+
 ## 0.4.0 - 2026-10-02
 
 - Play a notification sound for new loot alerts and previews; fade the banner during its final second. Updating remaining loot does not replay the sound.

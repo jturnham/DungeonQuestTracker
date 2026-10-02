@@ -13,6 +13,10 @@ local reminders = {
     [250483] = {
         { questID = 95216, itemID = 275443, item = "Highly Toxic Strain" },
     },
+    [1716] = { { questID = 391, itemID = 2926, item = "Head of Bazil Thredd" } },
+    [1696] = { { questID = 386, itemID = 3630, item = "Head of Targorr" } },
+    [1663] = { { questID = 377, itemID = 3628, item = "Hand of Dextren Ward" } },
+    [1666] = { { questID = 378, itemID = 3640, item = "Head of Deepfury" } },
 }
 -- No guessed NPC IDs: this beta-only fallback also requires the exact instance name.
 local namedReminders = {
@@ -32,12 +36,52 @@ local encounters = {
     ["Charlga Razorflank"] = { npcID = 4421, instance = "Razorfen Kraul" },
     ["Witherfang"] = { npcID = 250483, instance = "Ruins of Lordaeron" },
     ["The Baron"] = { npcID = 999999, instance = "Ruins of Lordaeron" },
+    ["Bazil Thredd"] = { npcID = 1716, instance = "The Stockade" },
+    ["Targorr the Dread"] = { npcID = 1696, instance = "The Stockade" },
+    ["Dextren Ward"] = { npcID = 1663, instance = "The Stockade" },
+    ["Kam Deepfury"] = { npcID = 1666, instance = "The Stockade" },
 }
+
+local function IsSecret(value)
+    return type(issecretvalue) == "function" and issecretvalue(value)
+end
 
 local function SafeCall(fn, ...)
     if type(fn) ~= "function" then return nil end
     local ok, a, b = pcall(fn, ...)
-    if ok then return a, b end
+    if ok and not IsSecret(a) and not IsSecret(b) then return a, b end
+end
+
+-- Index known items once; loot inspection needs neither corpse GUIDs nor unit APIs.
+local lootItems = {}
+local function IndexDrop(location, drop)
+    lootItems[location] = lootItems[location] or {}
+    local items = lootItems[location]
+    items[drop.itemID] = items[drop.itemID] or {}
+    for _, existing in ipairs(items[drop.itemID]) do
+        if existing.questID == drop.questID then return end
+    end
+    items[drop.itemID][#items[drop.itemID] + 1] = drop
+end
+for name, encounter in pairs(encounters) do
+    for _, drop in ipairs(reminders[encounter.npcID] or namedReminders[name] or {}) do
+        if drop.itemID then
+            IndexDrop(encounter.instance, drop)
+        end
+    end
+end
+
+-- Explicit single-copy objectives only; collection drops must not enter this allowlist.
+-- Entrance targets have no reliable boss notification, so inspect available loot instead.
+local singleDrops = {
+    { questID = 959, itemID = 5334, item = "99-Year-Old Port", locations = { "Wailing Caverns", "The Barrens", "Northern Barrens" } },
+    { questID = 167, itemID = 1875, item = "Thistlenettle's Badge", locations = { "The Deadmines", "Westfall" } },
+    { questID = 2922, itemID = 9277, item = "Techbot's Memory Core", locations = { "Gnomeregan", "Dun Morogh" } },
+    { questID = 1701, itemID = 6841, item = "Vial of Phlogiston", locations = { "Razorfen Kraul" } },
+    { questID = 1838, itemID = 6841, item = "Vial of Phlogiston", locations = { "Razorfen Kraul" } },
+}
+for _, drop in ipairs(singleDrops) do
+    for _, location in ipairs(drop.locations) do IndexDrop(location, drop) end
 end
 
 function DQT:NeedsQuestLoot(drop)
@@ -110,7 +154,38 @@ function DQT:PreviewQuestLootReminder()
     self:ShowQuestLootReminder("Witherfang", reminders[250483], true)
 end
 
-local seen, order = {}, {}
+local seen, order, notified = {}, {}, {}
+local function NotifyDrops(name, drops)
+    local relevant = {}
+    for _, drop in ipairs(drops) do
+        if not notified[drop.questID] and DQT:NeedsQuestLoot(drop) then relevant[#relevant + 1] = drop end
+    end
+    if #relevant == 0 then return end
+    for _, drop in ipairs(relevant) do notified[drop.questID] = true end
+    DQT:ShowQuestLootReminder(name, relevant)
+end
+
+function DQT:HandleAvailableQuestLoot()
+    if not self.loaded or not self:GetOption("lootReminders.enabled") then return end
+    local inInstance, instanceType = SafeCall(IsInInstance)
+    if inInstance and instanceType ~= "party" then return end
+    local location = inInstance and SafeCall(GetInstanceInfo) or SafeCall(GetRealZoneText)
+    local items = lootItems[location]
+    if not items then return end
+    local count = SafeCall(GetNumLootItems)
+    if type(count) ~= "number" or count < 1 or count > 128 or count ~= math.floor(count) then return end
+    local drops, found = {}, {}
+    for slot = 1, count do
+        local link = SafeCall(GetLootSlotLink, slot)
+        local id = type(link) == "string" and tonumber(link:match("item:(%d+)"))
+        if id and items[id] and not found[id] then
+            found[id] = true
+            for _, drop in ipairs(items[id]) do drops[#drops + 1] = drop end
+        end
+    end
+    NotifyDrops("Available quest loot", drops)
+end
+
 function DQT:HandleQuestLootDeath(guid, name)
     if not self.loaded or not self:GetOption("lootReminders.enabled") then return end
     local inInstance, instanceType = SafeCall(IsInInstance)
@@ -126,32 +201,49 @@ function DQT:HandleQuestLootDeath(guid, name)
     seen[guid] = true
     order[#order + 1] = guid
     if #order > 64 then seen[table.remove(order, 1)] = nil end
-    local relevant = {}
-    for _, drop in ipairs(drops) do if self:NeedsQuestLoot(drop) then relevant[#relevant + 1] = drop end end
-    if #relevant > 0 then self:ShowQuestLootReminder(type(name) == "string" and name or "Defeated boss", relevant) end
+    NotifyDrops(type(name) == "string" and name or "Defeated boss", drops)
 end
 
 local events = CreateFrame("Frame")
 DQT.lootReminderEvents = events
+local lootDelay
+local function CheckAutoLoot(_, elapsed)
+    lootDelay = lootDelay - elapsed
+    if lootDelay > 0 then return end
+    lootDelay = nil
+    events:SetScript("OnUpdate", nil)
+    DQT:HandleAvailableQuestLoot()
+end
 -- Restricted event registration can trigger a Blizzard warning without throwing a Lua error.
 -- Use public encounter notifications, never probe or register combat-log events.
-for _, event in ipairs({ "BOSS_KILL", "BAG_UPDATE_DELAYED", "QUEST_LOG_UPDATE", "PLAYER_ENTERING_WORLD" }) do
+for _, event in ipairs({ "BOSS_KILL", "ENCOUNTER_END", "LOOT_READY", "LOOT_OPENED", "LOOT_SLOT_CHANGED", "BAG_UPDATE_DELAYED", "QUEST_LOG_UPDATE", "PLAYER_ENTERING_WORLD" }) do
     SafeCall(events.RegisterEvent, events, event)
 end
 events:SetScript("OnEvent", function(_, event, ...)
     if event == "PLAYER_ENTERING_WORLD" then
-        seen, order = {}, {}
+        seen, order, notified = {}, {}, {}
+        lootDelay = nil
+        events:SetScript("OnUpdate", nil)
         if DQT.lootReminderFrame then DQT.lootReminderFrame:Hide() end
-    elseif event == "BOSS_KILL" then
+    elseif event == "BOSS_KILL" or event == "ENCOUNTER_END" then
         if not DQT.loaded or not DQT:GetOption("lootReminders.enabled") then return end
-        local _, name = ...
-        if issecretvalue and issecretvalue(name) then return end
+        local _, name, _, _, success = ...
+        if event == "ENCOUNTER_END" and (IsSecret(success) or success ~= 1) then return end
+        if IsSecret(name) then return end
         if type(name) ~= "string" then return end
         local encounter = encounters[name]
         if encounter and SafeCall(GetInstanceInfo) == encounter.instance then
             -- Session-local identity for duplicate public encounter notifications, not a unit GUID.
             DQT:HandleQuestLootDeath("Creature-0-0-0-0-" .. encounter.npcID .. "-0000", name)
         end
+    elseif event == "LOOT_READY" or event == "LOOT_OPENED" or event == "LOOT_SLOT_CHANGED" then
+        if not DQT.loaded or not DQT:GetOption("lootReminders.enabled") then return end
+        local autoLoot = ...
+        if event ~= "LOOT_SLOT_CHANGED" and IsSecret(autoLoot) then return end
+        if lootDelay or (event ~= "LOOT_SLOT_CHANGED" and autoLoot == true) then
+            lootDelay = lootDelay or 0.15
+            events:SetScript("OnUpdate", CheckAutoLoot)
+        else DQT:HandleAvailableQuestLoot() end
     else
         local frame = DQT.lootReminderFrame
         if not frame or not frame:IsShown() then return end

@@ -78,7 +78,7 @@ Excavation Site now includes seven quests from the [October 2 dungeon guide](htt
 
 ## Install
 
-Download `DungeonQuestTrackerForever-0.4.0.zip` from the [GitHub release](https://github.com/jturnham/DungeonQuestTracker/releases/tag/v0.4.0) and extract it into your World of Warcraft client's `Interface/AddOns` directory. The ZIP already contains the `DungeonQuestTrackerForever` folder; do not add an extra enclosing folder.
+Download `DungeonQuestTrackerForever-0.4.1.zip` from the [GitHub release](https://github.com/jturnham/DungeonQuestTracker/releases/tag/v0.4.1) and extract it into your World of Warcraft client's `Interface/AddOns` directory. The ZIP already contains the `DungeonQuestTrackerForever` folder; do not add an extra enclosing folder.
 
 When upgrading to the renamed addon, remove the old `DungeonQuestTracker` folder from `Interface/AddOns` before installing `DungeonQuestTrackerForever`, so only one copy loads. With WoW closed, copy `WTF/Account/<account>/SavedVariables/DungeonQuestTracker.lua` to `DungeonQuestTrackerForever.lua` to retain settings. Do not overwrite an existing new-name saved file. The internal `DungeonQuestTrackerDB` variable and `/dqt` command are retained for compatibility. The GitHub repository URL is unchanged.
 
@@ -183,9 +183,15 @@ Don't leave a quest item on a boss! Known boss drops trigger a **Quest Loot** ba
 
 Open **Options > Display** to toggle reminders or click **Preview Alert** to test the same banner, sound, and fade-out. The preview works even when reminders are disabled and does not change your quest status. Sound follows the client's master sound settings; if sound playback is unavailable, the visual alert still works.
 
-Reminders use the public boss-kill notification, not restricted combat-log access; bosses that do not emit this notification cannot trigger a reminder. An alert reminds you to check the corpse, but does not guarantee a drop or loot eligibility. Completed/ready quests, unavailable quests and items already in your bags are suppressed. Objective drops require an active quest; quest-starting items can be highlighted before you accept their quest. Looting the item or accepting its starting quest clears the reminder.
+Reminders use public boss-kill and successful encounter-end notifications, not restricted combat-log access. When no encounter notification is available, a read-only fallback checks opened loot for known quest-item IDs in the current dungeon. That fallback only works after you click a corpse; it cannot remind you about an unopened corpse. Auto-loot gets a brief chance to collect items before fallback checks, and duplicate encounter/loot notifications do not replay alerts. Unavailable or secret loot data is skipped. These newer triggers still need verification in the beta client.
 
-Initial coverage includes VanCleef's Unsent Letter, Mutanus' Glowing Shard, Charlga Razorflank's Small Scroll, Witherfang's Highly Toxic Strain, and The Baron's faction-specific heads. The Baron's English-name fallback is restricted to Ruins of Lordaeron until its NPC ID is confirmed. Random trash drops and ground objects are not inferred from boss deaths. Toggle reminders under Options > Display.
+An alert reminds you to check the corpse, but does not guarantee a drop or loot eligibility. Completed/ready quests, unavailable quests and items already in your bags are suppressed. Objective drops require an active quest; quest-starting items can be highlighted before you accept their quest. Looting the item or accepting its starting quest clears the reminder.
+
+Coverage includes VanCleef's Unsent Letter, Mutanus' Glowing Shard, Charlga Razorflank's Small Scroll, Witherfang's Highly Toxic Strain, and The Baron's faction-specific heads. The Stockade also includes the Head of Bazil Thredd, Head of Targorr, Hand of Dextren Ward, and Head of Deepfury. The loot-window fallback covers mapped items with known item IDs; The Baron's Alliance head currently lacks a mapped item ID. The Baron's English-name fallback is restricted to Ruins of Lordaeron until its NPC ID is confirmed. Random trash drops and ground objects are not inferred from boss deaths. Toggle reminders under Options > Display.
+
+Single-copy objective drops also include Mad Magglish's 99-Year-Old Port, Foreman Thistlenettle's Badge, Techbot's Memory Core, and Roogug's Vial of Phlogiston for either Warrior armor quest. Entrance-area drops use opened-loot detection in their associated zones. Multi-item collection drops such as bandanas, hides, and guano are deliberately excluded to avoid repeated alerts.
+
+Stockade coverage, these single-copy drops, and the loot-window/encounter-end fallback are included starting with 0.4.1. Notification delivery and loot API access still need verification in the beta client.
 
 ## Project Layout
 
@@ -226,11 +232,11 @@ From the repository root, create a tester zip that contains the `DungeonQuestTra
 .\Tools\package-release.ps1
 ```
 
-This produces `release/DungeonQuestTrackerForever-0.4.0.zip` and checks its version and folder layout. Testers can extract that zip directly into `Interface/AddOns`.
+This produces `release/DungeonQuestTrackerForever-0.4.1.zip` and checks its version and folder layout. Testers can extract that zip directly into `Interface/AddOns`.
 
 ## Development Notes
 
-- Current addon version: `0.4.0`.
+- Current addon version: `0.4.1`.
 - Current TOC interface: `16001`.
 - Saved variables live in `DungeonQuestTrackerDB`.
 - The UI intentionally uses native WoW frames and templates only, with no external addon library dependency yet.
