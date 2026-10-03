@@ -55,13 +55,16 @@ Current tracked dungeon data includes:
 - Hall of Thanes
 - Shadowfang Keep
 - The Stockade
-- Excavation Site: Wetlands (seven provisional quest records)
+- Excavation Site: Wetlands (faction quests, lead-ins and return follow-ups; XP unknown)
 - Blackfathom Deeps
 - City of Dalaran (no quests recorded yet)
 - Scarlet Monastery: Graveyard
 - Gnomeregan
 - Scarlet Monastery: Library
 - Razorfen Kraul
+- Razorfen Downs (Classic quest/reward fallbacks; beta entry level 25)
+- Uldaman (Classic quest/reward fallbacks; beta entry level 30)
+- Scarlet Monastery: Cathedral
 - Scarlet Monastery: Armory
 
 Quest data is curated locally because the WoW API does not expose a complete dungeon quest catalog with pickup locations and prerequisite chains. XP values are intended to use Forever beta dungeon quest rewards where verified.
@@ -74,11 +77,13 @@ Dungeon chains include catalogued follow-ups outside the instance: Hidden Enemie
 
 Quest records use [Forever quest listings](https://www.wowhead.com/forever/guide/dungeons/every-dungeon-quest-location) and database pages; old beta XP is sourced from [WCLBox](https://wowforever.wclbox.com/en/fuben). The [October 1 bonus reduction](https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-1/2360696) is modeled as normal XP plus half the previous bonus, not half the whole reward. Rewards, rounding, pickup locations and prerequisites still need beta-client confirmation.
 
-Excavation Site now includes seven quests from the [October 2 dungeon guide](https://www.wowhead.com/forever/guide/excavation-site-wetlands-dungeon-overview-location-rewards). XP is unknown and some contacts, exact levels and follow-up IDs remain unconfirmed. City of Dalaran remains an empty placeholder. Scarlet Monastery wings share relevant quests, but the global turn-in planner counts each quest once.
+Excavation Site includes the eight faction-specific dungeon objectives plus lead-ins and the Heartwoven, Prehistoric Prism and Earthen Echo returns, reviewed October 3 against [individual quest records](https://www.wowhead.com/forever/quest=95809/heartwoven). XP is unknown and some contacts and levels remain provisional. Player comments report missing Titan Relics after the first turn-in; current build behavior needs confirmation. City of Dalaran remains an empty placeholder. Scarlet Monastery wings share relevant quests, but the global turn-in planner counts each quest once.
+
+Version 0.4.2 adds Razorfen Downs, Uldaman and Cathedral, and replaces sixteen XP estimates with quest-specific post-update observations from the [public dungeon quest spreadsheet](https://docs.google.com/spreadsheets/d/1-185bNiXoGX4kEoeeQ3DmJdSqN4ZavOKXgZNJTnwLlQ/edit). These show as `Forever (player reported)`, not locally verified rewards. Individual report levels/builds are absent, so base XP remains provisional. Other quests retain the October 1 estimate, a Classic fallback, or unknown XP; no bonus multiplier is inferred for unreported quests.
 
 ## Install
 
-Download `DungeonQuestTrackerForever-0.4.1.zip` from the [GitHub release](https://github.com/jturnham/DungeonQuestTracker/releases/tag/v0.4.1) and extract it into your World of Warcraft client's `Interface/AddOns` directory. The ZIP already contains the `DungeonQuestTrackerForever` folder; do not add an extra enclosing folder.
+Download `DungeonQuestTrackerForever-0.4.2.zip` from the [GitHub release](https://github.com/jturnham/DungeonQuestTracker/releases/tag/v0.4.2) and extract it into your World of Warcraft client's `Interface/AddOns` directory. The ZIP already contains the `DungeonQuestTrackerForever` folder; do not add an extra enclosing folder.
 
 When upgrading to the renamed addon, remove the old `DungeonQuestTracker` folder from `Interface/AddOns` before installing `DungeonQuestTrackerForever`, so only one copy loads. With WoW closed, copy `WTF/Account/<account>/SavedVariables/DungeonQuestTracker.lua` to `DungeonQuestTrackerForever.lua` to retain settings. Do not overwrite an existing new-name saved file. The internal `DungeonQuestTrackerDB` variable and `/dqt` command are retained for compatibility. The GitHub repository URL is unchanged.
 
@@ -232,11 +237,11 @@ From the repository root, create a tester zip that contains the `DungeonQuestTra
 .\Tools\package-release.ps1
 ```
 
-This produces `release/DungeonQuestTrackerForever-0.4.1.zip` and checks its version and folder layout. Testers can extract that zip directly into `Interface/AddOns`.
+This produces `release/DungeonQuestTrackerForever-0.4.2.zip` and checks its version and folder layout. Testers can extract that zip directly into `Interface/AddOns`.
 
 ## Development Notes
 
-- Current addon version: `0.4.1`.
+- Current addon version: `0.4.2`.
 - Current TOC interface: `16001`.
 - Saved variables live in `DungeonQuestTrackerDB`.
 - The UI intentionally uses native WoW frames and templates only, with no external addon library dependency yet.

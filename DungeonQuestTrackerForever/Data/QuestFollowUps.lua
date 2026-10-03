@@ -194,6 +194,7 @@ local quests = {
     },
     [6521] = {
         name = "An Unholy Alliance", followUpOf = 6522, classicXp = 3500,
+        dungeon = "razorfen-downs", minLevel = 28, questLevel = 36,
         turnIn = { name = "Varimathras", zone = "Undercity", subzone = "Royal Quarter" },
         objectives = "Defeat Ambassador Malcin outside Razorfen Downs and bring his head to Varimathras. This continues the scroll quest from Razorfen Kraul.",
     },

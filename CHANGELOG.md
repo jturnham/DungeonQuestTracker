@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.2 - 2026-10-03
+
+- Add Razorfen Downs and Uldaman with known faction quests, class objectives and return chains; add Scarlet Monastery Cathedral. Current beta quest levels and rewards still need verification; new classic-dungeon rewards use labelled Classic fallbacks.
+- Expand Excavation Site: Wetlands with Open the Maw, Dragonmaw Rumors, Seeking Caitlin, Heartwoven, Prehistoric Prism and Earthen Echo; update provisional quest levels and chain notes. Wetlands XP remains unknown.
+- Replace sixteen quest XP estimates with individual post-update player reports, labelled separately from local verification and formula estimates. Do not extrapolate a dungeon-wide bonus.
+
 ## 0.4.1 - 2026-10-02
 
 - Add single-copy loot-window reminders for Mad Magglish's port, Thistlenettle's badge, Techbot's core and Roogug's vial (both Warrior quests), including entrance-area zone scopes. Multi-item collection drops remain excluded.

@@ -311,6 +311,7 @@ function DQT:GetQuestRewardXP(quest)
     if not quest then return 0, "none" end
     if quest.partySupplied then return 0, "Party supplied (XP unverified)" end
     if quest.foreverXp then
+        if quest.xpReported then return quest.foreverXp, "Forever (player reported)" end
         if quest.xpEstimate then return quest.foreverXp, "Forever (Oct 1 estimate)" end
         if quest.xpOutdated then return quest.foreverXp, "Forever (outdated; unverified)" end
         return quest.foreverXp, "Forever"

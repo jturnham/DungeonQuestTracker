@@ -75,7 +75,7 @@ C_QuestLog = {
 
 -- RUN TESTS
 local keys = DQT:GetOrderedDungeonKeys()
-assert(#keys == 15, "Expected 15 dungeons")
+assert(#keys == 18, "Expected 18 dungeon/wing entries")
 local listed, newCount = {}, 0
 for _, key in ipairs(keys) do
     assert(not listed[key], "Duplicate dungeon key")
@@ -86,7 +86,7 @@ for _, key in ipairs(keys) do
         if quest.source and quest.source:match("wowhead.com/forever/quest=") then
             assert(quest.turnIn and quest.objectives, "Incomplete new quest " .. id)
         end
-        assert(quest.minLevel <= 35, "Pickup above requested range: " .. id)
+        assert(quest.minLevel <= 60, "Invalid pickup level: " .. id)
         assert(DQT:GetDungeon(quest.dungeon), "Invalid primary dungeon " .. id)
     end
 end
@@ -100,7 +100,7 @@ for _, faction in ipairs({ "Alliance", "Horde" }) do
         assert(DQT:GetDungeonQuestStatus(keys[index]), "Missing status")
     end
     local wetlands = DQT:GetDungeonQuestStatus("excavation-site-wetlands")
-    assert(#wetlands.quests == (faction == "Horde" and 2 or 5), "Wetlands faction coverage")
+    assert(#wetlands.quests == (faction == "Horde" and 5 or 8), "Wetlands faction coverage")
     for _, row in ipairs(wetlands.quests) do
         assert(DQT:GetQuestRewardXP(row.quest) == 0, "Unknown Wetlands XP not fabricated")
         assert(not DQT:IsQuestGray(row.quest, {level=30}) and not DQT:IsQuestRed(row.quest, {level=18}), "Provisional quest level not used for color exclusion")
@@ -130,7 +130,7 @@ for _, item in ipairs(plan.quests) do
     assert(not seen[item.questID], "Duplicate turn-in")
     seen[item.questID] = true
 end
-assert(DQT:GetQuestRewardXP(DQT:GetQuest(1221)) == 4988, "October 1 bonus reduction estimate")
+assert(DQT:GetQuestRewardXP(DQT:GetQuest(1221)) == 5000, "Post-update player report")
 local _, source = DQT:GetQuestRewardXP(DQT:GetQuest(2841))
 assert(source == "Classic", "Unconfirmed reward must be labelled as an estimate")
 player.class = "WARRIOR"

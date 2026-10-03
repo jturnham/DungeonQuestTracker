@@ -156,5 +156,34 @@ for _, id in ipairs({95697,95664,98815,95772,95646,95647,95810}) do
     quest.sourceURLs[#quest.sourceURLs+1] = "https://www.wowhead.com/forever/guide/excavation-site-wetlands-dungeon-overview-location-rewards"
     quest.verification.sourceReview = "2026-10-02: quest IDs, objectives and available pickup/chain notes reviewed against the dungeon guide and quest pages."
     quest.verification.xp = "Unknown: no published reward or pre-patch bonus available; no XP fabricated."
-    quest.verification.conflict = "Guide lists level 24 pickup; exact quest level is not published, so level 24 is provisional for filtering. Some NPCs, locations and follow-up IDs still need client confirmation."
+    quest.verification.conflict = "Level 24 pickup and level 28/31 quest levels are from published community records, not this client's observations. Some contacts and current beta eligibility still need confirmation."
+end
+
+-- Prefer individual post-update observations, never apply a guessed dungeon factor.
+local reportedSource = "https://docs.google.com/spreadsheets/d/1-185bNiXoGX4kEoeeQ3DmJdSqN4ZavOKXgZNJTnwLlQ/edit"
+local reportedXP = {
+    [5723]=2150, [5722]=1800, [5725]=2950, [5728]=2350, [5761]=2350,
+    [92401]=4600, [92421]=4600,
+    [962]=3300, [1486]=3100, [959]=2650, [1487]=4000,
+    [1013]=5600, [1098]=5350, [1014]=8850,
+    [6563]=1750, [1221]=5000,
+}
+for id, xp in pairs(reportedXP) do
+    local quest = DQT.quests[id]
+    quest.xpPreviousEstimate = quest.foreverXp
+    quest.foreverXp, quest.xpReported = xp, true
+    quest.xpEstimate, quest.xpOutdated = nil, nil
+    quest.xpSource = reportedSource
+    quest.sourceURLs[#quest.sourceURLs+1] = reportedSource
+    quest.verification.xpReview = "2026-10-03: replaced estimate with individual post-update player report."
+    quest.verification.xp = "Player-reported beta reward, not independently verified. The source does not record character level/build for each observation; base reward and overlevel scaling remain provisional."
+end
+for id, quest in pairs(DQT.quests) do
+    if quest.dungeon == "uldaman" or quest.dungeon == "razorfen-downs" then
+        quest.verification.sourceReview = "2026-10-03: catalogued published quest identities, locations, chains and Classic fallback rewards; current Forever rewards and quest levels remain unverified."
+    elseif quest.dungeon == "excavation-site-wetlands" then
+        quest.questLevelUnverified = true
+        quest.verification.sourceReview = "2026-10-03: added Open the Maw, Dragonmaw Rumors, Seeking Caitlin and three return follow-ups; revised provisional quest levels from community records."
+        quest.sourceURLs[#quest.sourceURLs+1] = reportedSource
+    end
 end

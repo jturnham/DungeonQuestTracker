@@ -27,7 +27,7 @@ for id, quest in pairs(DQT.quests) do
     assert(DQT.dungeons[quest.dungeon], "Unresolved primary dungeon: " .. id)
     assert(membership[id] and membership[id][quest.dungeon], "Quest absent from primary dungeon: " .. id)
     assert(Integer(quest.minLevel, 1, 100) and Integer(quest.questLevel, 1, 100), "Invalid quest level: " .. id)
-    assert(quest.minLevel <= 35, "Quest outside release pickup range: " .. id)
+    assert(quest.minLevel <= 60, "Invalid quest pickup level: " .. id)
     assert(not quest.faction or quest.faction == "Alliance" or quest.faction == "Horde", "Invalid faction: " .. id)
     for field, allowed in pairs({classes=classes, races=races, excludedRaces=races}) do
         local seen = {}

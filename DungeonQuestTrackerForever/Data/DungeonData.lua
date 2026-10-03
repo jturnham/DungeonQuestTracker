@@ -1,6 +1,27 @@
 local _, DQT = ...
 
 DQT.dungeons = {
+    ["razorfen-downs"] = {
+        name = "Razorfen Downs", minLevel = 25, recommendedLevel = "37-46",
+        factions = { "Alliance", "Horde" }, location = "Southern Barrens, east of Razorfen Kraul",
+        art = "Interface\\LFGFrame\\UI-LFG-BACKGROUND-RazorfenDowns",
+        notes = "Open in the beta from level 25. Quest pickup levels and recommended range still use Classic data; entry level does not imply that every quest is available. Prepare the Kraul scroll chain for An Unholy Alliance.",
+        quests = { 3341, 3636, 6626, 3523, 3525, 6521 },
+    },
+    ["uldaman"] = {
+        name = "Uldaman", minLevel = 30, recommendedLevel = "41-51",
+        factions = { "Alliance", "Horde" }, location = "Badlands, northern excavation tunnels",
+        art = "Interface\\LFGFrame\\UI-LFG-BACKGROUND-Uldaman",
+        notes = "Open in the beta from level 30. Prepare quests in Badlands, Ironforge, Loch Modan, Orgrimmar or Undercity. Necklace and Platinum Disc chains continue outside the dungeon. Quest levels and rewards remain provisional Classic data.",
+        quests = { 2342, 1360, 2398, 2240, 2202, 17, 704, 1139, 2198, 2283, 2418, 709, 2278, 1956, 722 },
+    },
+    ["scarlet-monastery-cathedral"] = {
+        name = "Scarlet Monastery: Cathedral", minLevel = 21, recommendedLevel = "38-46",
+        factions = { "Alliance", "Horde" }, location = "Tirisfal Glades, Scarlet Monastery",
+        art = "Interface\\LFGFrame\\UI-LFG-BACKGROUND-ScarletMonastery",
+        notes = "Bring the Scarlet Key from the Library. Mograine and Whitemane complete the Cathedral portion of the monastery boss quests; Library and Armory kills are required too. Wing-specific beta availability still needs confirmation.",
+        quests = { 1113, 1048, 1053 },
+    },
     ["ragefire-chasm"] = {
         name = "Ragefire Chasm",
         minLevel = 8,
@@ -74,8 +95,8 @@ DQT.dungeons = {
         factions = { "Alliance", "Horde" },
         location = "Wetlands, above Whelgar's Excavation Site",
         art = "Interface\\LFGFrame\\UI-LFG-BACKGROUND-Uldaman",
-        notes = "New Wetlands dungeon with Horde and Alliance quests. Rewards, exact quest levels and some contacts are still being confirmed. The guide lists pickup from level 24; beta patch notes recommend 26-31. Titan Relic quests start inside the dungeon.",
-        quests = {95697,95664,98815,95772,95646,95647,95810},
+        notes = "Pick up quests from level 24; beta patch notes recommend 26-31. Caitlin's Ashenvale lead-in is optional. The Titan Relic from the final boss starts faction-specific return chains. Rewards and some contacts remain unconfirmed, and players have reported a missing-relic bug after the first turn-in.",
+        quests = {95697,95664,98815,95772,95646,95647,95810,95663,95682,95737},
     },
     ["blackfathom-deeps"] = {
         name = "Blackfathom Deeps",

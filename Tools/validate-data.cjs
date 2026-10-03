@@ -13,6 +13,15 @@ for (const file of files) {
     { luaVersion: '5.1', locations: true, encodingMode: 'pseudo-latin1' });
   function walk(node) {
     if (!node || typeof node !== 'object') return;
+    if (file === 'Data/QuestDataBeta30.lua' && node.type === 'LocalStatement'
+      && node.variables.some(variable => variable.name === 'rows')) {
+      for (const field of node.init[0].fields) {
+        const id = field.value.fields[0].value.value;
+        const location = `${file}:${field.loc.start.line}`;
+        if (questIDs.has(id)) errors.push(`${location}: duplicate quest ID ${id} (first at ${questIDs.get(id)})`);
+        questIDs.set(id, location);
+      }
+    }
     if (node.type === 'TableConstructorExpression') {
       const seen = new Set();
       for (const field of node.fields) {
