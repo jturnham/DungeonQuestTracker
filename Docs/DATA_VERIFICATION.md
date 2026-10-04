@@ -67,6 +67,23 @@ When the comparable reward exceeds the old reward, the assumed normal component 
 
 Classic-only records retain their fallback because no old Forever bonus is known. The zero/unknown Wrath of Rath'mael entry remains unresolved. No global dungeon multiplier or fabricated pre-patch value is applied to either category. Regression tests require every positive old Forever reward to be covered exactly once by the estimate model.
 
+## October 4 XP Review
+
+Reviewed the full 189-record catalog against the current [public quest spreadsheet](https://docs.google.com/spreadsheets/d/1-185bNiXoGX4kEoeeQ3DmJdSqN4ZavOKXgZNJTnwLlQ/edit) and all tracked [WCLBox dungeon pages](https://wowforever.wclbox.com/en/fuben). The spreadsheet's sixteen catalogued reports are unchanged. Thirty additional records now use individual rewards explicitly attributed by WCLBox to the October 1 level-30 build; no dungeon-wide factor or second bonus reduction is applied.
+
+| Dungeon | Quest IDs and published XP |
+| --- | --- |
+| Ragefire Chasm | 5724: 2950 |
+| Ruins of Lordaeron | 95250: 3900; 95195, 92415, 95189: 6200; 95216, 95204: 5450; 97288: 3450 |
+| Wailing Caverns | 914: 4300; 6981: 5150 |
+| The Deadmines | 214: 2950; 166: 6200; 2040: 3700 |
+| Blackfathom Deeps | 971: 6550; 1200, 6921: 7850; 1199: 6050; 6564: 1300; 6565: 6300 |
+| The Stockade | 391: 4950; 386: 4200; 377: 4400; 387, 388: 5550 |
+| Gnomeregan | 2904: 5800; 2922: 4750; 2926: 3950; 2928, 2962: 4400 |
+| Razorfen Kraul | 1144: 7250 |
+
+These display as `Forever (published beta)` and retain historical estimate/baseline metadata, without promoting confidence to locally verified. They replace 29 formula estimates and one Classic fallback (214). Source pages do not record per-quest character level and observation details. Twelve estimates remain; no current XP was found for Wetlands, Dalaran, Scarlet Monastery, Razorfen Downs, Uldaman, or unreported follow-up/class quests. Hall of Thanes explicitly still lists pre-October 1 rewards, so those cannot replace adjusted estimates. Ambiguous unlabeled XP numbers and Classic-only rewards were not treated as current beta observations.
+
 ## Received Records
 
 Party-supplied records are unverified and stored separately. They contain only bounded descriptive fields and restrictions, not executable Lua or XP rewards. Their sender/version identifies provenance, not trust. An updated bundled catalog replaces their effective record automatically. They cannot supply a new dungeon or propagate to another party.

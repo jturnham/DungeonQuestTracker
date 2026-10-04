@@ -30,6 +30,8 @@ The current target is the level 30 beta wave, including dungeon quests available
 
 Browse dungeon cards with level ranges, locations, quest totals, and party status. Search narrows the list, and party quest-data sync is opt-in.
 
+In the next update, active or ready quests keep their dungeon visible outside the level range by default. Enable `Apply level/color dungeon filters even with active or ready quests` for strict filtering. Other explicit checklist/list filters still apply.
+
 ![Dungeon list showing dungeon cards, quest totals, search, and the party data sync checkbox](images/dungeon-list.png)
 
 ### Quest Checklist
@@ -69,9 +71,9 @@ Current tracked dungeon data includes:
 
 Quest data is curated locally because the WoW API does not expose a complete dungeon quest catalog with pickup locations and prerequisite chains. XP values are intended to use Forever beta dungeon quest rewards where verified.
 
-**XP values are in flux during the Forever beta and are being updated as soon as new information becomes available.** All 56 positive old Forever rewards use the bonus-reduction model, with a quest-specific baseline where known or a labelled same-level assumption otherwise. Small rewards with no inferred positive bonus stay unchanged. Classic-only and unknown rewards remain provisional fallbacks/unknowns; turn-in priority and predicted level-ups are not guarantees.
+**XP values are in flux during the Forever beta and are being updated as soon as new information becomes available.** Individually published post-update rewards take priority over formula estimates. Remaining estimates use the bonus-reduction model, with a quest-specific baseline where known or a labelled same-level assumption otherwise. Classic-only and unknown rewards remain provisional fallbacks/unknowns; turn-in priority and predicted level-ups are not guarantees.
 
-For example, The New Plague uses an assumed 1750 XP baseline and estimates 5035 XP, rather than its old 8320 XP. Baseline assumptions and sources are recorded in [data verification notes](Docs/DATA_VERIFICATION.md). Reports should include quest ID, client build, character level, exact reward and applicable bonuses.
+The October 4 review updates thirty records with individual October 1 build rewards from [WCLBox dungeon pages](https://wowforever.wclbox.com/en/fuben), labelled `Forever (published beta)`. For example, The New Plague now uses the published 5450 XP reward instead of the 5035 XP estimate. Published rewards are not independently verified in our client. Baseline assumptions and sources are recorded in [data verification notes](Docs/DATA_VERIFICATION.md). Reports should include quest ID, client build, character level, exact reward and applicable bonuses.
 
 Dungeon chains include catalogued follow-ups outside the instance: Hidden Enemies, In Nightmares, all five Unending Torment steps, the Deadmines/Stockade chain through An Audience with the King, Gnomeregan ring returns, Library book/class-quest returns, shared Paladin forging rewards, and Razorfen Kraul Warrior armor branches. Each continuation joins its originating dungeon automatically, with completion and readiness tracked independently by quest ID. Ready follow-ups remain in the global Turn-ins list even when checklist or dungeon display filters hide their rows; the separate gray-turn-in option still applies. Rewards use a labelled Classic fallback only where available; otherwise XP stays unknown. This is curated coverage, not automatic discovery of unknown follow-ups.
 
@@ -134,7 +136,7 @@ Use the gear button in the title bar or `/dqt options`. Settings apply immediate
 
 - Checklist: show completed/unavailable/low-level locked quests, hide gray/red quests, and include or exclude class, breadcrumb-only, and drop/object-start quests.
 - Display: switch compact mode, enable or disable boss quest-loot reminders, and use Preview Alert to check the banner and notification sound.
-- Dungeon list: hide gray/red dungeons, set upper/lower level gaps (0-60), or show only missing/locked quests or ready turn-ins. Enabling both list-only filters requires both to match.
+- Dungeon list: hide gray/red dungeons, set upper/lower level gaps (0-60), or show only unfinished quests (missing, locked, active or ready) or ready turn-ins. Enabling both list-only filters requires both to match.
 - Turn-ins: explicitly exclude gray ready quests from priority. Other checklist and dungeon filters do not suppress the global planner.
 - Minimap/party: toggle the minimap button, status responses, automatic broadcasts on dungeon open, Share All confirmation, and party data sync.
 

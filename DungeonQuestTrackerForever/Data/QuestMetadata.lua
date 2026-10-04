@@ -178,6 +178,37 @@ for id, xp in pairs(reportedXP) do
     quest.verification.xpReview = "2026-10-03: replaced estimate with individual post-update player report."
     quest.verification.xp = "Player-reported beta reward, not independently verified. The source does not record character level/build for each observation; base reward and overlevel scaling remain provisional."
 end
+
+-- These pages explicitly identify rewards from the October 1 level-30 build.
+local publishedXP = {
+    ["ragefire-chasm"] = { [5724]=2950 },
+    ["ruins-of-lordaeron"] = {
+        [95250]=3900, [95195]=6200, [92415]=6200, [95189]=6200,
+        [95216]=5450, [97288]=3450, [95204]=5450,
+    },
+    ["wailing-caverns"] = { [914]=4300, [6981]=5150 },
+    ["the-deadmines"] = { [214]=2950, [166]=6200, [2040]=3700 },
+    ["blackfathom-deeps"] = {
+        [971]=6550, [1200]=7850, [1199]=6050,
+        [6564]=1300, [6565]=6300, [6921]=7850,
+    },
+    ["the-stockade"] = { [391]=4950, [386]=4200, [377]=4400, [387]=5550, [388]=5550 },
+    ["gnomeregan"] = { [2904]=5800, [2922]=4750, [2926]=3950, [2928]=4400, [2962]=4400 },
+    ["razorfen-kraul"] = { [1144]=7250 },
+}
+for dungeon, rewards in pairs(publishedXP) do
+    local source = "https://wowforever.wclbox.com/en/fuben/" .. dungeon
+    for id, xp in pairs(rewards) do
+        local quest = DQT.quests[id]
+        quest.xpPreviousEstimate = quest.foreverXp
+        quest.foreverXp, quest.xpPublished = xp, true
+        quest.xpEstimate, quest.xpOutdated = nil, nil
+        quest.xpSource = source
+        quest.sourceURLs[#quest.sourceURLs+1] = source
+        quest.verification.xpReview = "2026-10-04: individual published reward from the October 1 level-30 build."
+        quest.verification.xp = "WCLBox published beta reward, not independently verified in our client. Character level and observation details are not recorded per quest; current reward and overlevel scaling remain provisional."
+    end
+end
 for id, quest in pairs(DQT.quests) do
     if quest.dungeon == "uldaman" or quest.dungeon == "razorfen-downs" then
         quest.verification.sourceReview = "2026-10-03: catalogued published quest identities, locations, chains and Classic fallback rewards; current Forever rewards and quest levels remain unverified."

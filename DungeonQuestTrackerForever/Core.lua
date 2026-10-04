@@ -311,6 +311,7 @@ function DQT:GetQuestRewardXP(quest)
     if not quest then return 0, "none" end
     if quest.partySupplied then return 0, "Party supplied (XP unverified)" end
     if quest.foreverXp then
+        if quest.xpPublished then return quest.foreverXp, "Forever (published beta)" end
         if quest.xpReported then return quest.foreverXp, "Forever (player reported)" end
         if quest.xpEstimate then return quest.foreverXp, "Forever (Oct 1 estimate)" end
         if quest.xpOutdated then return quest.foreverXp, "Forever (outdated; unverified)" end
@@ -445,12 +446,18 @@ function DQT:GetGlobalTurnInPriority()
     local ignoreGray = self:GetOption("filters.ignoreGrayTurnIns")
     local dungeonKeys = self:GetOrderedDungeonKeys()
     for _, dungeonKey in ipairs(dungeonKeys) do
-        local status = self:GetDungeonQuestStatus(dungeonKey, false, true, context)
-        if status then
-            for _, row in ipairs(status.quests or {}) do
-                if row.state == "ready" and not seenQuests[row.questID] and not (ignoreGray and self:IsQuestGray(row.quest, context)) then
-                    seenQuests[row.questID] = true
-                    table.insert(turnIns, self:BuildTurnInItem(row, dungeonKey, status.dungeon, context, xpToLevel))
+        local dungeon = self:GetDungeon(dungeonKey)
+        if dungeon then
+            for _, questID in ipairs(dungeon.quests or {}) do
+                if not seenQuests[questID] then
+                    seenQuests[questID] = true
+                    local quest = self:GetQuest(questID)
+                    if quest and self:QuestMatchesPlayerFaction(quest, context) and self:QuestMatchesPlayerClass(quest, context)
+                        and self:GetQuestState(questID, quest, context) == "ready"
+                        and not (ignoreGray and self:IsQuestGray(quest, context)) then
+                        local row = { questID=questID, quest=quest }
+                        table.insert(turnIns, self:BuildTurnInItem(row, dungeonKey, dungeon, context, xpToLevel))
+                    end
                 end
             end
         end

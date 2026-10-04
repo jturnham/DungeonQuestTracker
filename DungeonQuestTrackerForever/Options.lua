@@ -20,8 +20,8 @@ DQT.optionDefinitions = {
     {key="filters.lowLevelGap", label="Maximum levels below me", number=true, tip="Uses the upper end of the dungeon's recommended level range. Range: 0-60."},
     {key="filters.hideHighDungeons", label="Hide dungeons above my level range"},
     {key="filters.highLevelGap", label="Maximum levels above me", number=true, tip="Uses the lower end of the dungeon's recommended level range. Range: 0-60."},
-    {key="filters.hideTrackedDungeons", label="Apply level/color dungeon filters even with active or ready quests", tip="On by default to keep the list within your level range. Turn it off to keep dungeons with current quests visible. Ready quests remain in the global turn-in planner."},
-    {key="filters.onlyMissing", label="Show only dungeons with missing or locked quests", tip="When both list-only filters are enabled, a dungeon must satisfy both."},
+    {key="filters.hideTrackedDungeons", label="Apply level/color dungeon filters even with active or ready quests", tip="Off by default: current quests keep their dungeon and quest rows visible regardless of level. Enable for strict level filtering. Ready quests remain in the global turn-in planner."},
+    {key="filters.onlyMissing", label="Show only dungeons with unfinished quests", tip="Includes missing, locked, active and ready quests; hides fully completed dungeons. When both list-only filters are enabled, a dungeon must satisfy both."},
     {key="filters.onlyReady", label="Show only dungeons with ready turn-ins"},
     {section="Turn-In Planner"},
     {key="filters.ignoreGrayTurnIns", label="Exclude gray quests from turn-in priority", tip="This explicitly hides gray ready quests from the planner. Other checklist and dungeon filters do not affect it."},
@@ -68,11 +68,16 @@ function DQT:InitializeOptions()
         Store(self.db, "filters.showUnavailable", false)
         Store(self.db, "filters.showClassRestricted", true)
     end
-    if self.db.optionsVersion ~= 2 then
-        for _, key in ipairs({"filters.ignoreGrayChecklist", "filters.hideGrayDungeons", "filters.hideTrackedDungeons"}) do
+    if not self.db.optionsVersion or self.db.optionsVersion < 2 then
+        for _, key in ipairs({"filters.ignoreGrayChecklist", "filters.hideGrayDungeons"}) do
             if not (type(self.db.optionOverrides) == "table" and self.db.optionOverrides[key]) and Lookup(self.db, key) == false then Store(self.db, key, true) end
         end
-        self.db.optionsVersion = 2
+    end
+    if not self.db.optionsVersion or self.db.optionsVersion < 3 then
+        if not (type(self.db.optionOverrides) == "table" and self.db.optionOverrides["filters.hideTrackedDungeons"]) then
+            Store(self.db, "filters.hideTrackedDungeons", false)
+        end
+        self.db.optionsVersion = 3
     end
     for key in pairs(definitions) do Store(self.db, key, self:GetOption(key)) end
 end
@@ -130,23 +135,27 @@ function DQT:GetDisplayDungeonStatus(key, context)
     context = context or self:GetPlayerContext()
     local raw = self:GetDungeonQuestStatus(key, true, true, context)
     if not raw then return nil end
-    local blocking = {}
-    local function MarkPrerequisites(quest, seen)
+    local blocking, seen = {}, {}
+    local function MarkPrerequisites(quest)
         for _, prerequisite in ipairs(quest.prerequisites or {}) do
             local id = prerequisite.questID
-            if prerequisite.relationship == "required" and id and not seen[id] and not self:IsQuestComplete(id) then
-                seen[id], blocking[id] = true, true
-                local parent = self:GetQuest(id)
-                if parent then MarkPrerequisites(parent, seen) end
+            if prerequisite.relationship == "required" and id and not seen[id] then
+                seen[id] = true
+                if not self:IsQuestComplete(id) then
+                    blocking[id] = true
+                    local parent = self:GetQuest(id)
+                    if parent then MarkPrerequisites(parent) end
+                end
             end
         end
     end
     for _, row in ipairs(raw.quests) do
-        if row.state ~= "completed" and row.state ~= "unavailable" and not self:IsQuestGray(row.quest, context) and not (self:GetOption("filters.ignoreRedChecklist") and self:IsQuestRed(row.quest, context)) then MarkPrerequisites(row.quest, {}) end
+        if row.state ~= "completed" and row.state ~= "unavailable" and not self:IsQuestGray(row.quest, context) and not (self:GetOption("filters.ignoreRedChecklist") and self:IsQuestRed(row.quest, context)) then MarkPrerequisites(row.quest) end
     end
     local result = {key=key, dungeon=raw.dungeon, quests={}, counts={completed=0, ready=0, active=0, missing=0, locked=0, unavailable=0}, hidden=0, raw=raw}
     for _, row in ipairs(raw.quests) do
         local quest, visible = row.quest, true
+        local protectTracked = (row.state == "active" or row.state == "ready") and not self:GetOption("filters.hideTrackedDungeons")
         local available = self:GetQuestAvailability(quest, context) ~= "unavailable"
         if not available and not self:GetOption("filters.showUnavailable") then visible=false end
         if row.state == "completed" and not self:GetOption("filters.showCompleted") then visible=false end
@@ -154,11 +163,11 @@ function DQT:GetDisplayDungeonStatus(key, context)
         if quest.breadcrumbOnly and not self:GetOption("filters.includeBreadcrumbs") then visible=false end
         local pickupType = self:GetQuestPickupType(quest)
         if (pickupType == "drop" or pickupType == "object") and not self:GetOption("filters.includeItemQuests") then visible=false end
-        if row.state ~= "ready" and not blocking[row.questID] then
+        if row.state ~= "ready" and not protectTracked and not blocking[row.questID] then
             if self:GetOption("filters.ignoreGrayChecklist") and self:IsQuestGray(quest, context) then visible=false end
             if row.state == "locked" and not quest.questLevelUnverified and quest.questLevel < context.level and not self:GetOption("filters.showLowLevelLocked") then visible=false end
         end
-        if row.state ~= "ready" and self:GetOption("filters.ignoreRedChecklist") and self:IsQuestRed(quest, context) then visible=false end
+        if row.state ~= "ready" and not protectTracked and self:GetOption("filters.ignoreRedChecklist") and self:IsQuestRed(quest, context) then visible=false end
         if visible then
             result.quests[#result.quests+1] = row
             result.counts[row.state] = result.counts[row.state]+1
@@ -169,7 +178,7 @@ end
 function DQT:ShouldShowDungeon(status, context)
     context = context or self:GetPlayerContext()
     local counts, raw = status.counts, status.raw
-    if self:GetOption("filters.onlyMissing") and counts.missing+counts.locked == 0 then return false end
+    if self:GetOption("filters.onlyMissing") and counts.missing+counts.locked+counts.active+counts.ready == 0 then return false end
     if self:GetOption("filters.onlyReady") and counts.ready == 0 then return false end
     local relevant, tracked = false, false
     for _, row in ipairs(raw.quests) do

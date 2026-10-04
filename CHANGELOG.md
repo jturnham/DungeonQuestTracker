@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.3 - 2026-10-04
+
+- Review all 189 quest records against current published XP sources; update thirty records with individually published October 1 build rewards across eight dungeons. Label these as published beta values, not local verification; retain estimates and Classic fallbacks where current rewards are unknown.
+- Avoid repeated shared-quest state checks and unused status row allocations in global turn-in scans; traverse each shared prerequisite only once per checklist refresh.
+- Make the unfinished-dungeon filter include active and ready quests, not only missing/locked quests, so current Book of Ur progress does not hide Shadowfang Keep. Rename the option to describe its behavior.
+- Keep dungeons and active quest rows visible outside the level range by default when current quests are tracked. Migrate the previous default without overriding an explicitly chosen strict-filter setting.
+
 ## 0.4.2 - 2026-10-03
 
 - Add Razorfen Downs and Uldaman with known faction quests, class objectives and return chains; add Scarlet Monastery Cathedral. Current beta quest levels and rewards still need verification; new classic-dungeon rewards use labelled Classic fallbacks.

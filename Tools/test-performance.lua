@@ -56,4 +56,52 @@ do
     ui.RefreshCurrentDungeon = oldRefresh
     ui:ShowDungeonList()
 end
-print("Passed performance: context reuse, no duplicate planners, search scan counts, event coalescing and no idle/hidden updates.")
+do
+    local oldState, oldStatus = DQT.GetQuestState, DQT.GetDungeonQuestStatus
+    local calls, scans = 0, 0
+    DQT.GetQuestState = function() calls=calls+1; return "ready" end
+    local context, reference, seen = DQT:GetPlayerContext(), {}, {}
+    local xpToLevel = math.max(0, (context.maxXp or 0) - (context.currentXp or 0))
+    for _, key in ipairs(DQT:GetOrderedDungeonKeys()) do
+        local status = oldStatus(DQT, key, false, true, context)
+        for _, row in ipairs(status.quests) do
+            if not seen[row.questID] and not (DQT:GetOption("filters.ignoreGrayTurnIns") and DQT:IsQuestGray(row.quest, context)) then
+                seen[row.questID] = true
+                reference[#reference+1] = DQT:BuildTurnInItem(row, key, status.dungeon, context, xpToLevel)
+            end
+        end
+    end
+    DQT:SortTurnIns(reference)
+    local previousCalls = calls
+    calls = 0
+    DQT.GetDungeonQuestStatus = function(self, ...) scans=scans+1; return oldStatus(self, ...) end
+    local actual = DQT:GetGlobalTurnInPriority().quests
+    assert(scans == 0 and calls < previousCalls, "Global planner avoids status allocations and repeated shared quest states")
+    assert(#actual == #reference, "Planner retains every eligible unique quest")
+    for i, item in ipairs(actual) do
+        local expected = reference[i]
+        assert(item.questID == expected.questID and item.dungeonKey == expected.dungeonKey and item.priorityScore == expected.priorityScore, "Same order, dungeon ownership and priorities")
+    end
+    print("Global turn-in state checks: " .. previousCalls .. " -> " .. calls .. "; no intermediate dungeon status scans.")
+    DQT.GetQuestState = function() return "completed" end
+    assert(#DQT:GetGlobalTurnInPriority().quests == 0, "Quest state is fresh on the next scan")
+    DQT.GetQuestState, DQT.GetDungeonQuestStatus = oldState, oldStatus
+end
+do
+    local saved = {}
+    for _, name in ipairs({"GetDungeonQuestStatus", "GetQuest", "IsQuestComplete", "GetQuestAvailability", "IsQuestGray", "IsQuestRed"}) do saved[name]=DQT[name] end
+    local checks = {}
+    local parent = { prerequisites={{questID=100002, relationship="required"}} }
+    local child = { questLevel=25, prerequisites={{questID=100001, relationship="required"}} }
+    DQT.GetDungeonQuestStatus = function() return {quests={{questID=100003, quest=child, state="missing"}, {questID=100004, quest=child, state="missing"}}} end
+    DQT.GetQuest = function(_, id) if id == 100001 then return parent end end
+    DQT.IsQuestComplete = function(_, id) checks[id]=(checks[id] or 0)+1; return false end
+    DQT.GetQuestAvailability = function() return "missing" end
+    DQT.IsQuestGray, DQT.IsQuestRed = function() return false end, function() return false end
+    DQT:GetDisplayDungeonStatus("test", {level=25})
+    assert(checks[100001] == 1 and checks[100002] == 1, "Shared prerequisite ancestors traversed once per refresh")
+    DQT:GetDisplayDungeonStatus("test", {level=25})
+    assert(checks[100001] == 2 and checks[100002] == 2, "Prerequisite traversal never caches across refreshes")
+    for name, fn in pairs(saved) do DQT[name]=fn end
+end
+print("Passed performance: context reuse, unique quest scans, shared prerequisite traversal, equivalent planner output, search scan counts and event coalescing.")

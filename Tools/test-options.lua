@@ -57,7 +57,7 @@ DQT:SetOption("filters.showClassRestricted", false); assert(not Visible(6))
 DQT:SetOption("filters.includeBreadcrumbs", false); assert(not Visible(7))
 DQT:SetOption("filters.includeItemQuests", false); assert(not Visible(8) and not Visible(9))
 DQT:SetOption("filters.ignoreGrayChecklist", true)
-assert(Visible(2) and not Visible(3) and Visible(4), "Gray ready and blocking prerequisites protected")
+assert(Visible(2) and Visible(3) and Visible(4), "Gray active, ready and blocking prerequisites protected")
 Quest(10).prerequisites = {}
 assert(not Visible(4), "Unneeded gray prerequisite can hide")
 Quest(4).prerequisites = {{questID=998001,relationship="required",external=true}}

@@ -1,7 +1,7 @@
 local addonName, DQT = ...
 
 DQT.name = addonName
-DQT.version = "0.4.2"
+DQT.version = "0.4.3"
 
 DQT.defaults = {
     partyDataSync = false,
@@ -24,7 +24,7 @@ DQT.defaults = {
         lowLevelGap = 5,
         hideHighDungeons = false,
         highLevelGap = 5,
-        hideTrackedDungeons = true,
+        hideTrackedDungeons = false,
         onlyMissing = false,
         onlyReady = false,
         includeBreadcrumbs = true,
