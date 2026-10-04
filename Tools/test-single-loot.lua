@@ -29,6 +29,10 @@ do
         {2922,9277,"Dun Morogh",false},
         {1701,6841,"Razorfen Kraul",true},
         {1838,6841,"Razorfen Kraul",true},
+        {6521,17009,"The Barrens",false},
+        {1051,5538,"Alterac Mountains",false},
+        {722,4635,"Badlands",false},
+        {762,4621,"Badlands",false},
     }) do
         questID, itemID, location, inside = data[1], data[2], data[3], data[4]
         Check(true)

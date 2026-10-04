@@ -85,7 +85,7 @@ Version 0.4.2 adds Razorfen Downs, Uldaman and Cathedral, and replaces sixteen X
 
 ## Install
 
-Download `DungeonQuestTrackerForever-0.4.2.zip` from the [GitHub release](https://github.com/jturnham/DungeonQuestTracker/releases/tag/v0.4.2) and extract it into your World of Warcraft client's `Interface/AddOns` directory. The ZIP already contains the `DungeonQuestTrackerForever` folder; do not add an extra enclosing folder.
+Download `DungeonQuestTrackerForever-0.4.4.zip` from the [GitHub release](https://github.com/jturnham/DungeonQuestTracker/releases/tag/v0.4.4) and extract it into your World of Warcraft client's `Interface/AddOns` directory. The ZIP already contains the `DungeonQuestTrackerForever` folder; do not add an extra enclosing folder.
 
 When upgrading to the renamed addon, remove the old `DungeonQuestTracker` folder from `Interface/AddOns` before installing `DungeonQuestTrackerForever`, so only one copy loads. With WoW closed, copy `WTF/Account/<account>/SavedVariables/DungeonQuestTracker.lua` to `DungeonQuestTrackerForever.lua` to retain settings. Do not overwrite an existing new-name saved file. The internal `DungeonQuestTrackerDB` variable and `/dqt` command are retained for compatibility. The GitHub repository URL is unchanged.
 
@@ -194,7 +194,7 @@ Reminders use public boss-kill and successful encounter-end notifications, not r
 
 An alert reminds you to check the corpse, but does not guarantee a drop or loot eligibility. Completed/ready quests, unavailable quests and items already in your bags are suppressed. Objective drops require an active quest; quest-starting items can be highlighted before you accept their quest. Looting the item or accepting its starting quest clears the reminder.
 
-Coverage includes VanCleef's Unsent Letter, Mutanus' Glowing Shard, Charlga Razorflank's Small Scroll, Witherfang's Highly Toxic Strain, and The Baron's faction-specific heads. The Stockade also includes the Head of Bazil Thredd, Head of Targorr, Hand of Dextren Ward, and Head of Deepfury. The loot-window fallback covers mapped items with known item IDs; The Baron's Alliance head currently lacks a mapped item ID. The Baron's English-name fallback is restricted to Ruins of Lordaeron until its NPC ID is confirmed. Random trash drops and ground objects are not inferred from boss deaths. Toggle reminders under Options > Display.
+Coverage includes sourced single-copy quest drops from named mobs across the supported dungeons, including Arugal's head, Taragaman's heart, VanCleef's head, the Fang gems, Kelris's head, Razorflank's faction items and Uldaman's boss necklace components. Both Baron heads have loot-window mappings. See [loot reminder coverage](Docs/LOOT_REMINDER_COVERAGE.md) for the audited mappings and exclusions. Beta-only name fallbacks are restricted to their dungeon; random trash drops and ground objects are not inferred from boss deaths. Toggle reminders under Options > Display.
 
 Single-copy objective drops also include Mad Magglish's 99-Year-Old Port, Foreman Thistlenettle's Badge, Techbot's Memory Core, and Roogug's Vial of Phlogiston for either Warrior armor quest. Entrance-area drops use opened-loot detection in their associated zones. Multi-item collection drops such as bandanas, hides, and guano are deliberately excluded to avoid repeated alerts.
 
@@ -239,11 +239,11 @@ From the repository root, create a tester zip that contains the `DungeonQuestTra
 .\Tools\package-release.ps1
 ```
 
-This produces `release/DungeonQuestTrackerForever-0.4.2.zip` and checks its version and folder layout. Testers can extract that zip directly into `Interface/AddOns`.
+This produces `release/DungeonQuestTrackerForever-0.4.4.zip` and checks its version and folder layout. Testers can extract that zip directly into `Interface/AddOns`.
 
 ## Development Notes
 
-- Current addon version: `0.4.2`.
+- Current addon version: `0.4.4`.
 - Current TOC interface: `16001`.
 - Saved variables live in `DungeonQuestTrackerDB`.
 - The UI intentionally uses native WoW frames and templates only, with no external addon library dependency yet.

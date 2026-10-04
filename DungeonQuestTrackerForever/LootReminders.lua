@@ -2,12 +2,15 @@ local _, DQT = ...
 
 local reminders = {
     [639] = {
+        { questID = 166, itemID = 3637, item = "Head of VanCleef" },
         { questID = 373, itemID = 2874, item = "An Unsent Letter", startsQuest = true },
     },
     [3654] = {
         { questID = 6981, itemID = 10441, item = "Glowing Shard", startsQuest = true },
     },
     [4421] = {
+        { questID = 1101, itemID = 5792, item = "Razorflank's Medallion" },
+        { questID = 1102, itemID = 5793, item = "Razorflank's Heart" },
         { questID = 6522, itemID = 17008, item = "Small Scroll", startsQuest = true },
     },
     [250483] = {
@@ -17,18 +20,63 @@ local reminders = {
     [1696] = { { questID = 386, itemID = 3630, item = "Head of Targorr" } },
     [1663] = { { questID = 377, itemID = 3628, item = "Hand of Dextren Ward" } },
     [1666] = { { questID = 378, itemID = 3640, item = "Head of Deepfury" } },
+    [4275] = { { questID = 1014, itemID = 5442, item = "Head of Arugal" } },
+    [11520] = { { questID = 5761, itemID = 14540, item = "Taragaman the Hungerer's Heart" } },
+    [642] = { { questID = 2040, itemID = 7365, item = "Gnoam Sprecklesprocket" } },
+    [3669] = { { questID = 914, itemID = 9738, item = "Gem of Cobrahn" } },
+    [3671] = { { questID = 914, itemID = 9739, item = "Gem of Anacondra" } },
+    [3670] = { { questID = 914, itemID = 9740, item = "Gem of Pythas" } },
+    [3673] = { { questID = 914, itemID = 9741, item = "Gem of Serpentis" } },
+    [4832] = {
+        { questID = 1200, itemID = 5881, item = "Head of Kelris" },
+        { questID = 6561, itemID = 5881, item = "Head of Kelris" },
+    },
+    [12876] = { { questID = 6922, itemID = 16782, item = "Strange Water Globe", startsQuest = true } },
+    [7800] = { { questID = 2841, itemID = 9299, item = "Thermaplugg's Safe Combination" } },
+    [7358] = { { questID = 3341, itemID = 10420, item = "Skull of the Coldbringer" } },
+    [2748] = {
+        { questID = 2204, itemID = 7672, item = "Shattered Necklace Power Source" },
+        { questID = 2339, itemID = 7672, item = "Shattered Necklace Power Source" },
+    },
+    [4854] = {
+        { questID = 2201, itemID = 7670, item = "Shattered Necklace Sapphire" },
+        { questID = 2339, itemID = 7670, item = "Shattered Necklace Sapphire" },
+    },
+    [7023] = { { questID = 1956, itemID = 8053, item = "Obsidian Power Source" } },
 }
 -- No guessed NPC IDs: this beta-only fallback also requires the exact instance name.
 local namedReminders = {
     ["The Baron"] = {
         { questID = 97288, itemID = 280438, item = "Abominable Head", startsQuest = true },
-        { questID = 95250, item = "Head of the Baron" },
+        { questID = 95250, itemID = 268518, item = "Head of the Baron" },
+    },
+    ["Durgen Dirgehammer"] = { { questID = 96393, itemID = 274286, item = "Durgen Dirgehammer's Head" } },
+    ["Highland Horror"] = { { questID = 95646, itemID = 270180, item = "Horrible Rootcore" } },
+    ["Relic Guardian"] = {
+        { questID = 95810, itemID = 270865, item = "Titan Relic", startsQuest = true },
+        { questID = 95664, itemID = 270865, item = "Titan Relic", startsQuest = true },
     },
 }
 DQT.lootReminderData = reminders
 DQT.namedLootReminderData = namedReminders
 
 local encounters = {
+    ["Taragaman the Hungerer"] = { npcID = 11520, instance = "Ragefire Chasm" },
+    ["Sneed's Shredder"] = { npcID = 642, instance = "The Deadmines" },
+    ["Lord Cobrahn"] = { npcID = 3669, instance = "Wailing Caverns" },
+    ["Lady Anacondra"] = { npcID = 3671, instance = "Wailing Caverns" },
+    ["Lord Pythas"] = { npcID = 3670, instance = "Wailing Caverns" },
+    ["Lord Serpentis"] = { npcID = 3673, instance = "Wailing Caverns" },
+    ["Twilight Lord Kelris"] = { npcID = 4832, instance = "Blackfathom Deeps" },
+    ["Baron Aquanis"] = { npcID = 12876, instance = "Blackfathom Deeps" },
+    ["Mekgineer Thermaplugg"] = { npcID = 7800, instance = "Gnomeregan" },
+    ["Amnennar the Coldbringer"] = { npcID = 7358, instance = "Razorfen Downs" },
+    ["Archaedas"] = { npcID = 2748, instance = "Uldaman" },
+    ["Grimlok"] = { npcID = 4854, instance = "Uldaman" },
+    ["Obsidian Sentinel"] = { npcID = 7023, instance = "Uldaman" },
+    ["Durgen Dirgehammer"] = { instance = "Hall of Thanes" },
+    ["Highland Horror"] = { instance = "Excavation Site: Wetlands" },
+    ["Relic Guardian"] = { instance = "Excavation Site: Wetlands" },
     ["Edwin VanCleef"] = { npcID = 639, instance = "The Deadmines" },
     ["VanCleef"] = { npcID = 639, instance = "The Deadmines" },
     ["Mutanus the Devourer"] = { npcID = 3654, instance = "Wailing Caverns" },
@@ -40,6 +88,8 @@ local encounters = {
     ["Targorr the Dread"] = { npcID = 1696, instance = "The Stockade" },
     ["Dextren Ward"] = { npcID = 1663, instance = "The Stockade" },
     ["Kam Deepfury"] = { npcID = 1666, instance = "The Stockade" },
+    ["Archmage Arugal"] = { npcID = 4275, instance = "Shadowfang Keep" },
+    ["Arugal"] = { npcID = 4275, instance = "Shadowfang Keep" },
 }
 
 local function IsSecret(value)
@@ -74,6 +124,10 @@ end
 -- Explicit single-copy objectives only; collection drops must not enter this allowlist.
 -- Entrance targets have no reliable boss notification, so inspect available loot instead.
 local singleDrops = {
+    { questID = 6521, itemID = 17009, item = "Ambassador Malcin's Head", locations = { "The Barrens", "Southern Barrens", "Razorfen Downs" } },
+    { questID = 1051, itemID = 5538, item = "Vorrel's Wedding Ring", locations = { "Alterac Mountains", "Hillsbrad Foothills" } },
+    { questID = 722, itemID = 4635, item = "Hammertoe's Amulet", locations = { "Uldaman", "Badlands" } },
+    { questID = 762, itemID = 4621, item = "Ambassador Infernus' Bracer", locations = { "Badlands" } },
     { questID = 959, itemID = 5334, item = "99-Year-Old Port", locations = { "Wailing Caverns", "The Barrens", "Northern Barrens" } },
     { questID = 167, itemID = 1875, item = "Thistlenettle's Badge", locations = { "The Deadmines", "Westfall" } },
     { questID = 2922, itemID = 9277, item = "Techbot's Memory Core", locations = { "Gnomeregan", "Dun Morogh" } },
@@ -155,13 +209,16 @@ function DQT:PreviewQuestLootReminder()
 end
 
 local seen, order, notified = {}, {}, {}
+local function DropKey(drop)
+    return tostring(drop.questID) .. ":" .. tostring(drop.itemID or drop.item)
+end
 local function NotifyDrops(name, drops)
     local relevant = {}
     for _, drop in ipairs(drops) do
-        if not notified[drop.questID] and DQT:NeedsQuestLoot(drop) then relevant[#relevant + 1] = drop end
+        if not notified[DropKey(drop)] and DQT:NeedsQuestLoot(drop) then relevant[#relevant + 1] = drop end
     end
     if #relevant == 0 then return end
-    for _, drop in ipairs(relevant) do notified[drop.questID] = true end
+    for _, drop in ipairs(relevant) do notified[DropKey(drop)] = true end
     DQT:ShowQuestLootReminder(name, relevant)
 end
 
@@ -195,7 +252,7 @@ function DQT:HandleQuestLootDeath(guid, name)
     local drops = reminders[npcID]
     if not drops and namedReminders[name] then
         local instanceName = SafeCall(GetInstanceInfo)
-        if instanceName == "Ruins of Lordaeron" then drops = namedReminders[name] end
+        if encounters[name] and instanceName == encounters[name].instance then drops = namedReminders[name] end
     end
     if not drops or seen[guid] then return end
     seen[guid] = true
@@ -234,7 +291,12 @@ events:SetScript("OnEvent", function(_, event, ...)
         local encounter = encounters[name]
         if encounter and SafeCall(GetInstanceInfo) == encounter.instance then
             -- Session-local identity for duplicate public encounter notifications, not a unit GUID.
-            DQT:HandleQuestLootDeath("Creature-0-0-0-0-" .. encounter.npcID .. "-0000", name)
+            if encounter.npcID then
+                DQT:HandleQuestLootDeath("Creature-0-0-0-0-" .. encounter.npcID .. "-0000", name)
+            else
+                local inInstance, instanceType = SafeCall(IsInInstance)
+                if inInstance and instanceType == "party" then NotifyDrops(name, namedReminders[name] or {}) end
+            end
         end
     elseif event == "LOOT_READY" or event == "LOOT_OPENED" or event == "LOOT_SLOT_CHANGED" then
         if not DQT.loaded or not DQT:GetOption("lootReminders.enabled") then return end

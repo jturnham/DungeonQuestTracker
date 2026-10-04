@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.4 - 2026-10-04
+
+- Audit single-copy named-mob quest drops across the catalogue and expand reminders for Ragefire Chasm, Deadmines, Wailing Caverns, Blackfathom Deeps, Hall of Thanes, Wetlands, Gnomeregan, Razorfen Kraul, Razorfen Downs and Uldaman, plus named-mob chain objectives outside instances.
+- Add the Alliance Baron's head item ID for loot-window detection. Deduplicate reminders by quest and item so distinct boss items in one quest each get an alert.
+
+- Add the missing Head of Arugal loot reminder for Arugal Must Die, including boss/encounter notifications and a Shadowfang Keep loot-window fallback.
+
 ## 0.4.3 - 2026-10-04
 
 - Review all 189 quest records against current published XP sources; update thirty records with individually published October 1 build rewards across eight dungeons. Label these as published beta values, not local verification; retain estimates and Classic fallbacks where current rewards are unknown.
