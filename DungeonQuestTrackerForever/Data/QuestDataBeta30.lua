@@ -102,6 +102,7 @@ DQT.quests[1956].classes = {"MAGE"}
 DQT.quests[6522].classicXp = 2800
 
 local wetlands = {
+    [95795]={name="Fallen in the Fen",faction="Alliance",followUpOf=95772,pickupType="object",pickup={name="Daewyn Songblade's body",zone="Excavation Site: Wetlands"},turnIn={name="Dorin Songblade",zone="Redridge Mountains",subzone="Lakeshire",coordinates="25.6, 46.6"},objectives="Return to Dorin Songblade in Lakeshire and tell him what happened to his brother."},
     [95663]={name="Dragonmaw Rumors",faction="Horde",pickup={name="Zaruk (player-reported; confirm in beta)",zone="Arathi Highlands",subzone="Hammerfall"},turnIn={name="Deathstalker Agent",zone="Wetlands",subzone="Hills above the Dragonmaw camp"},objectives="Meet the Deathstalker Agent above the Dragonmaw camp."},
     [95682]={name="Open the Maw",faction="Horde",followUpOf=95663,pickup={name="Deathstalker Agent",zone="Wetlands",subzone="Outside Excavation Site"},turnIn={name="Deathstalker Agent",zone="Wetlands",subzone="Outside Excavation Site"},objectives="Kill 2 Dragonmaw Saboteurs and 4 Dragonmaw Warders; recover a Dragonmaw Dispatch."},
     [95737]={name="Seeking Caitlin",faction="Alliance",pickup={name="Llana",zone="Ashenvale",subzone="Astranaar",coordinates="35.0, 48.6"},turnIn={name="Caitlin Grassman",zone="Wetlands",subzone="Menethil Harbor"},objectives="Find Caitlin Grassman in Menethil Harbor."},
@@ -122,6 +123,7 @@ DQT.quests[95647].pickup = wetlands[95737].turnIn
 DQT.quests[95647].pickup.coordinates = "11.8, 58.6"
 DQT.quests[95647].prerequisites = {{questID=95737,relationship="breadcrumb",note="Optional Seeking Caitlin lead-in from Llana. The updated dungeon guide and player reports allow direct pickup in Menethil Harbor; confirm in beta."}}
 DQT.quests[95737].breadcrumbOnly = true
+DQT.quests[95772].objectives = "Find Daewyn Songblade's body inside the Excavation Site, then accept Fallen in the Fen to return to Dorin in Lakeshire."
 DQT.quests[95647].objectives = "Find Ardin Grassman in the Excavation Site; Heartwoven returns to Caitlin in Menethil Harbor."
 DQT.quests[95810].objectives = "Take the Titan Relic to Prospector Whelgar, then continue with Prehistoric Prism in Ironforge."
 DQT.quests[95664].objectives = "Take the Titan Relic to Elder Rise, then continue with Earthen Echo in Mulgore. Confirm the Elder Rise contact in beta."

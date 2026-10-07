@@ -55,9 +55,9 @@ for id, quest in pairs(DQT.quests) do
         assert(DQT.quests[quest.followUpOf] and quest.followUpOf ~= id, "Unresolved follow-up origin: " .. id)
         local linked = false
         for _, prerequisite in ipairs(quest.prerequisites) do
-            if prerequisite.questID == quest.followUpOf and prerequisite.relationship == "required" then linked = true end
+            if prerequisite.questID == quest.followUpOf and (prerequisite.relationship == "required" or prerequisite.relationship == "breadcrumb") then linked = true end
         end
-        assert(linked, "Follow-up missing required predecessor: " .. id)
+        assert(linked, "Follow-up missing explicit required/breadcrumb predecessor: " .. id)
     end
     for _, prerequisite in ipairs(quest.prerequisites) do
         assert(prerequisite.relationship == "required" or prerequisite.relationship == "breadcrumb", "Invalid prerequisite relationship: " .. id)

@@ -417,6 +417,54 @@ function DQT:SortTurnIns(turnIns)
     end)
 end
 
+local function TurnInLocationKey(quest)
+    local location = quest.turnIn
+    if not location or not location.zone or not location.name then return nil end
+    if location.zone:lower():find("unknown",1,true) or location.name:lower():find("unknown",1,true) then return nil end
+    local area = location.subzone or location.coordinates or location.name
+    return location.zone:lower() .. "|" .. area:lower()
+end
+
+function DQT:GroupTurnInsByLocation(turnIns, context)
+    local budget = SafeNumber(context.maxXp,0) - SafeNumber(context.currentXp,0)
+    local level = SafeNumber(context.level,0)
+    if budget <= 0 or level <= 0 then return end
+    local spent = 0
+    for index=1,#turnIns do
+        local current = turnIns[index]
+        spent = spent + current.effectiveXp
+        if spent >= budget or current.xpSource == "unknown" or current.quest.partySupplied then return end
+        local locationKey = TurnInLocationKey(current.quest)
+        if locationKey then
+            local candidateIndex = index+2
+            while candidateIndex <= #turnIns do
+                local candidate = turnIns[candidateIndex]
+                if TurnInLocationKey(candidate.quest) == locationKey then
+                    local safe = candidate.xpSource ~= "unknown" and not candidate.quest.partySupplied
+                    local originalSpent = spent
+                    for skipped=index+1,candidateIndex-1 do
+                        local other = turnIns[skipped]
+                        -- Future level thresholds are unknown: never delay a hand-in
+                        -- across the first projected level-up, even if its XP looks stable.
+                        if originalSpent + candidate.effectiveXp >= budget then
+                            safe=false; break
+                        end
+                        if other.xpSource == "unknown" or other.quest.partySupplied then safe=false; break end
+                        originalSpent = originalSpent + other.effectiveXp
+                    end
+                    if safe then
+                        table.remove(turnIns,candidateIndex)
+                        table.insert(turnIns,index+1,candidate)
+                        candidate.locationGrouped = true
+                        break
+                    end
+                end
+                candidateIndex=candidateIndex+1
+            end
+        end
+    end
+end
+
 function DQT:GetTurnInPriority(status, context)
     context = context or self:GetPlayerContext()
     local xpToLevel = 0
@@ -432,6 +480,7 @@ function DQT:GetTurnInPriority(status, context)
     end
 
     self:SortTurnIns(turnIns)
+    self:GroupTurnInsByLocation(turnIns,context)
     return { context = context, xpToLevel = xpToLevel, quests = turnIns }
 end
 
@@ -464,6 +513,7 @@ function DQT:GetGlobalTurnInPriority()
     end
 
     self:SortTurnIns(turnIns)
+    self:GroupTurnInsByLocation(turnIns,context)
     return { context = context, xpToLevel = xpToLevel, quests = turnIns }
 end
 

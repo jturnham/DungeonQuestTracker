@@ -277,6 +277,7 @@ function UI:Create()
     frame.primaryButton:SetPoint("LEFT", frame.nav, "LEFT", 0, 0)
     frame.primaryButton:SetScript("OnClick", function()
         if UI.currentView == "options" then UI:CloseOptions()
+        elseif UI.currentView == "pickups" then DQT:OpenDungeon(UI.currentDungeonKey)
         elseif UI.currentView == "list" then
             if UI.currentDungeonKey then DQT:OpenDungeon(UI.currentDungeonKey) end
         else
@@ -301,6 +302,21 @@ function UI:Create()
     end)
     AddTooltip(frame.partyButton, "Check Party", "Requests this dungeon's quest status from party members running DQT. Checks have a five-second cooldown; responses expire after two minutes.")
     AddTooltip(frame.shareButton, "Share All", "Requests sharing of active or ready quests the client marks shareable. Requires a group; drop, object and prerequisite quests may not be shareable.")
+
+    frame.pickupButton = CreateFrame("Button", nil, frame.nav)
+    frame.pickupButton:SetSize(24, 24)
+    frame.pickupButton:SetPoint("RIGHT", frame.nav, "RIGHT", -4, 0)
+    frame.pickupButton:SetNormalTexture("Interface\\Icons\\INV_Misc_Map_01")
+    frame.pickupButton:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
+    frame.pickupButton:SetScript("OnClick", function() UI:ShowPickups() end)
+    AddTooltip(frame.pickupButton, "Pickup route", "Missing quest pickups grouped by zone and giver. Select a stop to open its zone map with numbered pickup pins where coordinates are available.")
+    frame.pickupStart = CreateButton(frame.nav, "Start zone", 190)
+    frame.pickupStart:SetPoint("LEFT", frame.turnInsButton, "RIGHT", 8, 0)
+    frame.pickupStart:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    frame.pickupStart:SetScript("OnClick", nil)
+    AddTooltip(frame.pickupStart, "Starting zone", function()
+        return (UI.pickupPlan and UI.pickupPlan.startReason or "") .. "\nRemaining zones are alphabetical, not travel-time optimized."
+    end)
 
     frame.searchLabel = frame.nav:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     frame.searchLabel:SetPoint("LEFT", frame.nav, "LEFT", 370, 0)
@@ -390,7 +406,10 @@ function UI:Create()
     frame.filterSummary.text:SetAllPoints()
     frame.filterSummary.text:SetJustifyH("LEFT")
     frame.filterSummary:SetScript("OnClick", function() UI:ShowOptions() end)
-    AddTooltip(frame.filterSummary, "Filters", function() return DQT:GetFilterSummary() end)
+    AddTooltip(frame.filterSummary, function() return UI.currentView == "pickups" and "Pickup route assumptions" or "Filters" end, function()
+        if UI.currentView == "pickups" then return "Pickup routes include all level-eligible missing quests, independently of checklist color filters. Coordinate-space order is suggested within each zone; unknown coordinates are placed last. Zone travel, terrain, starting position and entrance arrival are not optimized. Recorded beta locations still need client verification." end
+        return DQT:GetFilterSummary()
+    end)
 
     self.frame = frame
 end
@@ -432,6 +451,9 @@ function UI:UpdateNav()
     if not self.frame then return end
     self:ApplyLayout()
     local listView = self.currentView == "list"
+    self.frame.pickupButton:SetShown((self.currentView == "checklist" or self.currentView == "pickups") and DQT.pickupRouteDungeons[self.currentDungeonKey] == true)
+    self.frame.pickupStart:SetShown(self.currentView == "pickups")
+    self.frame.pickupStart:SetWidth(self:IsCompact() and 190 or 290)
     self.frame.filterSummary:SetShown(self.currentView ~= "options")
     self.frame.search:SetShown(listView)
     self.frame.searchLabel:SetShown(listView)
@@ -488,7 +510,7 @@ function UI:ClearRows()
     end
     for _, row in ipairs(self.frame.rows) do row:Hide() end
     for _, card in ipairs(self.frame.dungeonCards) do card:Hide() end
-    for _, row in ipairs(self.frame.turnInRows) do row:Hide() end
+    for _, row in ipairs(self.frame.turnInRows) do row:Hide(); row:SetScript("OnMouseUp",nil) end
 end
 function UI:GroupChecklistQuests(quests)
     local groups, roots, result = {}, {}, {}
@@ -566,6 +588,10 @@ end
 
 function UI:ShowDungeon(status)
     self:Create()
+    if self.currentDungeonKey ~= status.key then
+        self.pickupStartZone = nil
+        if DQT.PickupMap then DQT.PickupMap:ClearRoute() end
+    end
     self.currentDungeonKey = status.key
     self.currentView = "checklist"
     self.frame.checklistScroll:SetVerticalScroll(0)
@@ -657,11 +683,13 @@ function UI:RenderChecklist(status)
             reason = reason .. "\nDungeon follow-up: " .. (parent and parent.name or "Quest") .. " (#" .. quest.followUpOf .. ")."
         end
         if quest.partySupplied then reason = reason .. "\nParty supplied: " .. tostring(quest.source) .. " (v" .. tostring(quest.sourceVersion or "unknown") .. "); needs review, XP excluded."
+        elseif quest.awaitingFinalVerification then reason = reason .. "\nAttunement: awaiting final verification."
         elseif quest.confidence == "needsReview" then reason = reason .. "\nBeta data: needs in-game verification." end
         if quest.verification and quest.verification.conflict then reason = reason .. "\nSource conflict: " .. quest.verification.conflict end
         if #chainNotes > 0 then reason = reason .. "\nChain: " .. table.concat(chainNotes, " ") end
         row.reason:SetText(reason)
         row.tooltipText = (questStatus.stateReason or "") .. "\nPickup: " .. FormatLocation(quest.pickup) .. "\nTurn in: " .. FormatLocation(quest.turnIn)
+        if quest.awaitingFinalVerification then row.tooltipText=row.tooltipText .. "\nAttunement: awaiting final verification." end
         if #chainNotes > 0 then row.tooltipText = row.tooltipText .. "\nChain: " .. table.concat(chainNotes, " ") end
         local canShare, shareReason = false, "Only active or ready quests can be shared."
         if questStatus.state == "active" or questStatus.state == "ready" then
@@ -756,6 +784,7 @@ function UI:ShowTurnIns(preserveScroll)
         end
         row.rank:SetText(tostring(index) .. ".")
         row.title:SetText(string.format("%s - %d XP%s%s", item.quest.name, item.effectiveXp or 0, dingText, riskText))
+        if item.locationGrouped then row.title:SetText(row.title:GetText() .. " | same stop") end
         local dungeonName = item.dungeon and item.dungeon.name or "Unknown dungeon"
         local lossText = ""
         if item.xpLossOnLevel and item.xpLossOnLevel > 0 then
@@ -782,11 +811,73 @@ function UI:ShowTurnIns(preserveScroll)
     self.frame.turnInScroll:SetVerticalScroll(math.min(scroll, math.max(0, y - viewportHeight)))
     self.frame:Show()
 end
+function UI:ShowPickups(preserveScroll)
+    if not self.currentDungeonKey or not DQT.pickupRouteDungeons[self.currentDungeonKey] then return end
+    self:Create()
+    local scroll = preserveScroll and self.frame.turnInScroll:GetVerticalScroll() or 0
+    self.currentView = "pickups"
+    self:ClearRows()
+    self:UpdateNav()
+    self.frame.content:Hide()
+    self.frame.turnInScroll:Show()
+    local plan = DQT:GetDungeonPickupRoute(self.currentDungeonKey)
+    self.pickupPlan = plan
+    if DQT.PickupMap then DQT.PickupMap:SetRoute(plan) end
+    self.frame.pickupStart:SetText(plan.zones[1] or "No pickup stops")
+    self.frame.pickupStart:SetEnabled(false)
+    self.frame.subtitle:SetText(plan.dungeon.name .. " | Pickups | Level " .. tostring(plan.context.level or "?") .. " | " .. #plan.stops .. " stops")
+    self:FitContent()
+    self.frame.filterSummary.text:SetText("Pickups | Suggested order | Beta locations")
+    local entries = {}
+    for i, stop in ipairs(plan.stops) do
+        local names = {}
+        for _, entry in ipairs(stop.quests) do
+            names[#names+1] = (entry.preparation and "Preparation: " or "") .. entry.quest.name .. " (#" .. entry.questID .. ")" .. (entry.notes ~= "" and "\n" .. entry.notes or "")
+        end
+        entries[#entries+1] = {stop=stop, rank=tostring(i), title=FormatLocation(stop.location), detail=table.concat(names,"\n") .. (not stop.x and "\nNo coordinates; stop order provisional." or "")}
+    end
+    for _, group in ipairs({{plan.blocked,"Blocked"},{plan.inside,"Dungeon / item pickup"},{plan.unknown,"Unknown pickup"}}) do
+        for _, entry in ipairs(group[1]) do
+            entries[#entries+1] = {rank="-",title=group[2] .. ": " .. entry.quest.name, detail=FormatLocation(entry.quest.pickup) .. "\n" .. (entry.reason or "") .. (entry.notes ~= "" and "\n" .. entry.notes or "")}
+        end
+    end
+    if #entries == 0 then entries[1] = {rank="-",title="No missing pickups for your character.",detail="Active, ready and completed quests are excluded."} end
+    local y = 0
+    for i, entry in ipairs(entries) do
+        local row = self.frame.turnInRows[i]
+        if not row then row=CreateTurnInRow(self.frame.turnInContent,i); self.frame.turnInRows[i]=row end
+        row:SetWidth(contentWidth)
+        row.title:SetWidth(contentWidth-50)
+        row.detail:SetWidth(contentWidth-50)
+        row.rank:SetText(entry.rank)
+        row.title:SetText(entry.title)
+        row.detail:SetText(entry.detail)
+        row.detail:Show()
+        row.tooltipTitle, row.tooltipText = entry.title, entry.detail
+        row:SetScript("OnMouseUp", entry.stop and function(_,button)
+            if button == "LeftButton" and DQT.PickupMap then
+                local ok,reason=DQT.PickupMap:OpenStop(entry.stop)
+                if not ok and DEFAULT_CHAT_FRAME then DEFAULT_CHAT_FRAME:AddMessage("DQT: " .. reason) end
+            end
+        end or nil)
+        local height = math.max(40,row.title:GetStringHeight()+row.detail:GetStringHeight()+18)
+        row:SetHeight(height)
+        row:ClearAllPoints()
+        row:SetPoint("TOPLEFT",self.frame.turnInContent,"TOPLEFT",0,-y)
+        row:Show()
+        y=y+height+8
+    end
+    self.frame.turnInContent:SetHeight(math.max(viewportHeight,y))
+    self.frame.turnInScroll:SetVerticalScroll(math.min(scroll,math.max(0,y-viewportHeight)))
+    self.frame:Show()
+end
+
 function UI:RefreshCurrentDungeon()
     if not self.frame or not self.frame:IsShown() then return end
     if self.currentView == "options" then self:RefreshOptions(); return end
     if self.currentView == "list" then self:ShowDungeonList(true); return end
     if self.currentView == "turnins" then self:ShowTurnIns(true); return end
+    if self.currentView == "pickups" then self:ShowPickups(true); return end
     if not self.currentDungeonKey then return end
     local status = DQT:GetDisplayDungeonStatus(self.currentDungeonKey)
     if status then self:RenderChecklist(status) end

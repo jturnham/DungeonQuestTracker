@@ -25,7 +25,7 @@ for id, quest in pairs(DQT.quests) do
         assert(source == "Forever (outdated; unverified)", "Stale reward label: " .. id)
     end
 end
-assert(count == 12 and published == 30, "Only explicitly published post-update rewards supersede estimates: " .. count .. " estimates, " .. published .. " published")
+assert(count == 7 and published == 35, "Only explicitly published post-update rewards supersede estimates: " .. count .. " estimates, " .. published .. " published")
 assert(DQT.quests[5723].foreverXp == 2150 and DQT.quests[5723].xpReported, "RFC player report")
 assert(DQT.quests[387].classicXp == 2650 and DQT.quests[387].foreverXp == 5550, "Stockade baseline retained separately from published XP")
 assert(DQT.quests[386].foreverXp == 4200, "Stockade estimate")
@@ -40,5 +40,8 @@ assert(DQT.quests[92401].foreverXp == 4600, "Ruins player report")
 assert(DQT.quests[97288].foreverXp == 3450, "Ruins published reward")
 assert(DQT.quests[92422].foreverXp == 0 and not DQT.quests[92422].xpEstimate, "No fabricated XP for an unknown zero placeholder")
 assert(DQT.quests[96403].xpBaselineAssumed, "Hall uses comparable baseline")
+for id,xp in pairs({[96395]=2300,[96403]=2950,[96394]=2300,[96393]=3200,[6921]=6550,[6561]=7850}) do
+    assert(DQT.quests[id].foreverXp==xp and DQT.quests[id].xpPublished and not DQT.quests[id].xpEstimate,"October 7 exact-ID correction: " .. id)
+end
 assert(DQT:GetQuestRewardXP({partySupplied=true,foreverXp=99999,xpEstimate=true}) == 0, "Party XP never trusted")
 print("Passed XP: " .. count .. " remaining estimates, " .. published .. " published beta rewards, separately labelled player reports, New Plague 5450 XP and party XP excluded.")

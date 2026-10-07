@@ -128,6 +128,7 @@ function UI:CloseOptions()
     self.optionsOrigin = nil
     if origin.view == "checklist" and origin.key then DQT:OpenDungeon(origin.key)
     elseif origin.view == "turnins" then self:ShowTurnIns()
+    elseif origin.view == "pickups" then self.currentDungeonKey=origin.key; self:ShowPickups()
     else self:ShowDungeonList() end
 end
 function UI:RequestShareAll(key)

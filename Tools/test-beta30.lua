@@ -6,7 +6,7 @@ do
         for _, value in ipairs(DQT.dungeons[key].quests) do if value == id then return true end end
         return false
     end
-    for _, id in ipairs({95663,95682,95737,95809,98824,98823}) do
+    for _, id in ipairs({95663,95682,95737,95809,98824,98823,95795}) do
         assert(Contains("excavation-site-wetlands",id), "Wetlands chain not included")
         assert(not DQT.quests[id].foreverXp and not DQT.quests[id].classicXp, "No fabricated new-dungeon XP")
     end
@@ -15,16 +15,22 @@ do
     end
     assert(DQT.quests[6521].dungeon == "razorfen-downs" and Contains("razorfen-downs",6521), "Malcin belongs to Downs")
     assert(DQT.quests[95647].prerequisites[1].relationship == "breadcrumb", "Optional Caitlin lead-in must not lock direct pickup")
+    assert(DQT.quests[95795].followUpOf==95772 and DQT.quests[95795].prerequisites[1].questID==95772
+        and DQT.quests[95795].pickupType=="object","Fallen in the Fen follows Songblade Search at the body")
     assert(DQT.quests[6563].foreverXp == 1750 and DQT.quests[6563].xpReported, "Outside BFD objective has no fabricated bonus")
     local reports = 0
     for _, quest in pairs(DQT.quests) do if quest.xpReported then reports=reports+1 end end
     assert(reports == 16, "Quest-specific reports only; no inferred multiplier")
     local oldLog, oldFaction = C_QuestLog, UnitFactionGroup
-    C_QuestLog = {IsOnQuest=function(id) return id == 98823 or id == 6521 end, ReadyForTurnIn=function(id) return id == 98823 or id == 6521 end, IsQuestFlaggedCompleted=function() return false end}
+    C_QuestLog = {IsOnQuest=function(id) return id == 98823 or id == 6521 or id == 95795 end, ReadyForTurnIn=function(id) return id == 98823 or id == 6521 or id == 95795 end, IsQuestFlaggedCompleted=function() return false end}
     UnitFactionGroup = function() return "Horde" end
     local found = {}
     for _, entry in ipairs(DQT:GetGlobalTurnInPriority().quests) do found[entry.questID]=true end
     assert(found[98823] and found[6521], "Ready follow-ups reach global planner")
+    UnitFactionGroup=function() return "Alliance" end
+    found={}
+    for _, entry in ipairs(DQT:GetGlobalTurnInPriority().quests) do found[entry.questID]=true end
+    assert(found[95795],"Ready Fallen in the Fen reaches global planner")
     C_QuestLog, UnitFactionGroup = oldLog, oldFaction
 end
 print("Passed beta catalog: available dungeons, Wetlands continuations, distinct reported XP and ready follow-ups")

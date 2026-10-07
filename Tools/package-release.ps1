@@ -26,7 +26,7 @@ try {
             if ($name -match 'IMPLEMENTATION_CHECKLIST|(^|/)(Docs|Tools|\.git)/') { throw "Development file in archive: $name" }
         }
         $expected = @('DungeonQuestTrackerForever/DungeonQuestTrackerForever.toc', 'DungeonQuestTrackerForever/LICENSE')
-        $expected += @($toc | Where-Object { $_ -match '\.lua$' } | ForEach-Object { 'DungeonQuestTrackerForever/' + $_.Replace('\', '/') })
+        $expected += @($toc | Where-Object { $_ -match '\.(lua|xml)$' } | ForEach-Object { 'DungeonQuestTrackerForever/' + $_.Replace('\', '/') })
         foreach ($name in $expected) {
             if (-not ($entries | Where-Object { $_.FullName.Replace('\', '/') -eq $name })) { throw "Missing archive file: $name" }
         }

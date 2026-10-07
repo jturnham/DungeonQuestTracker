@@ -115,8 +115,8 @@ DQT.dungeons = {
         factions = { "Alliance", "Horde" },
         location = "Alterac Mountains, Dalaran",
         art = "Interface\\LFGFrame\\UI-LFG-BACKGROUND-TheVioletHold",
-        notes = "Quest details for this new dungeon haven't been confirmed yet. The checklist is empty for now; that doesn't mean there are no quests to find.",
-        quests = {},
+        notes = "Attunement information is awaiting final verification. Horde preparation starts in Tarren Mill; Alliance access is reported through Modera's image beside Lordamere Lake. Companion quests are not confirmed key requirements. Dungeon access, exact contacts, levels and XP still need beta-client confirmation.",
+        quests = {544,545,93680,556,557,92434,96984,92432,92458},
     },
     ["scarlet-monastery-graveyard"] = {
         name = "Scarlet Monastery: Graveyard",

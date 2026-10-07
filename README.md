@@ -59,7 +59,7 @@ Current tracked dungeon data includes:
 - The Stockade
 - Excavation Site: Wetlands (faction quests, lead-ins and return follow-ups; XP unknown)
 - Blackfathom Deeps
-- City of Dalaran (no quests recorded yet)
+- City of Dalaran (attunement awaiting final verification)
 - Scarlet Monastery: Graveyard
 - Gnomeregan
 - Scarlet Monastery: Library
@@ -79,13 +79,15 @@ Dungeon chains include catalogued follow-ups outside the instance: Hidden Enemie
 
 Quest records use [Forever quest listings](https://www.wowhead.com/forever/guide/dungeons/every-dungeon-quest-location) and database pages; old beta XP is sourced from [WCLBox](https://wowforever.wclbox.com/en/fuben). The [October 1 bonus reduction](https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-1/2360696) is modeled as normal XP plus half the previous bonus, not half the whole reward. Rewards, rounding, pickup locations and prerequisites still need beta-client confirmation.
 
-Excavation Site includes the eight faction-specific dungeon objectives plus lead-ins and the Heartwoven, Prehistoric Prism and Earthen Echo returns, reviewed October 3 against [individual quest records](https://www.wowhead.com/forever/quest=95809/heartwoven). XP is unknown and some contacts and levels remain provisional. Player comments report missing Titan Relics after the first turn-in; current build behavior needs confirmation. City of Dalaran remains an empty placeholder. Scarlet Monastery wings share relevant quests, but the global turn-in planner counts each quest once.
+Excavation Site includes faction-specific dungeon objectives, lead-ins and Heartwoven, Fallen in the Fen, Prehistoric Prism and Earthen Echo returns. XP is unknown and some contacts and levels remain provisional. Player comments report missing Titan Relics after the first turn-in; current build behavior needs confirmation. Scarlet Monastery wings share relevant quests, but the global turn-in planner counts each quest once.
+
+City of Dalaran includes nine preparation/dungeon quest records, explicitly **awaiting final verification**. Horde preparation starts with Magus Wordeen Voidglare in Tarren Mill, continuing through Dalaran Patrols and Key to the City to Blood in the Streets and the Horde Heart of Disruption. Keeper Bel'varil's Stone Tokens/Bracers of Binding branch is companion preparation, not an enforced key requirement. Alliance has An Alarming Request and its own Heart of Disruption quest ID at Modera's image beside Lordamere Lake; the referral is treated as optional pending confirmation. Unknown XP and coordinates are not invented. Reused outdoor minimum levels, exact contacts, prerequisite gates and actual dungeon access need client confirmation. [Attunement report](https://www.wowhead.com/news/how-to-become-attuned-to-city-of-dalaran-dungeon-as-horde-in-wow-forever-383256).
 
 Version 0.4.2 adds Razorfen Downs, Uldaman and Cathedral, and replaces sixteen XP estimates with quest-specific post-update observations from the [public dungeon quest spreadsheet](https://docs.google.com/spreadsheets/d/1-185bNiXoGX4kEoeeQ3DmJdSqN4ZavOKXgZNJTnwLlQ/edit). These show as `Forever (player reported)`, not locally verified rewards. Individual report levels/builds are absent, so base XP remains provisional. Other quests retain the October 1 estimate, a Classic fallback, or unknown XP; no bonus multiplier is inferred for unreported quests.
 
 ## Install
 
-Download `DungeonQuestTrackerForever-0.4.4.zip` from the [GitHub release](https://github.com/jturnham/DungeonQuestTracker/releases/tag/v0.4.4) and extract it into your World of Warcraft client's `Interface/AddOns` directory. The ZIP already contains the `DungeonQuestTrackerForever` folder; do not add an extra enclosing folder.
+Download `DungeonQuestTrackerForever-0.5.0.zip` from the [GitHub release](https://github.com/jturnham/DungeonQuestTracker/releases/tag/v0.5.0) and extract it into your World of Warcraft client's `Interface/AddOns` directory. The ZIP already contains the `DungeonQuestTrackerForever` folder; do not add an extra enclosing folder.
 
 When upgrading to the renamed addon, remove the old `DungeonQuestTracker` folder from `Interface/AddOns` before installing `DungeonQuestTrackerForever`, so only one copy loads. With WoW closed, copy `WTF/Account/<account>/SavedVariables/DungeonQuestTracker.lua` to `DungeonQuestTrackerForever.lua` to retain settings. Do not overwrite an existing new-name saved file. The internal `DungeonQuestTrackerDB` variable and `/dqt` command are retained for compatibility. The GitHub repository URL is unchanged.
 
@@ -149,6 +151,20 @@ Level gaps use the recommended range: its upper end for dungeons below you and l
 Reset Filters restores filter defaults, including gray/red filtering. Reset Minimap Position restores the button position without changing visibility. `/dqt minimap` toggles visibility directly. Completed in-range quests stay visible by default and unavailable quests are hidden. The earlier inactive range defaults are upgraded once; subsequent explicit choices persist across reloads.
 
 Party responses are on by default; automatic broadcasts and Share All confirmation are off. Automatic broadcasts have a five-second per-dungeon cooldown and do not request replies. Disabling status responses does not disable separately opted-in quest-data sync. If confirmation is enabled but its dialog is unavailable, Share All sends nothing.
+
+## Turn-In Location Grouping
+
+The Turn-ins view also prefers consecutive hand-ins at the same recorded zone/subzone (or exact recorded coordinates/NPC when the subzone is absent). This preference is subordinate to XP protection: a quest is moved forward only if none of the delayed hand-ins crosses the next projected level-up. The planner stops regrouping after that level-up because future-level XP thresholds are not verified, and retains the original order for unknown rewards or XP-to-level. Moved quests are marked `same stop` in full mode. This is location grouping, not an optimized inter-zone travel route; estimated rewards can still differ from the beta client.
+
+## Dungeon Pickup Routes
+
+On a higher-level dungeon checklist, click the map icon at the right of the navigation bar to open its pickup route. Back returns to that dungeon's checklist. Routes start in your current zone when it has eligible missing pickups, and the open route refreshes when you change zones. Within that zone, the first stop uses the largest nearby pickup cluster, not your exact player position. If the current zone has no eligible pickups or cannot be read, the route falls back to the largest nearby missing-pickup cluster across recorded zones, with faction-city tie-breaks. Faction-restricted and already-owned quests do not contribute. This is a coordinate heuristic, not physical travel distance or a cross-zone travel estimate. The starting-zone display is automatic rather than a manual selector; its tooltip explains the choice.
+
+Routes cover Shadowfang Keep, The Stockade, Blackfathom Deeps, Gnomeregan, Razorfen Kraul, Razorfen Downs, Uldaman, Excavation Site: Wetlands and all four Scarlet Monastery wings. They use your actual faction, class, race and level, not a fixed level-28 profile. Active, ready and completed quests are excluded. Missing prerequisite preparation, level-gated quests, dungeon/item pickups and unknown locations are distinguished from immediately available stops. Quest updates refresh the open route.
+
+Quests at the same recorded giver/location share a stop. Recorded coordinates suggest the order within each zone; up to seven positioned stops use an exact coordinate-space ordering, and larger sets use a bounded heuristic. This does not account for terrain, your exact starting position, the dungeon entrance or travel time. Other zones are alphabetical after the starting zone; boats, flights and cross-zone travel are not optimized. Unknown coordinates are ordered last within their zone, and beta locations remain unverified. Pickup routes are independent of checklist color filters and global XP turn-in priority.
+
+Click a pickup stop to open its zone map. Numbered world-map pins match the selected route's stop numbers; hover a pin for its giver and quests. Overlapping pickups within half a coordinate percentage point share a pin marked with a `+`; the tooltip lists each numbered stop and its quests separately. Pins update as quests are collected and only appear on their matching zone map. Locations without coordinates or an unambiguous client map remain text-only. Map matching currently uses English zone names. Map opening is deferred until out of combat, and unavailable map support leaves the list usable. No navigation addon is required, existing player waypoints are untouched, and route lines are not drawn. Pin placement still needs verification in the Forever beta client.
 
 ## Party Checking
 
@@ -239,11 +255,11 @@ From the repository root, create a tester zip that contains the `DungeonQuestTra
 .\Tools\package-release.ps1
 ```
 
-This produces `release/DungeonQuestTrackerForever-0.4.4.zip` and checks its version and folder layout. Testers can extract that zip directly into `Interface/AddOns`.
+This produces `release/DungeonQuestTrackerForever-0.5.0.zip` and checks its version and folder layout. Testers can extract that zip directly into `Interface/AddOns`.
 
 ## Development Notes
 
-- Current addon version: `0.4.4`.
+- Current addon version: `0.5.0`.
 - Current TOC interface: `16001`.
 - Saved variables live in `DungeonQuestTrackerDB`.
 - The UI intentionally uses native WoW frames and templates only, with no external addon library dependency yet.

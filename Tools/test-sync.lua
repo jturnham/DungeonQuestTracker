@@ -30,13 +30,14 @@ assert(DQT:GetQuest(id) == original, "Bundled data wins")
 DQT:InitializeQuestDataSync()
 assert(not DQT.db.partyQuestCache[id], "Bundled cache duplicate pruned")
 local fakeID = 999001
+local dalaranCount=#DQT.dungeons["city-of-dalaran"].quests
 decoded.name, decoded.dungeon = "Party test quest", "city-of-dalaran"
 DQT.db.partyQuestCache[fakeID] = decoded
 DQT:InitializeQuestDataSync()
-assert(#DQT:GetDungeon("city-of-dalaran").quests == 1, "Empty dungeon accepts supplemental quests")
-assert(#DQT.dungeons["city-of-dalaran"].quests == 0, "Bundled dungeon unchanged")
+assert(#DQT:GetDungeon("city-of-dalaran").quests == dalaranCount+1, "Dungeon accepts supplemental quests")
+assert(#DQT.dungeons["city-of-dalaran"].quests == dalaranCount, "Bundled dungeon unchanged")
 DQT:SetQuestDataSync("off")
-assert(#DQT:GetDungeon("city-of-dalaran").quests == 0 and not DQT:GetQuest(fakeID), "Disabled sync hides cache")
+assert(#DQT:GetDungeon("city-of-dalaran").quests == dalaranCount and not DQT:GetQuest(fakeID), "Disabled sync hides cache")
 DQT:SetQuestDataSync("on")
 DQT:ResetQuestDataTransfers()
 local originalSend = DQT.SendQuestDataMessage

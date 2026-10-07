@@ -72,6 +72,7 @@ do
         end
     end
     DQT:SortTurnIns(reference)
+    DQT:GroupTurnInsByLocation(reference,context)
     local previousCalls = calls
     calls = 0
     DQT.GetDungeonQuestStatus = function(self, ...) scans=scans+1; return oldStatus(self, ...) end

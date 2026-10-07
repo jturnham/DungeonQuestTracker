@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.5.0 - 2026-10-07
+
+- Add nine City of Dalaran attunement/preparation records for both factions, visibly awaiting final verification. Keep separate Heart of Disruption IDs, optional companion/referral branches, unknown XP/coordinates and explicit access/contact/level caveats. Enable its text pickup route and global ready turn-ins.
+- Review pending data corrections: replace four Hall of Thanes XP estimates with published post-update rewards, correct Amongst the Ruins to 6550 XP and source Horde Blackfathom Villainy at 7850 XP. Add Fallen in the Fen as the Songblade Search continuation with unknown XP. Document unresolved Hall/location conflicts and newly sourced Dalaran attunement coverage separately.
+- Index the client map hierarchy once per map root, cache ambiguous/missing map lookups, resolve each zone once per pin pass and reuse pickup plans across map redraws until quest, level, XP, zone or DQT party-data events invalidate them. Precompute within-zone route distances and avoid a redundant global cluster scan when local pickups exist.
+- Start pickup routes in the player's current zone when eligible pickups are present, refresh on zone changes and replace manual zone selection with an automatic starting-zone display. Retain cluster selection as a fallback where no local pickups exist.
+- Group overlapping pickup map pins, mark shared locations with a plus sign and show each numbered quest giver and its quests in separate tooltip sections.
+- Add numbered world-map pickup pins with quest-giver tooltips and click-to-open pickup stops. Resolve zone maps from the client hierarchy, omit ambiguous/unpositioned locations, refresh on quest changes and keep existing user waypoints untouched. Beta-client verification is still required.
+- Use nearby eligible missing-quest clusters and faction-city tie-breaks for pickup-start fallback and within-zone ordering.
+
+- Keep ready turn-ins at the same recorded area together when cumulative XP permits, without delaying another quest across a projected level-up. Preserve the original XP-priority order when future thresholds, rewards or locations are unknown.
+
+- Add a pickup-route view for thirteen dungeon entries including provisional Dalaran preparation, using character eligibility and completion state, shared giver stops, known prerequisite preparation and separate blocked/dungeon/unmapped tasks.
+- Suggest pickup ordering within each zone from recorded coordinates, with current-zone starts and live quest refresh. Cross-zone travel, terrain, exact start position and entrance arrival are not optimized.
+- Add level-28 Horde/Alliance route, state, coordinate-order, UI, compact-mode and navigation regressions.
+
 ## 0.4.4 - 2026-10-04
 
 - Audit single-copy named-mob quest drops across the catalogue and expand reminders for Ragefire Chasm, Deadmines, Wailing Caverns, Blackfathom Deeps, Hall of Thanes, Wetlands, Gnomeregan, Razorfen Kraul, Razorfen Downs and Uldaman, plus named-mob chain objectives outside instances.

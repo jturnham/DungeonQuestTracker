@@ -100,12 +100,12 @@ for _, faction in ipairs({ "Alliance", "Horde" }) do
         assert(DQT:GetDungeonQuestStatus(keys[index]), "Missing status")
     end
     local wetlands = DQT:GetDungeonQuestStatus("excavation-site-wetlands")
-    assert(#wetlands.quests == (faction == "Horde" and 5 or 8), "Wetlands faction coverage")
+    assert(#wetlands.quests == (faction == "Horde" and 5 or 9), "Wetlands faction coverage")
     for _, row in ipairs(wetlands.quests) do
         assert(DQT:GetQuestRewardXP(row.quest) == 0, "Unknown Wetlands XP not fabricated")
         assert(not DQT:IsQuestGray(row.quest, {level=30}) and not DQT:IsQuestRed(row.quest, {level=18}), "Provisional quest level not used for color exclusion")
     end
-    assert(#DQT:GetDungeonQuestStatus("city-of-dalaran").quests == 0)
+    assert(#DQT:GetDungeonQuestStatus("city-of-dalaran").quests == (faction=="Horde" and 7 or 2),"Dalaran faction attunement coverage")
 end
 player.faction = "Horde"
 player.race = "Scourge"
@@ -140,7 +140,7 @@ end
 
 DQT.UI:ShowDungeonList()
 assert(DQT.UI.frame.dungeonContent.height > 470, "Dungeon list should scroll")
-DQT.UI:ShowDungeon(DQT:GetDungeonQuestStatus("city-of-dalaran"))
+DQT.UI:ShowDungeon({key="city-of-dalaran",dungeon=DQT.dungeons["city-of-dalaran"],quests={},turnIns={}})
 assert(DQT.UI.frame.emptyMessage.shown and DQT.UI.frame.emptyMessage.text:match("No quests recorded"))
 player.faction = "Alliance"
 DQT.UI:ShowDungeon(DQT:GetDungeonQuestStatus("scarlet-monastery-graveyard"))

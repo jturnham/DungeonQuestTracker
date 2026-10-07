@@ -181,6 +181,7 @@ end
 
 -- These pages explicitly identify rewards from the October 1 level-30 build.
 local publishedXP = {
+    ["hall-of-thanes"] = { [96395]=2300, [96403]=2950, [96394]=2300, [96393]=3200 },
     ["ragefire-chasm"] = { [5724]=2950 },
     ["ruins-of-lordaeron"] = {
         [95250]=3900, [95195]=6200, [92415]=6200, [95189]=6200,
@@ -190,7 +191,7 @@ local publishedXP = {
     ["the-deadmines"] = { [214]=2950, [166]=6200, [2040]=3700 },
     ["blackfathom-deeps"] = {
         [971]=6550, [1200]=7850, [1199]=6050,
-        [6564]=1300, [6565]=6300, [6921]=7850,
+        [6564]=1300, [6565]=6300, [6921]=6550, [6561]=7850,
     },
     ["the-stockade"] = { [391]=4950, [386]=4200, [377]=4400, [387]=5550, [388]=5550 },
     ["gnomeregan"] = { [2904]=5800, [2922]=4750, [2926]=3950, [2928]=4400, [2962]=4400 },
@@ -206,6 +207,10 @@ for dungeon, rewards in pairs(publishedXP) do
         quest.xpSource = source
         quest.sourceURLs[#quest.sourceURLs+1] = source
         quest.verification.xpReview = "2026-10-04: individual published reward from the October 1 level-30 build."
+        if dungeon == "hall-of-thanes" or id == 6921 or id == 6561 then
+            quest.verification.xpReview = "2026-10-07: matched quest ID and individual reward on the current quest and dungeon pages, attributed to the October 1 level-30 build."
+            quest.sourceURLs[#quest.sourceURLs+1] = "https://wowforever.wclbox.com/en/renwu/" .. id
+        end
         quest.verification.xp = "WCLBox published beta reward, not independently verified in our client. Character level and observation details are not recorded per quest; current reward and overlevel scaling remain provisional."
     end
 end
@@ -216,5 +221,16 @@ for id, quest in pairs(DQT.quests) do
         quest.questLevelUnverified = true
         quest.verification.sourceReview = "2026-10-03: added Open the Maw, Dragonmaw Rumors, Seeking Caitlin and three return follow-ups; revised provisional quest levels from community records."
         quest.sourceURLs[#quest.sourceURLs+1] = reportedSource
+    end
+end
+-- Targeted review supersedes the general Wetlands catalog review above.
+DQT.quests[95795].verification.sourceReview = "2026-10-07: quest ID, body pickup, Lakeshire return and Songblade Search continuation checked against Wowhead and WCLBox. Beta-client confirmation pending."
+DQT.quests[95795].sourceURLs[#DQT.quests[95795].sourceURLs+1] = "https://wowforever.wclbox.com/en/renwu/95795"
+for id,quest in pairs(DQT.quests) do
+    if quest.awaitingFinalVerification then
+        quest.verification.sourceReview="2026-10-07: sourced Dalaran attunement; awaiting final verification in the Forever client."
+        quest.verification.xp="Unknown Forever XP; no Classic reward or dungeon bonus assumed."
+        quest.verification.level="Level 24 is reported for the new attunement steps; reused outdoor minimum levels and provisional level 33 need final verification."
+        quest.verification.conflict="Awaiting final verification: contact positions, prerequisite gates, optional companion branches and dungeon access. No map coordinates or XP invented."
     end
 end
