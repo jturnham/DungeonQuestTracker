@@ -81,13 +81,13 @@ Quest records use [Forever quest listings](https://www.wowhead.com/forever/guide
 
 Excavation Site includes faction-specific dungeon objectives, lead-ins and Heartwoven, Fallen in the Fen, Prehistoric Prism and Earthen Echo returns. XP is unknown and some contacts and levels remain provisional. Player comments report missing Titan Relics after the first turn-in; current build behavior needs confirmation. Scarlet Monastery wings share relevant quests, but the global turn-in planner counts each quest once.
 
-City of Dalaran includes seventeen preparation, dungeon and follow-up records, with uncertain details explicitly **awaiting final verification**. Horde preparation starts with Magus Wordeen Voidglare in Tarren Mill, continuing through Dalaran Patrols and Key to the City to Blood in the Streets and Heart of Disruption. Keeper Bel'varil's branch is optional. Only one keyholder needs to open the gate for the group; obtaining your own key is not a personal entry requirement for every member. Alliance can approach Modera's image beside Lordamere Lake; An Alarming Request is treated as an optional referral. Both factions' dungeon objectives and continuations to Archmage Celindra are tracked. Unknown XP and coordinates are not invented; exact contacts, quest levels and chain gates still need client confirmation. [Current Dalaran guide](https://www.wowhead.com/forever/guide/city-of-dalaran-dungeon-overview-location-rewards).
+City of Dalaran includes fifteen preparation, dungeon and follow-up records, with uncertain details explicitly **awaiting final verification**. Horde preparation starts with Magus Wordeen Voidglare in Tarren Mill, continuing through Dalaran Patrols and Key to the City to Blood in the Streets and Heart of Disruption. Stone Tokens and Bracers of Binding are unrelated outdoor quests and are excluded. Only one keyholder needs to open the gate for the group; obtaining your own key is not a personal entry requirement for every member. Alliance can approach Modera's image beside Lordamere Lake; An Alarming Request is treated as an optional referral. Both factions' dungeon objectives and continuations to Archmage Celindra are tracked. Unknown XP and coordinates are not invented; exact contacts, quest levels and chain gates still need client confirmation. [Current Dalaran guide](https://www.wowhead.com/forever/guide/city-of-dalaran-dungeon-overview-location-rewards).
 
 Version 0.4.2 adds Razorfen Downs, Uldaman and Cathedral, and replaces sixteen XP estimates with quest-specific post-update observations from the [public dungeon quest spreadsheet](https://docs.google.com/spreadsheets/d/1-185bNiXoGX4kEoeeQ3DmJdSqN4ZavOKXgZNJTnwLlQ/edit). These show as `Forever (player reported)`, not locally verified rewards. Individual report levels/builds are absent, so base XP remains provisional. Other quests retain the October 1 estimate, a Classic fallback, or unknown XP; no bonus multiplier is inferred for unreported quests.
 
 ## Install
 
-Download `DungeonQuestTrackerForever-0.5.1.zip` from the [GitHub release](https://github.com/jturnham/DungeonQuestTracker/releases/tag/v0.5.1) and extract it into your World of Warcraft client's `Interface/AddOns` directory. The ZIP already contains the `DungeonQuestTrackerForever` folder; do not add an extra enclosing folder.
+Download `DungeonQuestTrackerForever-0.5.2.zip` from the [GitHub release](https://github.com/jturnham/DungeonQuestTracker/releases/tag/v0.5.2) and extract it into your World of Warcraft client's `Interface/AddOns` directory. The ZIP already contains the `DungeonQuestTrackerForever` folder; do not add an extra enclosing folder.
 
 When upgrading to the renamed addon, remove the old `DungeonQuestTracker` folder from `Interface/AddOns` before installing `DungeonQuestTrackerForever`, so only one copy loads. With WoW closed, copy `WTF/Account/<account>/SavedVariables/DungeonQuestTracker.lua` to `DungeonQuestTrackerForever.lua` to retain settings. Do not overwrite an existing new-name saved file. The internal `DungeonQuestTrackerDB` variable and `/dqt` command are retained for compatibility. The GitHub repository URL is unchanged.
 
@@ -255,11 +255,11 @@ From the repository root, create a tester zip that contains the `DungeonQuestTra
 .\Tools\package-release.ps1
 ```
 
-This produces `release/DungeonQuestTrackerForever-0.5.1.zip` and checks its version and folder layout. Testers can extract that zip directly into `Interface/AddOns`.
+This produces `release/DungeonQuestTrackerForever-0.5.2.zip` and checks its version and folder layout. Testers can extract that zip directly into `Interface/AddOns`.
 
 ## Development Notes
 
-- Current addon version: `0.5.1`.
+- Current addon version: `0.5.2`.
 - Current TOC interface: `16001`.
 - Saved variables live in `DungeonQuestTrackerDB`.
 - The UI intentionally uses native WoW frames and templates only, with no external addon library dependency yet.

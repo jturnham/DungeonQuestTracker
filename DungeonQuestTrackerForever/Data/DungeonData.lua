@@ -116,7 +116,7 @@ DQT.dungeons = {
         location = "Alterac Mountains, Dalaran",
         art = "Interface\\LFGFrame\\UI-LFG-BACKGROUND-TheVioletHold",
         notes = "Open for beta testing since October 8. Horde players can obtain a sewer key through Magus Voidglare's Tarren Mill chain; only one keyholder needs to open the gate for the group. Alliance players can approach Modera's image beside Lordamere Lake. Keeper Bel'varil's companion quests are optional. Exact contacts, quest levels and XP await final client verification.",
-        quests = {544,545,93680,556,557,92434,96984,97287,96986,96988,96987,92432,92458,92459,92489,92456,92457},
+        quests = {544,545,93680,92434,96984,97287,96986,96988,96987,92432,92458,92459,92489,92456,92457},
     },
     ["scarlet-monastery-graveyard"] = {
         name = "Scarlet Monastery: Graveyard",

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.2 - 2026-10-09
+
+- Remove Stone Tokens and Bracers of Binding from Dalaran tracking: neither belongs to the dungeon or its required key chain.
+- Recheck Dalaran quest coverage and add default-filter visibility tests for The Grave Knight's missing, active, ready and completed states.
+
 ## 0.5.1 - 2026-10-09
 
 - Add six City of Dalaran dungeon quests for Horde and Alliance, plus Shrewd Negotiations and Friend of the Kirin Tor as grouped Heart of Disruption continuations. Include faction-aware pickups and ready turn-ins.

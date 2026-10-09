@@ -1,9 +1,35 @@
 do
     local oldLog,oldFaction=C_QuestLog,UnitFactionGroup
-    local complete,ready={},{}
-    C_QuestLog={IsQuestFlaggedCompleted=function(id) return complete[id] end,IsOnQuest=function(id) return ready[id] end,ReadyForTurnIn=function(id) return ready[id] end}
+    local complete,ready,active={},{},{}
+    C_QuestLog={IsQuestFlaggedCompleted=function(id) return complete[id] end,IsOnQuest=function(id) return active[id] or ready[id] end,ReadyForTurnIn=function(id) return ready[id] end}
     UnitFactionGroup=function() return "Horde" end
     local context=DQT:GetPlayerContext(); context.level=28; context.faction="Horde"
+    assert(not DQT.quests[556] and not DQT.quests[557],"Unrelated outdoor quests excluded from bundled dungeon catalog")
+    local oldDB=DQT.db
+    DQT.db={options={}}
+    local function GraveState(expected)
+        local matches=0
+        for _,row in ipairs(DQT:GetDisplayDungeonStatus("city-of-dalaran",context).quests) do
+            assert(row.questID~=556 and row.questID~=557,"Unrelated outdoor quests absent from checklist")
+            if row.questID==96986 then
+                matches=matches+1
+                assert(row.state==expected,"Grave Knight checklist state")
+            end
+        end
+        assert(matches==1,"Grave Knight visible once with default filters at level 28")
+    end
+    GraveState("missing")
+    active[96986]=true
+    GraveState("active")
+    active[96986]=nil
+    ready[96986]=true
+    GraveState("ready")
+    ready[96986]=nil
+    complete[96986]=true
+    DQT:SetOption("filters.showCompleted",true)
+    GraveState("completed")
+    complete[96986]=nil
+    DQT.db=oldDB
     local function HasPickup(route,id)
         for _,stop in ipairs(route.stops) do
             for _,entry in ipairs(stop.quests) do if entry.questID==id then return true end end

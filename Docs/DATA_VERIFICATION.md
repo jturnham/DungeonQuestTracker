@@ -113,6 +113,12 @@ The updated key walkthrough omits Keeper Bel'varil's branch; those records remai
 
 Sources: [Blizzard October 8 notes](https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-8/2360696/5), [current Dalaran guide](https://www.wowhead.com/forever/guide/city-of-dalaran-dungeon-overview-location-rewards), [Horde continuation](https://www.wowhead.com/forever/quest=97287/shrewd-negotiations), [Alliance continuation](https://www.wowhead.com/forever/quest=92459/friend-of-the-kirin-tor), [dungeon listings](https://wowforever.wclbox.com/en/fuben). No other source-backed catalog correction identified in this pass; this is not a claim of complete in-client verification.
 
+## Dalaran Follow-Up Audit - October 9
+
+Rechecked all eight faction-specific dungeon objective IDs linked by the current Dalaran guide: Horde 96986, 96988, 96987, 96984; Alliance 92489, 92458, 92456, 92457. Both post-dungeon continuations remain tracked. No additional sourced dungeon objective was found. The Grave Knight 96986 is already in release 0.5.1; the missing-quest report came from a tester running 0.5.0. Added default-filter checklist tests for its missing, active, ready and completed states at level 28.
+
+Removed outdoor companion quests 556 Stone Tokens and 557 Bracers of Binding entirely from the dungeon catalog rather than continuing to recommend them. They are not part of the current key walkthrough or a prerequisite for Blood in the Streets. Current totals: 205 quests, 18 dungeon entries; Dalaran has 15 records (9 Horde, 6 Alliance), including real key preparation and follow-ups. XP and remaining location/level/contact uncertainties are unchanged. The correction is local and does not modify the published 0.5.1 archive.
+
 ## Received Records
 
 Party-supplied records are unverified and stored separately. They contain only bounded descriptive fields and restrictions, not executable Lua or XP rewards. Their sender/version identifies provenance, not trust. An updated bundled catalog replaces their effective record automatically. They cannot supply a new dungeon or propagate to another party.

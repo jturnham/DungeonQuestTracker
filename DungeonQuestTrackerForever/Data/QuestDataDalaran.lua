@@ -1,7 +1,6 @@
 local _, DQT = ...
 local source="https://www.wowhead.com/forever/guide/city-of-dalaran-dungeon-overview-location-rewards"
 local magus={name="Magus Wordeen Voidglare",zone="Hillsbrad Foothills",subzone="Tarren Mill"}
-local keeper={name="Keeper Bel'varil",zone="Hillsbrad Foothills",subzone="Tarren Mill"}
 local modera={name="Image of Archmage Modera",zone="Alterac Mountains",subzone="Outside Dalaran, beside Lordamere Lake (confirm exact position)"}
 local celindra={name="Archmage Celindra",zone="City of Dalaran",subzone="Violet Citadel (confirm exact position)"}
 local melisara={name="Melisara",zone="Hillsbrad Foothills",subzone="Tarren Mill"}
@@ -13,8 +12,6 @@ local records={
     [544]={name="Prison Break In",faction="Horde",pickup=magus,turnIn=magus,objectives="Recover the traitors' bloodstone artifacts at Lordamere Internment Camp and return to Tarren Mill."},
     [545]={name="Dalaran Patrols",faction="Horde",followUpOf=544,pickup=magus,turnIn=magus,objectives="Kill 6 Dalaran Summoners and 12 Elemental Slaves, then return to Tarren Mill.",prerequisites={{questID=544,relationship="required",note="Complete Prison Break In first; exact Forever chain requirements await final verification."}}},
     [93680]={name="Key to the City",faction="Horde",pickup=magus,turnIn=magus,objectives="Recover the Grimy Key from the Dalaran camps for Magus Wordeen Voidglare."},
-    [556]={name="Stone Tokens",faction="Horde",pickup=keeper,turnIn=keeper,objectives="Collect 10 Worn Stone Tokens. Companion preparation: a player report says Keeper Bel'varil's quests are not required for the sewer key; awaiting final verification."},
-    [557]={name="Bracers of Binding",faction="Horde",followUpOf=556,pickup=keeper,turnIn=keeper,objectives="Collect 4 Bracers of Earth Binding. Companion preparation, not treated as a mandatory sewer-key prerequisite.",prerequisites={{questID=556,relationship="required",note="Complete Stone Tokens before this companion quest; awaiting final verification."}}},
     [92434]={name="Blood in the Streets",faction="Horde",followUpOf=545,pickup=magus,turnIn=modera,objectives="Take the key to the sewer approach along Lordamere Lake and speak to Modera's image.",prerequisites={
         {questID=545,relationship="required",note="Complete Magus Voidglare's patrol branch; awaiting final verification."},
         {questID=93680,relationship="required",note="Recover and turn in the Grimy Key; awaiting final verification."},
