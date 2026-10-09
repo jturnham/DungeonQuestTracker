@@ -228,9 +228,9 @@ DQT.quests[95795].verification.sourceReview = "2026-10-07: quest ID, body pickup
 DQT.quests[95795].sourceURLs[#DQT.quests[95795].sourceURLs+1] = "https://wowforever.wclbox.com/en/renwu/95795"
 for id,quest in pairs(DQT.quests) do
     if quest.awaitingFinalVerification then
-        quest.verification.sourceReview="2026-10-07: sourced Dalaran attunement; awaiting final verification in the Forever client."
+        quest.verification.sourceReview="2026-10-09: Dalaran guide and individual Forever quest IDs reviewed; dungeon opening confirmed by October 8 Blizzard notes. Awaiting final client verification."
         quest.verification.xp="Unknown Forever XP; no Classic reward or dungeon bonus assumed."
         quest.verification.level="Level 24 is reported for the new attunement steps; reused outdoor minimum levels and provisional level 33 need final verification."
-        quest.verification.conflict="Awaiting final verification: contact positions, prerequisite gates, optional companion branches and dungeon access. No map coordinates or XP invented."
+        quest.verification.conflict="Awaiting final verification: contact positions and prerequisite gates. Keeper Bel'varil's branch is optional; only one keyholder is needed to open the group entrance. No map coordinates or XP invented."
     end
 end

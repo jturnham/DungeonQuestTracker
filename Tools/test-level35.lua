@@ -105,7 +105,7 @@ for _, faction in ipairs({ "Alliance", "Horde" }) do
         assert(DQT:GetQuestRewardXP(row.quest) == 0, "Unknown Wetlands XP not fabricated")
         assert(not DQT:IsQuestGray(row.quest, {level=30}) and not DQT:IsQuestRed(row.quest, {level=18}), "Provisional quest level not used for color exclusion")
     end
-    assert(#DQT:GetDungeonQuestStatus("city-of-dalaran").quests == (faction=="Horde" and 7 or 2),"Dalaran faction attunement coverage")
+    assert(#DQT:GetDungeonQuestStatus("city-of-dalaran").quests == (faction=="Horde" and 11 or 6),"Dalaran faction quest and continuation coverage")
 end
 player.faction = "Horde"
 player.race = "Scourge"

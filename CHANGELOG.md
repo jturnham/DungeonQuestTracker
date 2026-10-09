@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.1 - 2026-10-09
+
+- Add six City of Dalaran dungeon quests for Horde and Alliance, plus Shrewd Negotiations and Friend of the Kirin Tor as grouped Heart of Disruption continuations. Include faction-aware pickups and ready turn-ins.
+- Refresh Dalaran access notes following the October 8 opening: one keyholder can open the group entrance; Keeper Bel'varil's companion branch and the Alliance referral are optional. Update the recommended range to 28-34.
+- Review current dungeon sources without applying the creature-kill XP increase to quest rewards. Dalaran XP, exact coordinates, outdoor level assumptions and remaining contact/chain details await client confirmation. Quest XP values remain in flux and will be updated as reliable information becomes available.
+- Add regression coverage for level-28 pickups, independent dungeon quests, prerequisite gates and both factions' follow-up turn-ins.
+
 ## 0.5.0 - 2026-10-07
 
 - Add nine City of Dalaran attunement/preparation records for both factions, visibly awaiting final verification. Keep separate Heart of Disruption IDs, optional companion/referral branches, unknown XP/coordinates and explicit access/contact/level caveats. Enable its text pickup route and global ready turn-ins.

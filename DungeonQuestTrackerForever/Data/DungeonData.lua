@@ -111,12 +111,12 @@ DQT.dungeons = {
     ["city-of-dalaran"] = {
         name = "City of Dalaran",
         minLevel = 28,
-        recommendedLevel = "28-33",
+        recommendedLevel = "28-34",
         factions = { "Alliance", "Horde" },
         location = "Alterac Mountains, Dalaran",
         art = "Interface\\LFGFrame\\UI-LFG-BACKGROUND-TheVioletHold",
-        notes = "Attunement information is awaiting final verification. Horde preparation starts in Tarren Mill; Alliance access is reported through Modera's image beside Lordamere Lake. Companion quests are not confirmed key requirements. Dungeon access, exact contacts, levels and XP still need beta-client confirmation.",
-        quests = {544,545,93680,556,557,92434,96984,92432,92458},
+        notes = "Open for beta testing since October 8. Horde players can obtain a sewer key through Magus Voidglare's Tarren Mill chain; only one keyholder needs to open the gate for the group. Alliance players can approach Modera's image beside Lordamere Lake. Keeper Bel'varil's companion quests are optional. Exact contacts, quest levels and XP await final client verification.",
+        quests = {544,545,93680,556,557,92434,96984,97287,96986,96988,96987,92432,92458,92459,92489,92456,92457},
     },
     ["scarlet-monastery-graveyard"] = {
         name = "Scarlet Monastery: Graveyard",
