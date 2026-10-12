@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.5.3 - 2026-10-12
 
 - Keep the entire Docs directory local-only and remove previously tracked research/testing files without deleting local copies.
 - Add Classic-source dungeon quest coverage beyond the original beta range, including class objectives and return chains. Forever rewards and changed eligibility remain unverified.
