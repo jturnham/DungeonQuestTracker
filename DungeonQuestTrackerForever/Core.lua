@@ -99,15 +99,20 @@ end
 function DQT:GetQuestLogIndexByQuestName(questName, questID)
     if not questName then return nil end
     local wanted = NormalizeQuestTitle(questName)
-    local ambiguous = false
-    if questID then
-        for id, quest in pairs(self.quests or {}) do
-            if id ~= questID and NormalizeQuestTitle(quest.name) == wanted then ambiguous = true; break end
-        end
-    end
+    local ambiguous
     local function Matches(title, id, isHeader)
-        if isHeader or NormalizeQuestTitle(title) ~= wanted then return false end
+        if isHeader then return false end
         if questID and type(id) == "number" and id > 0 then return id == questID end
+        if NormalizeQuestTitle(title) ~= wanted then return false end
+        -- Only title-only clients need the catalogue-wide ambiguity check.
+        if ambiguous == nil then
+            ambiguous = false
+            if questID then
+                for otherID, quest in pairs(self.quests or {}) do
+                    if otherID ~= questID and NormalizeQuestTitle(quest.name) == wanted then ambiguous = true; break end
+                end
+            end
+        end
         return not ambiguous
     end
 
@@ -282,9 +287,16 @@ function DQT:GetOrderedDungeonKeys()
             seen[key] = true
         end
     end
+    local remaining = {}
     for key in pairs(self.dungeons or {}) do
-        if not seen[key] then table.insert(keys, key) end
+        if not seen[key] then table.insert(remaining, key) end
     end
+    table.sort(remaining, function(a, b)
+        local left, right = self.dungeons[a], self.dungeons[b]
+        if left.minLevel ~= right.minLevel then return left.minLevel < right.minLevel end
+        return left.name < right.name
+    end)
+    for _, key in ipairs(remaining) do table.insert(keys, key) end
     return keys
 end
 

@@ -32,6 +32,10 @@ for id, quest in pairs(DQT.quests) do
         end
     end
     quest.shareability = { assumption="clientDetermined", note="The client's pushable flag is authoritative; recipient eligibility can still block acceptance." }
+    if quest.classicSourceOnly then
+        quest.verification.sourceReview = "2026-10-12: Classic database coverage, including class and return-chain records. Forever availability, levels, rewards and chain changes await client verification."
+        if quest.classRequirementInferred then quest.verification.classes = "Dungeon-set branch inferred from the named class armour rewards; verify Forever eligibility." end
+    end
     local pickup = ((quest.pickup and quest.pickup.subzone) or ""):lower()
     quest.pickupType = quest.pickupType or (pickup:find("drop", 1, true) and "drop" or "npc")
     for _, prerequisite in ipairs(quest.prerequisites or {}) do

@@ -105,4 +105,23 @@ do
     assert(checks[100001] == 2 and checks[100002] == 2, "Prerequisite traversal never caches across refreshes")
     for name, fn in pairs(saved) do DQT[name]=fn end
 end
-print("Passed performance: context reuse, unique quest scans, shared prerequisite traversal, equivalent planner output, search scan counts and event coalescing.")
+do
+    local oldQuests, oldLog, oldTitle, oldCount = DQT.quests, C_QuestLog, GetQuestLogTitle, GetNumQuestLogEntries
+    GetQuestLogTitle, GetNumQuestLogEntries = nil, nil
+    DQT.quests = {[1]=setmetatable({}, {__index=function() error("ID lookup must not scan catalogue titles") end})}
+    C_QuestLog = {
+        GetNumQuestLogEntries=function() return 1 end,
+        GetInfo=function() return {title="Changed beta title",questID=42} end,
+    }
+    assert(DQT:GetQuestLogIndexByQuestName("Classic source title",42) == 1, "Exact IDs are authoritative despite beta title changes")
+    C_QuestLog.GetNumQuestLogEntries = function() return 0 end
+    assert(not DQT:GetQuestLogIndexByQuestName("Classic source title",42), "Empty logs do not scan the catalogue")
+    C_QuestLog.GetNumQuestLogEntries = function() return 1 end
+    C_QuestLog.GetInfo = function() return {title="Same name"} end
+    DQT.quests = {[42]={name="Same name"},[43]={name="Same name"}}
+    assert(not DQT:GetQuestLogIndexByQuestName("Same name",42), "Ambiguous title-only logs remain unsafe")
+    DQT.quests[43] = nil
+    assert(DQT:GetQuestLogIndexByQuestName("Same name",42) == 1, "Unique legacy titles still work")
+    DQT.quests, C_QuestLog, GetQuestLogTitle, GetNumQuestLogEntries = oldQuests, oldLog, oldTitle, oldCount
+end
+print("Passed performance: lazy title ambiguity checks, context reuse, unique quest scans, shared prerequisite traversal, equivalent planner output, search scan counts and event coalescing.")

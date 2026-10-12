@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Keep the entire Docs directory local-only and remove previously tracked research/testing files without deleting local copies.
+- Add Classic-source dungeon quest coverage beyond the original beta range, including class objectives and return chains. Forever rewards and changed eligibility remain unverified.
+- Add remaining announced Forever dungeon placeholders without inventing unavailable quest lists.
+- Add coverage checks for ready dungeon turn-ins at level 60; no level-35 runtime cap applies.
+- Avoid catalogue-wide title scans when quest-log IDs are available, including renamed beta quests; retain safe legacy title-only matching.
+
 ## 0.5.2 - 2026-10-09
 
 - Remove Stone Tokens and Bracers of Binding from Dalaran tracking: neither belongs to the dungeon or its required key chain.

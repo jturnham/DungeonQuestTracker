@@ -95,7 +95,7 @@ DQT.dungeons = {
         factions = { "Alliance", "Horde" },
         location = "Wetlands, above Whelgar's Excavation Site",
         art = "Interface\\LFGFrame\\UI-LFG-BACKGROUND-Uldaman",
-        notes = "Pick up quests from level 24; beta patch notes recommend 26-31. Caitlin's Ashenvale lead-in is optional. The Titan Relic from the final boss starts faction-specific return chains. Rewards and some contacts remain unconfirmed, and players have reported a missing-relic bug after the first turn-in.",
+        notes = "Pick up quests from level 24; beta patch notes recommend 26-31. Caitlin's Ashenvale lead-in is optional. The Titan Relic starts faction-specific return chains and is returned for the next step after the first turn-in. Rewards and some contacts still need confirmation.",
         quests = {95697,95664,98815,95772,95646,95647,95810,95663,95682,95737},
     },
     ["blackfathom-deeps"] = {
@@ -169,6 +169,41 @@ DQT.dungeons = {
         quests = { 1113, 1048, 1053 },
     },
 }
+
+-- Empty coverage placeholders, not verified Forever quest or entry-level data.
+local placeholders = {
+    {"the-drowned-city", "The Drowned City", 35, 40},
+    {"kroldok-stronghold", "Krol'dok Stronghold", 40, 45},
+    {"zul-farrak", "Zul'Farrak", 44, 54},
+    {"maraudon", "Maraudon", 46, 55},
+    {"alcaz-prison", "Alcaz Prison", 48, 53},
+    {"sunken-temple", "The Sunken Temple", 50, 60},
+    {"blackrock-depths", "Blackrock Depths", 52, 60},
+    {"dire-maul-east", "Dire Maul: East", 54, 60},
+    {"lower-blackrock-spire", "Lower Blackrock Spire", 55, 60},
+    {"blackmaw-hold", "Blackmaw Hold", 55, 60},
+    {"dire-maul-north", "Dire Maul: North", 56, 60},
+    {"dire-maul-west", "Dire Maul: West", 56, 60},
+    {"scholomance", "Scholomance", 58, 60},
+    {"stratholme-main-gate", "Stratholme: Main Gate", 58, 60},
+    {"stratholme-service-gate", "Stratholme: Service Gate", 58, 60},
+    {"shapers-terrace", "Shaper's Terrace", 58, 60},
+    {"upper-blackrock-spire", "Upper Blackrock Spire", 59, 60},
+}
+local announced = {
+    ["the-drowned-city"]=true, ["kroldok-stronghold"]=true,
+    ["alcaz-prison"]=true, ["blackmaw-hold"]=true, ["shapers-terrace"]=true,
+}
+for _, row in ipairs(placeholders) do
+    DQT.dungeons[row[1]] = {
+        name=row[2], minLevel=row[3], recommendedLevel=row[3] .. "-" .. row[4],
+        factions={"Alliance", "Horde"}, quests={}, placeholder=true,
+        entryLevelUnverified=true, newInForever=announced[row[1]] or nil,
+        location="Entrance location awaiting verification",
+        notes="Quest coverage is not implemented yet. No quests or XP rewards are listed. The level range is a planning guide, not a verified entry requirement or confirmation of beta availability.",
+        source=announced[row[1]] and "https://eu.forums.blizzard.com/en/wow/t/kroldok-stronghold/628618" or "https://www.wowhead.com/classic/guide/classic-dungeons-overview",
+    }
+end
 
 
 

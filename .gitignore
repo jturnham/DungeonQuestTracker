@@ -6,4 +6,5 @@ Thumbs.db
 *.code-workspace
 .vscode/
 release/
-Docs/IMPLEMENTATION_CHECKLIST.md
+# Local research, testing records and implementation notes; never package or publish.
+Docs/

@@ -11,6 +11,7 @@ Data/QuestDataLevel35.lua
 Data/DungeonData.lua
 Data/QuestDataBeta30.lua
 Data/QuestDataDalaran.lua
+Data/QuestDataClassic.lua
 Data/QuestFollowUps.lua
 Data/QuestMetadata.lua
 Core.lua

@@ -75,7 +75,7 @@ C_QuestLog = {
 
 -- RUN TESTS
 local keys = DQT:GetOrderedDungeonKeys()
-assert(#keys == 18, "Expected 18 dungeon/wing entries")
+assert(#keys == 35, "Expected 35 dungeon/wing entries")
 local listed, newCount = {}, 0
 for _, key in ipairs(keys) do
     assert(not listed[key], "Duplicate dungeon key")

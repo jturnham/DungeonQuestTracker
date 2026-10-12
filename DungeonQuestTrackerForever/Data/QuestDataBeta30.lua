@@ -130,3 +130,26 @@ DQT.quests[95664].objectives = "Take the Titan Relic to Elder Rise, then continu
 for _, id in ipairs({95664,95810}) do
     DQT.quests[id].pickup.subzone = "Titan Relic from the final boss, Relic Guardian"
 end
+
+-- Reviewed October 11. Rewards and quest levels remain unverified, not estimated XP.
+DQT.quests[98824].objectives = "Bring the Titan Relic to High Explorer Magellas. The October 8 fix returns the relic after Lost Relic so this chain can continue."
+DQT.quests[98823].objectives = "Deliver the Titan Relic to Muln Earthfury. The October 8 fix returns the relic after Elder Knowledge so this chain can continue."
+local lumina = {name="Lumina Windsinger",zone="Silverpine Forest",subzone="Crypt",coordinates="43.0, 40.0"}
+local alba = {name="Alba Fairmoon",zone="Westfall",subzone="Confirm the contact's current location in beta"}
+local reviewed = {
+    [92753]={name="Destruction in Deadmines",dungeon="deadmines",faction="Alliance",minLevel=14,questLevel=14,pickup=alba,turnIn={name="Alba Fairmoon",zone="Westfall",subzone="Deadmines exit, hills behind Moonbrook"},objectives="Plant the explosives in Gilnid's forge, then meet Alba outside the Deadmines exit.",prerequisites={{questID=92752,external=true,relationship="required",note="Complete Explosive Consultation in Alba's Testing the Wells chain."}}},
+    [92819]={name="Destruction in Deadmines",dungeon="deadmines",faction="Alliance",minLevel=14,questLevel=14,followUpOf=92753,pickup={name="Alba Fairmoon",zone="Westfall",subzone="Deadmines exit"},turnIn={name="Alba Fairmoon",zone="Westfall",subzone="Deadmines exit"},objectives="Use the detonator to finish Alba's dungeon chain.",prerequisites={{questID=92753,relationship="required",note="Complete the explosives step inside Deadmines."}}},
+    [95036]={name="A Moon-Kissed Blade",dungeon="deadmines",faction="Horde",classes={"PALADIN"},minLevel=20,questLevel=20,pickup=lumina,turnIn=lumina,objectives="Speak with Trevan Rol in the Sepulcher. Collect lumber from Deadmines, the silver ingot from Arugal's table in Shadowfang Keep, and the purified Kor Gem from Blackfathom Deeps.",prerequisites={{relationship="required",note="Begin the Horde Paladin weapon chain in Banderion Keep, Tirisfal Glades. Exact preceding quest ID awaits verification."}}},
+    [95042]={name="Seeking the Kor Gem",dungeon="blackfathom-deeps",faction="Horde",classes={"PALADIN"},minLevel=20,questLevel=20,pickup={name="Ulric Frostveil",zone="Ashenvale",subzone="Zoram Strand"},turnIn={name="Ulric Frostveil",zone="Ashenvale",subzone="Zoram Strand"},objectives="Bring a Corrupted Kor Gem from Blackfathom naga to Ulric for purification while working on A Moon-Kissed Blade.",prerequisites={{relationship="required",note="Part of the active A Moon-Kissed Blade quest; that quest does not need to be completed first."}}},
+    [95111]={name="An Underrated Talent",dungeon="deadmines",faction="Horde",classes={"PALADIN"},minLevel=20,questLevel=20,followUpOf=95036,pickup=lumina,turnIn={name="Ott",zone="Hillsbrad Foothills",subzone="Tarren Mill"},objectives="Take the blacksmithing materials to Ott in Tarren Mill and ask him to forge your blade.",prerequisites={{questID=95036,relationship="required",note="Complete A Moon-Kissed Blade."}}},
+}
+for id, quest in pairs(reviewed) do
+    quest.newInForever, quest.verifiedForever, quest.questLevelUnverified = true, false, true
+    quest.source = "https://www.wowhead.com/forever/quest=" .. id
+    DQT.quests[id] = quest
+    table.insert(DQT.dungeons[quest.dungeon].quests, id)
+end
+DQT.dungeons.deadmines.factions = {"Alliance", "Horde"}
+for _, key in ipairs({"shadowfang-keep", "blackfathom-deeps"}) do
+    table.insert(DQT.dungeons[key].quests, 95036)
+end
