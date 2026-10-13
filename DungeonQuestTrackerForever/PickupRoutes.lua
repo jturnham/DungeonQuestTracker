@@ -149,9 +149,9 @@ function DQT:GetDungeonPickupRoute(key, startZone, context)
         local entry = {questID=id, quest=quest, preparation=preparation, reason=status.reason}
         local notes = {}
         for _, prerequisite in ipairs(quest.prerequisites or {}) do
-            if prerequisite.relationship == "required" and prerequisite.questID and not self:IsQuestComplete(prerequisite.questID) then
+            if not self:IsPrerequisiteSatisfied(prerequisite, context) and prerequisite.questID then
                 local parent = self:GetQuest(prerequisite.questID)
-                if parent then Add(prerequisite.questID, true, depth+1) end
+                if parent and not prerequisite.anyOf then Add(prerequisite.questID, true, depth+1) end
                 notes[#notes+1] = prerequisite.note or ("Complete " .. (parent and parent.name or ("quest " .. prerequisite.questID)))
             elseif prerequisite.note then
                 notes[#notes+1] = prerequisite.note

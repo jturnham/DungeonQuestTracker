@@ -45,6 +45,16 @@ function DQT:ValidatePartyQuest(id, quest)
     for _, prereq in ipairs(quest.prerequisites) do
         if type(prereq) ~= "table" or (prereq.relationship ~= "required" and prereq.relationship ~= "breadcrumb") then return false end
         if prereq.questID and (not Number(prereq.questID, 1000000) or prereq.questID == id) then return false end
+        if prereq.state and prereq.state ~= "active" and prereq.state ~= "completed" then return false end
+        if prereq.anyOf then
+            if type(prereq.anyOf) ~= "table" or #prereq.anyOf < 2 or #prereq.anyOf > 12 then return false end
+            local seen = {}
+            for _, candidate in ipairs(prereq.anyOf) do
+                if not Number(candidate,1000000) or candidate == id or seen[candidate] then return false end
+                seen[candidate] = true
+            end
+            if not seen[prereq.questID] then return false end
+        end
         if prereq.note and not Text(prereq.note, 600) then return false end
     end
     return true
@@ -62,7 +72,8 @@ function DQT:EncodePartyQuest(id, quest)
     end
     Add("version", self.version)
     for index, prereq in ipairs(quest.prerequisites) do
-        for _, key in ipairs({ "questID", "relationship", "note" }) do Add("p" .. index .. "." .. key, prereq[key]) end
+        for _, key in ipairs({ "questID", "relationship", "note", "state" }) do Add("p" .. index .. "." .. key, prereq[key]) end
+        if prereq.anyOf then Add("p" .. index .. ".anyOf", table.concat(prereq.anyOf, ",")) end
     end
     local encoded = table.concat(fields, "&")
     return #encoded <= MAX_PARTS * PART_SIZE and encoded or nil
@@ -88,11 +99,17 @@ function DQT:DecodePartyQuest(id, encoded)
             else
                 local index, part = key:match("^p(%d+)%.(%w+)$")
                 index = tonumber(index)
-                if not index or index < 1 or index > 12 or (part ~= "questID" and part ~= "relationship" and part ~= "note") then return nil end
+                if not index or index < 1 or index > 12 or (part ~= "questID" and part ~= "relationship" and part ~= "note" and part ~= "state" and part ~= "anyOf") then return nil end
                 quest.prerequisites[index] = quest.prerequisites[index] or {}
                 if part == "questID" then
                     if not Number(tonumber(value), 1000000) then return nil end
                     quest.prerequisites[index][part] = tonumber(value)
+                elseif part == "anyOf" then
+                    local candidates = {}
+                    if not value:match("^%d+[%d,]*$") then return nil end
+                    for candidate in value:gmatch("[^,]+") do candidates[#candidates+1] = tonumber(candidate) end
+                    if table.concat(candidates, ",") ~= value then return nil end
+                    quest.prerequisites[index].anyOf = candidates
                 else quest.prerequisites[index][part] = value end
             end
         end

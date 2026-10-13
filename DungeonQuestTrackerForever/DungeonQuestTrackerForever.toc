@@ -2,7 +2,7 @@
 ## Title: DungeonQuestTrackerForever
 ## Notes: Shows missing dungeon quests, pickup locations, and prerequisite chains for World of Warcraft: Forever.
 ## Author: James
-## Version: 0.5.3
+## Version: 0.5.4
 ## SavedVariables: DungeonQuestTrackerDB
 
 Config.lua
@@ -13,6 +13,7 @@ Data/QuestDataBeta30.lua
 Data/QuestDataDalaran.lua
 Data/QuestDataClassic.lua
 Data/QuestFollowUps.lua
+Data/PrerequisiteReview.lua
 Data/QuestMetadata.lua
 Core.lua
 Options.lua

@@ -14,7 +14,7 @@ if frame.CloseButton then
 else
     assert(frame.compactButton.points[1][1] == "TOPRIGHT" and frame.compactButton.points[1][4] == -30, "Close-area fallback anchor")
 end
-assert(frame:GetWidth() == 780 and not DQT:GetOption("display.compact"))
+assert(frame:GetWidth() == 700 and frame:GetHeight() == 570 and not DQT:GetOption("display.compact"))
 local fullHeight = frame.dungeonContent:GetHeight()
 frame.compactButton.scripts.OnClick(frame.compactButton)
 assert(DQT:GetOption("display.compact") and ui.currentView == "list")
@@ -50,9 +50,9 @@ frame.checklistScroll:SetVerticalScroll(40)
 ui:RefreshCurrentDungeon()
 assert(frame.checklistScroll:GetVerticalScroll() == 40)
 frame.compactButton.scripts.OnClick(frame.compactButton)
-assert(frame:GetWidth() == 780 and ui.currentDungeonKey == key)
+assert(frame:GetWidth() == 700 and ui.currentDungeonKey == key)
 assert(row.status:IsShown() and row.share:IsShown() and row.detail:IsShown())
-assert(row.title:GetText():find("#998101",1,true) and row.detail:GetWidth() == 660, "Full row restored")
+assert(row.title:GetText():find("#998101",1,true) and row.detail:GetWidth() == 580, "Detailed row restored in smaller regular frame")
 local originalPlanner = DQT.GetGlobalTurnInPriority
 DQT.GetGlobalTurnInPriority = function()
     local quests={}
@@ -69,13 +69,29 @@ assert(frame.turnInContent:GetHeight() > frame.content:GetHeight())
 frame.turnInScroll:SetVerticalScroll(30)
 ui:RefreshCurrentDungeon(); assert(frame.turnInScroll:GetVerticalScroll() == 30)
 ui:ShowOptions()
-assert(frame:GetWidth() == 780 and DQT:GetOption("display.compact"), "Options stays full-width without changing preference")
+assert(frame:GetWidth() == 520 and DQT:GetOption("display.compact"), "Options uses the compact frame")
+assert(frame.optionsContent:GetWidth() == 430 and frame.optionsContent:GetHeight() > frame.content:GetHeight(), "Compact options scroll inside the window")
+for _, entry in ipairs(frame.optionRows) do
+    if entry.row then
+        local left = entry.option.number and 0 or 30
+        local reserved = entry.preview and 154 or entry.option.number and 78 or 8
+        assert(entry.label:GetWidth()+left+reserved <= entry.row:GetWidth(), "Option label stays clear of its controls")
+        assert(entry.row:GetHeight() >= entry.label:GetStringHeight()+12, "Option labels wrap without overlapping the next row")
+    end
+end
+frame.optionsScroll:SetVerticalScroll(50)
+frame.compactButton.scripts.OnClick(frame.compactButton)
+assert(frame:GetWidth() == 700 and ui.currentView == "options", "Options can switch to regular in place")
+assert(frame.optionsScroll:GetVerticalScroll() == 50, "Options preserves scroll when changing mode")
+local regularOptionsHeight = frame.optionsContent:GetHeight()
+frame.compactButton.scripts.OnClick(frame.compactButton)
+assert(frame:GetWidth() == 520 and frame.optionsContent:GetHeight() < regularOptionsHeight, "Compact options uses denser rows")
 ui:CloseOptions()
 assert(frame:GetWidth() == 520 and ui.currentView == "turnins")
 DQT:InitializeOptions()
 assert(DQT:GetOption("display.compact"), "Compact preference survives reload normalization")
 frame.compactButton.scripts.OnClick(frame.compactButton)
-assert(frame:GetWidth() == 780 and frame.turnInRows[1].detail:IsShown())
+assert(frame:GetWidth() == 700 and frame.turnInRows[1].detail:IsShown())
 DQT.GetGlobalTurnInPriority = function() return {quests={},context={},xpToLevel=0} end
 DQT:SetOption("display.compact", true)
 assert(frame.turnInRows[1].title:GetWidth() <= frame.turnInContent:GetWidth(), "Compact empty state fits")
@@ -84,5 +100,5 @@ for i=1,20 do DQT.quests[998100+i]=nil; ui.expandedQuests[998100+i]=nil end
 DQT.dungeons[key]=nil
 DQT.db, DungeonQuestTrackerDB = oldDB, oldGlobalDB
 ui:ShowDungeonList()
-assert(frame:GetWidth() == 780 and frame.dungeonCards[1].art:IsShown(), "Full cards restored")
-print("Passed compact mode: persistence, title-bar toggle, text-only layouts, search, wrapping, scrolling, expanded-row restoration, turn-in order and full-width Options.")
+assert(frame:GetWidth() == 700 and frame.dungeonCards[1].art:IsShown(), "Detailed cards restored")
+print("Passed compact mode: persistence, title-bar toggle, text-only layouts, search, wrapping, scrolling, expanded rows, turn-ins and responsive Options.")

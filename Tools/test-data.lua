@@ -60,6 +60,17 @@ for id, quest in pairs(DQT.quests) do
         assert(linked, "Follow-up missing explicit required/breadcrumb predecessor: " .. id)
     end
     for _, prerequisite in ipairs(quest.prerequisites) do
+        assert(not prerequisite.state or prerequisite.state == "completed" or prerequisite.state == "active", "Invalid prerequisite state: " .. id)
+        if prerequisite.anyOf then
+            assert(type(prerequisite.anyOf) == "table" and #prerequisite.anyOf >= 2 and #prerequisite.anyOf <= 12, "Invalid alternatives: " .. id)
+            local seen = {}
+            for _, candidate in ipairs(prerequisite.anyOf) do
+                assert(Integer(candidate,1,1000000) and candidate ~= id and not seen[candidate], "Invalid alternative ID: " .. id)
+                assert(DQT.quests[candidate] or prerequisite.external, "Unresolved alternative: " .. id)
+                seen[candidate] = true
+            end
+            assert(seen[prerequisite.questID], "Alternative anchor missing: " .. id)
+        end
         assert(prerequisite.relationship == "required" or prerequisite.relationship == "breadcrumb", "Invalid prerequisite relationship: " .. id)
         assert(prerequisite.questID or Text(prerequisite.note), "Empty prerequisite: " .. id)
         if prerequisite.questID then
@@ -74,7 +85,9 @@ local function Visit(id)
     if visited[id] then return end
     visiting[id] = true
     for _, prerequisite in ipairs(DQT.quests[id].prerequisites) do
-        if DQT.quests[prerequisite.questID] then Visit(prerequisite.questID) end
+        for _, parent in ipairs(prerequisite.anyOf or {prerequisite.questID}) do
+            if DQT.quests[parent] then Visit(parent) end
+        end
     end
     visiting[id], visited[id] = nil, true
 end

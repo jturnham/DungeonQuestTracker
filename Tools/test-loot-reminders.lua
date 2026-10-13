@@ -104,7 +104,30 @@ do
     assert(not frame:IsShown(), "Preview expires normally")
     DQT:PreviewQuestLootReminder()
     assert(frame:GetAlpha() == 1 and frame.remaining == 15, "New preview resets opacity and timer")
-    frame.close.scripts.OnClick()
+    local oldStart, oldStop, oldPoint = frame.StartMoving, frame.StopMovingOrSizing, frame.GetPoint
+    local moving = false
+    frame.StartMoving = function() moving = true end
+    frame.StopMovingOrSizing = function() moving = false end
+    frame.GetPoint = function() return "CENTER", UIParent, "CENTER", 125, -80 end
+    frame.scripts.OnMouseDown(frame, "LeftButton")
+    frame.scripts.OnDragStart(frame)
+    assert(moving, "Dragging starts moving the alert")
+    frame.scripts.OnDragStop(frame)
+    frame.scripts.OnMouseUp(frame, "LeftButton")
+    assert(not moving and not frame.dismissRemaining, "Drag release does not dismiss alert")
+    assert(DQT.db.lootReminders.position.x == 125 and DQT.db.lootReminders.position.y == -80, "Dragged position saved")
+    frame.StartMoving, frame.StopMovingOrSizing, frame.GetPoint = oldStart, oldStop, oldPoint
+    frame:Hide()
+    DQT.lootReminderFrame = nil
+    DQT:PreviewQuestLootReminder()
+    frame = DQT.lootReminderFrame
+    local anchor = frame.points[#frame.points]
+    assert(anchor[1] == "CENTER" and anchor[4] == 125 and anchor[5] == -80, "Saved position restored on frame creation")
+    frame.scripts.OnMouseDown(frame, "LeftButton")
+    frame.scripts.OnMouseUp(frame, "LeftButton")
+    frame.scripts.OnUpdate(frame, 0.1)
+    assert(frame:IsShown() and frame:GetAlpha() == 0.5, "Click immediately starts a short fade")
+    frame.scripts.OnUpdate(frame, 0.1)
     assert(not frame:IsShown(), "Preview dismisses normally")
     DQT:ShowQuestLootReminder("Witherfang", DQT.lootReminderData[250483])
     assert(not frame.isPreview and frame.title:GetText() == "Quest Loot", "Real alerts reset preview state")
@@ -119,7 +142,9 @@ do
     DQT:SetOption("lootReminders.enabled", true)
     DQT.lootReminderEvents.scripts.OnEvent(nil, "BOSS_KILL", 1, "Mutanus the Devourer")
     assert(frame:IsShown(), "New instance session resets duplicate tracking")
-    frame.close.scripts.OnClick()
+    frame.scripts.OnMouseDown(frame, "LeftButton")
+    frame.scripts.OnMouseUp(frame, "LeftButton")
+    frame.scripts.OnUpdate(frame, 0.2)
     assert(not frame:IsShown(), "Dismiss button")
     DQT.lootReminderEvents.scripts.OnEvent(nil, "BOSS_KILL", 999, "Unknown boss")
     assert(not frame:IsShown() and combatCalls == 0, "Unknown boss ignored and combat APIs never accessed")

@@ -7,19 +7,25 @@ local aliases = { ["Stormwind City"]="Stormwind" }
 function Maps:ResolveMap(zone)
     if not C_Map or not C_Map.GetMapInfo or not C_Map.GetMapChildrenInfo or not C_Map.GetBestMapForUnit then return end
     local id = C_Map.GetBestMapForUnit("player")
-    if not id then return end
+    if not id then return self.cache[zone] or nil end
     local seen = {}
     while id and not seen[id] do
         seen[id] = true
         local info = C_Map.GetMapInfo(id)
-        if not info then return end
+        if not info then return self.cache[zone] or nil end
         if not info.parentMapID or info.parentMapID == 0 then break end
         id = info.parentMapID
     end
-    if self.root ~= id then self.root=id; self.cache={}; self.mapNames=nil end
+    if self.root ~= id then
+        local children=C_Map.GetMapChildrenInfo(id,nil,true)
+        if not children or #children == 0 then return self.cache[zone] or nil end
+        self.root=id; self.cache={}; self.mapNames=nil
+        self.mapChildren=children
+    end
     if self.cache[zone] ~= nil then return self.cache[zone] or nil end
     if not self.mapNames then
-        local children=C_Map.GetMapChildrenInfo(id,nil,true)
+        local children=self.mapChildren or C_Map.GetMapChildrenInfo(id,nil,true)
+        self.mapChildren=nil
         -- Do not cache an unavailable/empty hierarchy during client startup.
         if not children or #children == 0 then return end
         self.mapNames={}
@@ -117,6 +123,8 @@ function Maps:Attach()
             self:GetMap():AcquirePin(template,pin)
         end
     end
+    function provider:OnShow() self:RefreshAllData() end
+    function provider:OnMapChanged() self:RefreshAllData() end
     map:AddDataProvider(provider)
     self.provider=provider
     return true
@@ -124,7 +132,9 @@ end
 
 function Maps:SetRoute(plan)
     self.plan=plan
-    self.key,self.startZone=plan.key,plan.automaticStart and nil or plan.startZone
+    self.key=plan.key
+    self.startZone=nil
+    if not plan.automaticStart then self.startZone=plan.startZone end
     if self:Attach() and WorldMapFrame:IsShown() then self.provider:RefreshAllData() end
 end
 

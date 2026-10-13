@@ -62,29 +62,73 @@ local function SafeNumber(value, fallback)
     return fallback or 0
 end
 
-function DQT:IsQuestComplete(questID)
+function DQT:PrepareQuestScan(context)
+    context.questScan = {completed={},states={},availability={}}
+    return context
+end
+
+local function QuestLogSnapshot(context)
+    local scan = context and context.questScan
+    if not scan then return nil end
+    if scan.log ~= nil then return scan.log or nil end
+    scan.log = false
+    if not (C_QuestLog and C_QuestLog.GetInfo and C_QuestLog.GetNumQuestLogEntries) then return nil end
+    local count = CallAPI(C_QuestLog.GetNumQuestLogEntries)
+    if type(count) ~= "number" or count < 0 or count > 1000 or count ~= math.floor(count) then return nil end
+    if GetNumQuestLogEntries and GetQuestLogTitle and CallAPI(GetNumQuestLogEntries) ~= count then return nil end
+    local log = {byID={},byTitle={},completeIDs=true}
+    for index=1,count do
+        local info = CallAPI(C_QuestLog.GetInfo,index)
+        if type(info) ~= "table" then return nil end
+        if not info.isHeader then
+            local title = NormalizeQuestTitle(info.title)
+            if not title then return nil end
+            local entry = {index=index,id=info.questID,title=info.title}
+            if type(info.questID) == "number" and info.questID > 0 then log.byID[info.questID] = index
+            else log.completeIDs = false end
+            log.byTitle[title] = log.byTitle[title] or {}
+            table.insert(log.byTitle[title],entry)
+        end
+    end
+    scan.log = log
+    return log
+end
+
+function DQT:IsQuestComplete(questID, context)
     if not questID then return false end
+    local cache = context and context.questScan and context.questScan.completed
+    if cache and cache[questID] ~= nil then return cache[questID] end
 
     if C_QuestLog and C_QuestLog.IsQuestFlaggedCompleted then
         local complete = CallAPI(C_QuestLog.IsQuestFlaggedCompleted, questID)
-        if IsFinished(complete) then return true end
+        if IsFinished(complete) then
+            if cache then cache[questID] = true end
+            return true
+        end
     end
 
     if IsQuestFlaggedCompleted then
         local complete = CallAPI(IsQuestFlaggedCompleted, questID)
-        if IsFinished(complete) then return true end
+        if IsFinished(complete) then
+            if cache then cache[questID] = true end
+            return true
+        end
     end
 
+    if cache then cache[questID] = false end
     return false
 end
 
-function DQT:GetQuestLogIndexByQuestID(questID)
+function DQT:GetQuestLogIndexByQuestID(questID, context)
     if not questID then return nil end
 
     if C_QuestLog and C_QuestLog.GetLogIndexForQuestID then
         local index = CallAPI(C_QuestLog.GetLogIndexForQuestID, questID)
         if type(index) == "number" and index > 0 then return index end
     end
+
+    local snapshot = QuestLogSnapshot(context)
+    if snapshot and (snapshot.byID[questID] or snapshot.completeIDs) then return snapshot.byID[questID] end
 
     if GetQuestLogTitle and GetNumQuestLogEntries then
         for index = 1, CallAPI(GetNumQuestLogEntries) or 0 do
@@ -96,7 +140,7 @@ function DQT:GetQuestLogIndexByQuestID(questID)
     return nil
 end
 
-function DQT:GetQuestLogIndexByQuestName(questName, questID)
+function DQT:GetQuestLogIndexByQuestName(questName, questID, context)
     if not questName then return nil end
     local wanted = NormalizeQuestTitle(questName)
     local ambiguous
@@ -114,6 +158,15 @@ function DQT:GetQuestLogIndexByQuestName(questName, questID)
             end
         end
         return not ambiguous
+    end
+
+    local snapshot = QuestLogSnapshot(context)
+    if snapshot then
+        if questID and snapshot.byID[questID] then return snapshot.byID[questID] end
+        for _, entry in ipairs(snapshot.byTitle[wanted] or {}) do
+            if Matches(entry.title,entry.id,false) then return entry.index end
+        end
+        return nil
     end
 
     if C_QuestLog and C_QuestLog.GetInfo and C_QuestLog.GetNumQuestLogEntries then
@@ -135,19 +188,19 @@ function DQT:GetQuestLogIndexByQuestName(questName, questID)
     return nil
 end
 
-function DQT:IsQuestActive(questID, questName)
+function DQT:IsQuestActive(questID, questName, context)
     if questID and C_QuestLog and C_QuestLog.IsOnQuest then
         local active = CallAPI(C_QuestLog.IsOnQuest, questID)
         if IsFinished(active) then return true end
     end
 
-    if questID and self:GetQuestLogIndexByQuestID(questID) then return true end
-    if questName and self:GetQuestLogIndexByQuestName(questName, questID) then return true end
+    if questID and self:GetQuestLogIndexByQuestID(questID, context) then return true end
+    if questName and self:GetQuestLogIndexByQuestName(questName, questID, context) then return true end
 
     return false
 end
 
-function DQT:IsQuestReadyForTurnIn(questID, questName)
+function DQT:IsQuestReadyForTurnIn(questID, questName, context)
     if not questID and not questName then return false end
 
     if questID and C_QuestLog and C_QuestLog.ReadyForTurnIn then
@@ -155,7 +208,7 @@ function DQT:IsQuestReadyForTurnIn(questID, questName)
         if IsFinished(ready) then return true end
     end
 
-    local index = self:GetQuestLogIndexByQuestID(questID) or self:GetQuestLogIndexByQuestName(questName, questID)
+    local index = self:GetQuestLogIndexByQuestID(questID, context) or self:GetQuestLogIndexByQuestName(questName, questID, context)
     if index then
         if C_QuestLog and C_QuestLog.GetInfo then
             local info = CallAPI(C_QuestLog.GetInfo, index)
@@ -210,8 +263,20 @@ local function ContainsValue(values, value)
     return false
 end
 
-function DQT:GetQuestAvailability(quest, context)
-    context = context or self:GetPlayerContext()
+function DQT:IsPrerequisiteSatisfied(prereq, context)
+    if prereq.relationship ~= "required" then return true end
+    local ids = prereq.anyOf or (prereq.questID and {prereq.questID})
+    if not ids then return true end
+    for _, id in ipairs(ids) do
+        if prereq.state == "active" then
+            local quest = self:GetQuest(id)
+            if self:IsQuestActive(id, quest and quest.name, context) then return true end
+        elseif self:IsQuestComplete(id, context) then return true end
+    end
+    return false
+end
+
+local function QuestAvailability(self, quest, context)
 
     if quest.faction and context.faction and quest.faction ~= context.faction then
         return "unavailable", "Different faction"
@@ -233,14 +298,25 @@ function DQT:GetQuestAvailability(quest, context)
     end
 
     for _, prereq in ipairs(quest.prerequisites or {}) do
-        if prereq.relationship == "required" and prereq.questID and not self:IsQuestComplete(prereq.questID) then
+        if not self:IsPrerequisiteSatisfied(prereq, context) then
             local prereqQuest = self:GetQuest(prereq.questID)
             local prereqName = prereqQuest and prereqQuest.name or ("quest " .. tostring(prereq.questID))
-            return "locked", "Requires " .. prereqName
+            if prereq.anyOf then prereqName = "one of the listed prerequisite quests" end
+            return "locked", "Requires " .. prereqName .. (prereq.state == "active" and " in your quest log" or "")
         end
     end
 
     return "available", "Available"
+end
+
+function DQT:GetQuestAvailability(quest, context)
+    context = context or self:GetPlayerContext()
+    local cache = context.questScan and context.questScan.availability
+    local cached = cache and cache[quest]
+    if cached then return cached[1],cached[2] end
+    local state,reason = QuestAvailability(self,quest,context)
+    if cache then cache[quest] = {state,reason} end
+    return state,reason
 end
 
 function DQT:QuestMatchesPlayerFaction(quest, context)
@@ -300,16 +376,16 @@ function DQT:GetOrderedDungeonKeys()
     return keys
 end
 
-function DQT:GetQuestState(questID, quest, context)
-    if self:IsQuestComplete(questID) then
+local function QuestState(self, questID, quest, context)
+    if self:IsQuestComplete(questID, context) then
         return "completed", "Completed"
     end
 
-    if self:IsQuestReadyForTurnIn(questID, quest and quest.name) then
+    if self:IsQuestReadyForTurnIn(questID, quest and quest.name, context) then
         return "ready", "Ready for turn-in"
     end
 
-    if self:IsQuestActive(questID, quest and quest.name) then
+    if self:IsQuestActive(questID, quest and quest.name, context) then
         return "active", "In progress"
     end
 
@@ -317,6 +393,15 @@ function DQT:GetQuestState(questID, quest, context)
     if availability == "locked" then return "locked", reason end
     if availability == "unavailable" then return "unavailable", reason end
     return "missing", reason or "Missing"
+end
+
+function DQT:GetQuestState(questID, quest, context)
+    local cache = context and context.questScan and context.questScan.states
+    local cached = cache and cache[questID]
+    if cached then return cached[1],cached[2] end
+    local state,reason = QuestState(self,questID,quest,context)
+    if cache then cache[questID] = {state,reason} end
+    return state,reason
 end
 
 function DQT:GetQuestRewardXP(quest)

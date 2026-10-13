@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.5.4 - 2026-10-13
+
+- Let dungeon searches bypass visibility filters without changing saved settings; clearing the search restores normal filtering.
+- Refresh pickup pins when opening or changing maps, preserve known locations during temporary map-data gaps and keep automatic route starts responsive to the current zone.
+- Dismiss loot alerts with a click-to-fade, replace the close button with dragging and save the alert position across reloads.
+
+- Speed up dungeon-list refreshes with a per-refresh quest-log snapshot and shared quest-state, completion and availability checks. Reuse card click handlers and unchanged dungeon art without caching stale quest states across refreshes.
+
+- Reduce the regular window to 700 by 570 while retaining detailed quest information and readable text.
+- Use compact layouts on every addon screen, including responsive Options and condensed pickup routes with full tooltip details.
+
+- Review prerequisite records across the complete catalogue; distinguish required chain steps, optional referrals, active-log conditions and alternative faction/class branches.
+- Correct Hidden Enemies and high-level return-chain gates; keep optional referrals optional and add the Horde Bodley's Unfortunate Fate return.
+- Preserve active/alternative prerequisite conditions in pickup routes and bounded party data sharing; show explicit required/optional chain notes.
+- Keep incomplete Forever source checks flagged for verification rather than claiming client-confirmed eligibility.
+
 ## 0.5.3 - 2026-10-12
 
 - Keep the entire Docs directory local-only and remove previously tracked research/testing files without deleting local copies.

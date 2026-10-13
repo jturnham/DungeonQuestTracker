@@ -9,6 +9,11 @@ function UI:UpdateFilterSummary(hidden, dungeons)
 end
 function UI:RefreshOptions()
     if not self.frame or not self.frame.optionControls then return end
+    if self.currentView == "options" then
+        self:UpdateNav()
+        self:FitContent()
+        self:LayoutOptions()
+    end
     for _, control in ipairs(self.frame.optionControls) do
         local value = DQT:GetOption(control.option.key)
         if control.option.number then
@@ -29,12 +34,15 @@ function UI:CreateOptions()
     frame.optionsContent:SetSize(690, 470)
     frame.optionsScroll:SetScrollChild(frame.optionsContent)
     frame.optionControls = {}
+    frame.optionRows = {}
     local y = 0
     for _, option in ipairs(DQT.optionDefinitions) do
         if option.section then
             local title = frame.optionsContent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
             title:SetPoint("TOPLEFT", frame.optionsContent, "TOPLEFT", 0, -y-8)
             title:SetText(option.section)
+            title:SetJustifyH("LEFT")
+            frame.optionRows[#frame.optionRows+1] = {section=title}
             y=y+36
         else
             local row = CreateFrame("Frame", nil, frame.optionsContent)
@@ -84,6 +92,8 @@ function UI:CreateOptions()
             label:SetJustifyH("LEFT")
             if label.SetWordWrap then label:SetWordWrap(true) end
             label:SetText(option.label)
+            local entry = {row=row,label=label,control=control,option=option}
+            frame.optionRows[#frame.optionRows+1] = entry
             if option.key == "lootReminders.enabled" then
                 label:SetWidth(490)
                 local preview = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
@@ -92,6 +102,7 @@ function UI:CreateOptions()
                 preview:SetText("Preview Alert")
                 preview:SetScript("OnClick", function() DQT:PreviewQuestLootReminder() end)
                 frame.lootReminderPreview = preview
+                entry.preview = preview
             end
             if option.tip then UI.AddTooltip(control, option.label, option.tip) end
             y=y+42
@@ -107,7 +118,40 @@ function UI:CreateOptions()
     resetMinimap:SetPoint("LEFT", resetFilters, "RIGHT", 12, 0)
     resetMinimap:SetText("Reset Minimap Position")
     resetMinimap:SetScript("OnClick", function() DQT:ResetMinimapPosition() end)
+    frame.resetFilters, frame.resetMinimap = resetFilters, resetMinimap
     frame.optionsContent:SetHeight(y+60)
+end
+function UI:LayoutOptions()
+    local frame, compact = self.frame, self:IsCompact()
+    local width = frame.checklistContent:GetWidth()
+    frame.optionsContent:SetWidth(width)
+    local y = 0
+    for _, entry in ipairs(frame.optionRows) do
+        if entry.section then
+            entry.section:ClearAllPoints()
+            entry.section:SetPoint("TOPLEFT",frame.optionsContent,"TOPLEFT",0,-y-6)
+            entry.section:SetWidth(width-8)
+            y = y + (compact and 28 or 34)
+        else
+            local row = entry.row
+            row:SetWidth(width-8)
+            row:ClearAllPoints()
+            row:SetPoint("TOPLEFT",frame.optionsContent,"TOPLEFT",0,-y)
+            local left = entry.option.number and 0 or 30
+            local reserved = entry.preview and 154 or entry.option.number and 78 or 8
+            entry.label:ClearAllPoints()
+            entry.label:SetPoint("TOPLEFT",row,"TOPLEFT",left,-6)
+            entry.label:SetWidth(width-8-left-reserved)
+            local height = math.max(compact and 30 or 38,entry.label:GetStringHeight()+12)
+            row:SetHeight(height)
+            y = y + height
+        end
+    end
+    frame.resetFilters:ClearAllPoints()
+    frame.resetFilters:SetPoint("TOPLEFT",frame.optionsContent,"TOPLEFT",0,-y-12)
+    frame.optionsContent:SetHeight(y+52)
+    local maximum = math.max(0,frame.optionsContent:GetHeight()-frame.content:GetHeight())
+    frame.optionsScroll:SetVerticalScroll(math.min(frame.optionsScroll:GetVerticalScroll(),maximum))
 end
 function UI:ShowOptions()
     self:Create()

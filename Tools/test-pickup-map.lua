@@ -18,10 +18,10 @@ do
     assert(maps:ResolveMap("Ironforge")==87 and hierarchyCalls==2 and maps.root==indexedRoot,"Changed root invalidates map index")
     local savedChildren=children
     children={}; maps.root=nil
-    assert(not maps:ResolveMap("Ironforge"),"Unavailable map hierarchy is not cached")
+    assert(maps:ResolveMap("Ironforge")==87,"Unavailable hierarchy preserves known locations")
     children=savedChildren
     assert(maps:ResolveMap("Ironforge")==87,"Map discovery retries after startup data becomes available")
-    local plan={key="gnomeregan",automaticStart=true,stops={
+    local plan={key="gnomeregan",automaticStart=true,startZone="Ironforge",stops={
         {x=50,y=25,location={zone="Ironforge",name="Test"},quests={}},
         {location={zone="Ironforge",name="No coordinates"},quests={}},
         {x=10,y=20,location={zone="Badlands",name="Other"},quests={}},
@@ -64,8 +64,12 @@ do
     InCombatLockdown=function() return false end
     local oldRoute=DQT.GetDungeonPickupRoute
     local routeCalls=0
-    DQT.GetDungeonPickupRoute=function() routeCalls=routeCalls+1; return plan end
+    DQT.GetDungeonPickupRoute=function(_,key,startZone)
+        assert(startZone==nil,"Automatic map routes re-evaluate the player's current zone")
+        routeCalls=routeCalls+1; return plan
+    end
     maps:SetRoute(plan)
+    assert(maps.startZone==nil,"Automatic start is not accidentally converted to a manual start")
     assert(#acquired==1 and maps:OpenStop(plan.stops[1]) and opened==87,"Provider refresh and clickable map opening")
     for i=1,10 do maps.provider:RefreshAllData() end
     assert(routeCalls==0,"UI plan reused across map redraws")
@@ -73,6 +77,18 @@ do
     maps.provider:RefreshAllData()
     maps.provider:RefreshAllData()
     assert(routeCalls==1,"Invalidated map plan rebuilt once, then reused")
+    local bestMap=C_Map.GetBestMapForUnit
+    C_Map.GetBestMapForUnit=function() return nil end
+    maps.provider:OnShow()
+    assert(#acquired==1,"Reopening map retains pins while player map is unavailable")
+    C_Map.GetBestMapForUnit=bestMap
+    local getMapID=WorldMapFrame.GetMapID
+    WorldMapFrame.GetMapID=function() return 1418 end
+    maps.provider:OnMapChanged()
+    assert(#acquired==1 and acquired[1].mapID==1418,"Changing map replaces pins with the new zone's pickups")
+    WorldMapFrame.GetMapID=getMapID
+    maps.provider:OnMapChanged()
+    assert(#acquired==1 and acquired[1].mapID==87,"Returning to a zone restores its pins")
     print("Map redraw route scans: 10 redraws reuse the UI plan; 1 rebuild after invalidation.")
     plan.stops={}
     maps.provider:RefreshAllData()

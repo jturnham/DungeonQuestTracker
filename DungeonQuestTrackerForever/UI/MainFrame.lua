@@ -187,6 +187,7 @@ local function CreateDungeonCard(parent, index)
     local card = CreateFrame("Button", nil, parent)
     card:SetSize(contentWidth, 124)
     card:RegisterForClicks("LeftButtonUp")
+    card:SetScript("OnClick", function() if card.dungeonKey then DQT:OpenDungeon(card.dungeonKey) end end)
     ApplyCardBackdrop(card)
 
     card.art = card:CreateTexture(nil, "ARTWORK")
@@ -340,10 +341,10 @@ function UI:Create()
 
     frame.syncOption = CreateFrame("CheckButton", nil, frame.nav, "UICheckButtonTemplate")
     frame.syncOption:SetSize(24, 24)
-    frame.syncOption:SetPoint("LEFT", frame.nav, "LEFT", 140, 0)
+    frame.syncOption:SetPoint("RIGHT", frame.nav, "RIGHT", -80, 0)
     frame.syncLabel = frame.nav:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     frame.syncLabel:SetPoint("LEFT", frame.syncOption, "RIGHT", 2, 0)
-    frame.syncLabel:SetText("Party data sync")
+    frame.syncLabel:SetText("Party sync")
     frame.syncOption:SetScript("OnClick", function(self) DQT:SetQuestDataSync(self:GetChecked() and "on" or "off") end)
     AddTooltip(frame.syncOption, "Party quest-data sync", "Opt in to exchange missing quest records with grouped DQT users through Check Party. Party-supplied XP is not used for ranking.")
 
@@ -415,25 +416,25 @@ function UI:Create()
 end
 
 function UI:IsCompact()
-    return DQT:GetOption("display.compact") and self.currentView ~= "options"
+    return DQT:GetOption("display.compact")
 end
 
 function UI:ApplyLayout()
     local frame, compact = self.frame, self:IsCompact()
-    contentWidth = compact and 430 or 690
-    viewportHeight = compact and 350 or 470
-    frame:SetSize(compact and 520 or 780, compact and 500 or 620)
-    frame.nav:SetWidth(compact and 470 or 730)
+    contentWidth = compact and 430 or 610
+    viewportHeight = compact and 350 or 420
+    frame:SetSize(compact and 520 or 700, compact and 500 or 570)
+    frame.nav:SetWidth(compact and 470 or 650)
     frame.content:SetSize(contentWidth+30, viewportHeight)
     frame.subtitle:SetWidth(contentWidth+30)
     frame.emptyMessage:SetWidth(contentWidth-10)
     frame.listEmpty:SetWidth(contentWidth-24)
     frame.filterSummary:SetWidth(contentWidth)
     for _, child in ipairs({frame.checklistContent, frame.dungeonContent, frame.turnInContent}) do child:SetWidth(contentWidth) end
-    for _, button in ipairs({frame.primaryButton, frame.turnInsButton, frame.partyButton, frame.shareButton}) do button:SetWidth(compact and 100 or 118) end
+    for _, button in ipairs({frame.primaryButton, frame.turnInsButton, frame.partyButton, frame.shareButton}) do button:SetWidth(100) end
     frame.searchLabel:ClearAllPoints()
-    frame.searchLabel:SetPoint("LEFT", frame.nav, "LEFT", compact and 140 or 370, 0)
-    frame.search:SetWidth(compact and 215 or 235)
+    frame.searchLabel:SetPoint("LEFT", frame.nav, "LEFT", 140, 0)
+    frame.search:SetWidth(compact and 215 or 275)
     local texture = DQT:GetOption("display.compact") and "UI-Panel-BiggerButton" or "UI-Panel-SmallerButton"
     frame.compactButton:SetNormalTexture("Interface\\Buttons\\" .. texture .. "-Up")
     frame.compactButton:SetPushedTexture("Interface\\Buttons\\" .. texture .. "-Down")
@@ -669,7 +670,7 @@ function UI:RenderChecklist(status)
             row.title:SetText((statusText:match("^(|c%x%x%x%x%x%x%x%x)") or "") .. name .. "|r")
         else
             row.title:SetPoint("TOPLEFT", row.status, "TOPRIGHT", 10, 0)
-            row.title:SetWidth(490-row.chainIndent)
+            row.title:SetWidth(width-200)
             row.title:SetText(string.format("%s (#%d)", name, questStatus.questID))
         end
         row.detail:SetText("Pickup: " .. FormatLocation(quest.pickup) .. " | Turn in: " .. FormatLocation(quest.turnIn) .. prereqText)
@@ -753,7 +754,7 @@ function UI:ShowTurnIns(preserveScroll)
         row.title:SetText("No ready-to-turn-in dungeon quests detected yet.")
         row.detail:SetText("")
         row:SetWidth(contentWidth)
-        row.title:SetWidth(self:IsCompact() and contentWidth-50 or 620)
+        row.title:SetWidth(contentWidth-50)
         row.detail:SetShown(not self:IsCompact())
         row.tooltipTitle, row.tooltipText = "No ready turn-ins", ""
         row:ClearAllPoints()
@@ -795,8 +796,8 @@ function UI:ShowTurnIns(preserveScroll)
         row.tooltipText = "[" .. dungeonName .. "] Turn in: " .. FormatLocation(item.quest.turnIn) .. lossText .. " | XP source " .. tostring(item.xpSource or "unknown")
         local compact = self:IsCompact()
         row:SetWidth(contentWidth)
-        row.title:SetWidth(compact and contentWidth-50 or 620)
-        row.detail:SetWidth(compact and contentWidth-50 or 620)
+        row.title:SetWidth(contentWidth-50)
+        row.detail:SetWidth(contentWidth-50)
         row.detail:SetShown(not compact)
         if compact then row.title:SetText(item.quest.name) end
         local height = compact and math.max(24, row.title:GetStringHeight()+8) or math.max(56, row.title:GetStringHeight() + row.detail:GetStringHeight() + 17)
@@ -830,15 +831,16 @@ function UI:ShowPickups(preserveScroll)
     self.frame.filterSummary.text:SetText("Pickups | Suggested order | Beta locations")
     local entries = {}
     for i, stop in ipairs(plan.stops) do
-        local names = {}
+        local names, shortNames = {}, {}
         for _, entry in ipairs(stop.quests) do
             names[#names+1] = (entry.preparation and "Preparation: " or "") .. entry.quest.name .. " (#" .. entry.questID .. ")" .. (entry.notes ~= "" and "\n" .. entry.notes or "")
+            shortNames[#shortNames+1] = (entry.preparation and "Prep: " or "") .. entry.quest.name
         end
-        entries[#entries+1] = {stop=stop, rank=tostring(i), title=FormatLocation(stop.location), detail=table.concat(names,"\n") .. (not stop.x and "\nNo coordinates; stop order provisional." or "")}
+        entries[#entries+1] = {stop=stop, rank=tostring(i), title=FormatLocation(stop.location), compactDetail=table.concat(shortNames,"\n"), detail=table.concat(names,"\n") .. (not stop.x and "\nNo coordinates; stop order provisional." or "")}
     end
     for _, group in ipairs({{plan.blocked,"Blocked"},{plan.inside,"Dungeon / item pickup"},{plan.unknown,"Unknown pickup"}}) do
         for _, entry in ipairs(group[1]) do
-            entries[#entries+1] = {rank="-",title=group[2] .. ": " .. entry.quest.name, detail=FormatLocation(entry.quest.pickup) .. "\n" .. (entry.reason or "") .. (entry.notes ~= "" and "\n" .. entry.notes or "")}
+            entries[#entries+1] = {rank="-",title=group[2] .. ": " .. entry.quest.name, compactDetail=FormatLocation(entry.quest.pickup), detail=FormatLocation(entry.quest.pickup) .. "\n" .. (entry.reason or "") .. (entry.notes ~= "" and "\n" .. entry.notes or "")}
         end
     end
     if #entries == 0 then entries[1] = {rank="-",title="No missing pickups for your character.",detail="Active, ready and completed quests are excluded."} end
@@ -851,7 +853,7 @@ function UI:ShowPickups(preserveScroll)
         row.detail:SetWidth(contentWidth-50)
         row.rank:SetText(entry.rank)
         row.title:SetText(entry.title)
-        row.detail:SetText(entry.detail)
+        row.detail:SetText(self:IsCompact() and (entry.compactDetail or "") or entry.detail)
         row.detail:Show()
         row.tooltipTitle, row.tooltipText = entry.title, entry.detail
         row:SetScript("OnMouseUp", entry.stop and function(_,button)
@@ -860,12 +862,12 @@ function UI:ShowPickups(preserveScroll)
                 if not ok and DEFAULT_CHAT_FRAME then DEFAULT_CHAT_FRAME:AddMessage("DQT: " .. reason) end
             end
         end or nil)
-        local height = math.max(40,row.title:GetStringHeight()+row.detail:GetStringHeight()+18)
+        local height = math.max(self:IsCompact() and 32 or 40,row.title:GetStringHeight()+row.detail:GetStringHeight()+(self:IsCompact() and 12 or 18))
         row:SetHeight(height)
         row:ClearAllPoints()
         row:SetPoint("TOPLEFT",self.frame.turnInContent,"TOPLEFT",0,-y)
         row:Show()
-        y=y+height+8
+        y=y+height+(self:IsCompact() and 4 or 8)
     end
     self.frame.turnInContent:SetHeight(math.max(viewportHeight,y))
     self.frame.turnInScroll:SetVerticalScroll(math.min(scroll,math.max(0,y-viewportHeight)))
@@ -897,14 +899,14 @@ function UI:ShowDungeonList(preserveScroll)
 
     local y = 0
     local cardIndex, hidden = 0, 0
-    local context = DQT:GetPlayerContext()
+    local context = DQT:PrepareQuestScan(DQT:GetPlayerContext())
     local query = string.lower(self.searchText or ""):match("^%s*(.-)%s*$")
     for _, key in ipairs(DQT:GetOrderedDungeonKeys()) do
         local dungeon = DQT.dungeons[key]
         local matches = string.find(string.lower(dungeon.name .. " " .. key .. " " .. (dungeon.location or "")), query, 1, true)
         local status = matches and DQT:GetDisplayDungeonStatus(key, context)
         dungeon = status and status.dungeon or dungeon
-        if status and DQT:ShouldShowDungeon(status, context) and matches then
+        if status and (query ~= "" or DQT:ShouldShowDungeon(status, context)) and matches then
             cardIndex = cardIndex + 1
             local counts = status.counts or {}
             local card = self.frame.dungeonCards[cardIndex]
@@ -915,7 +917,9 @@ function UI:ShowDungeonList(preserveScroll)
 
             card:ClearAllPoints()
             card:SetPoint("TOPLEFT", self.frame.dungeonContent, "TOPLEFT", 0, -y)
-            card.art:SetTexture(dungeon.art or "Interface\\DialogFrame\\UI-DialogBox-Background-Dark")
+            local art = dungeon.art or "Interface\\DialogFrame\\UI-DialogBox-Background-Dark"
+            if card.artPath ~= art then card.art:SetTexture(art); card.artPath = art end
+            card.dungeonKey = key
             card.name:SetText(dungeon.name)
             card.dungeonName = dungeon.name
             card.notes = dungeon.notes
@@ -928,12 +932,12 @@ function UI:ShowDungeonList(preserveScroll)
             for _, region in ipairs({card.bg, card.art, card.shade, card.borderTop, card.borderBottom, card.borderLeft, card.borderRight, card.meta, card.summary, card.party}) do region:SetShown(not compact) end
             card.name:ClearAllPoints()
             card.name:SetPoint("TOPLEFT", card, "TOPLEFT", compact and 0 or 18, compact and -4 or -16)
-            card.name:SetWidth(compact and contentWidth-8 or 650)
+            card.name:SetWidth(compact and contentWidth-8 or contentWidth-36)
+            for _, region in ipairs({card.meta,card.summary,card.party}) do region:SetWidth(contentWidth-36) end
             card.name:SetFontObject(compact and "GameFontNormal" or "GameFontNormalLarge")
             if compact then card.notes = card.meta:GetText() .. "\n" .. card.summary:GetText() .. "\n" .. card.party:GetText() .. "\n" .. (dungeon.notes or "") end
             local height = compact and math.max(28, card.name:GetStringHeight()+12) or math.max(124, card.name:GetStringHeight() + card.meta:GetStringHeight() + card.summary:GetStringHeight() + card.party:GetStringHeight() + 54)
             card:SetHeight(height)
-            card:SetScript("OnClick", function() DQT:OpenDungeon(key) end)
             card:Show()
             y = y + height + (compact and 4 or 8)
         elseif matches then hidden = hidden+1
@@ -943,10 +947,11 @@ function UI:ShowDungeonList(preserveScroll)
     self.frame.dungeonContent:SetHeight(math.max(viewportHeight, y))
     self.frame.dungeonScroll:SetVerticalScroll(math.min(scroll, math.max(0, y - viewportHeight)))
     if cardIndex == 0 then
-        self.frame.listEmpty:SetText(query ~= "" and "No dungeons match your search and filters." or "No dungeons match your filters.")
+        self.frame.listEmpty:SetText(query ~= "" and "No dungeons match your search." or "No dungeons match your filters.")
         self.frame.listEmpty:Show()
     end
     self:UpdateFilterSummary(hidden, true)
+    if query ~= "" then self.frame.filterSummary.text:SetText("Filters: bypassed for search") end
 
     self.frame:Show()
 end

@@ -1,10 +1,12 @@
 do
     local oldContext, oldState, oldComplete, oldZone = DQT.GetPlayerContext, DQT.GetQuestState, DQT.IsQuestComplete, GetRealZoneText
+    local oldActive = DQT.IsQuestActive
     local oldDB = DQT.db
     local context = {faction="Horde",class="WARRIOR",race="Orc",level=28}
     local states = {}
     DQT.GetPlayerContext = function() return context end
     DQT.IsQuestComplete = function(_,id) return states[id] == "completed" end
+    DQT.IsQuestActive = function(_,id) return states[id] == "active" or states[id] == "ready" end
     DQT.GetQuestState = function(self,id,quest,player)
         if states[id] then return states[id],states[id] end
         local availability, reason=self:GetQuestAvailability(quest,player)
@@ -19,9 +21,12 @@ do
         return false
     end
     local route=DQT:GetDungeonPickupRoute("gnomeregan")
-    assert(Has(route.stops,2841) and Has(route.stops,2842),"Level 28 Horde Gnomeregan pickups")
+    assert(Has(route.stops,2841) and Has(route.blocked,2842),"Accept Rig Wars before Scooty's lead-in becomes available")
     assert(Has(route.blocked,2843) and Has(route.inside,2904),"Blocked teleporter and in-dungeon escort separated")
-    states[2841],states[2842]="active","completed"
+    states[2841]="active"
+    route=DQT:GetDungeonPickupRoute("gnomeregan")
+    assert(Has(route.stops,2842),"Active Rig Wars unlocks the Scooty pickup stop")
+    states[2842]="completed"
     route=DQT:GetDungeonPickupRoute("gnomeregan")
     assert(not Has(route.stops,2841) and not Has(route.stops,2842) and Has(route.stops,2843),"Live pickup/prerequisite updates")
     states={}
@@ -99,6 +104,7 @@ do
     DQT.UI.currentDungeonKey="gnomeregan"
     DQT.UI:ShowPickups()
     assert(DQT.UI.currentView=="pickups" and DQT.UI.frame.pickupButton:IsShown(),"Pickup navigation")
+    local fullPickupHeight = DQT.UI.frame.turnInContent:GetHeight()
     assert(DQT.UI.frame.turnInContent:GetHeight()>=DQT.UI.frame.content:GetHeight(),"Pickup content scrolls")
     DQT.UI:ShowOptions()
     DQT.UI:CloseOptions()
@@ -106,9 +112,23 @@ do
     DQT.db.display.compact=true
     DQT.UI:RefreshCurrentDungeon()
     assert(DQT.UI.frame:GetWidth()==520 and DQT.UI.frame.turnInRows[1].detail:IsShown(),"Compact retains pickup locations")
+    assert(DQT.UI.frame.turnInContent:GetHeight() <= fullPickupHeight,"Compact pickup route is no taller than the detailed route")
+    for _, row in ipairs(DQT.UI.frame.turnInRows) do
+        if row:IsShown() then
+            assert(not row.detail:GetText():find("#%d+"),"Compact pickups omit quest IDs and long chain notes")
+            assert(row.tooltipText and row.title:GetWidth() <= row:GetWidth()-50,"Pickup details remain available in tooltips without overflowing")
+        end
+    end
+    DQT.db.display.compact=false
+    DQT.UI:RefreshCurrentDungeon()
+    assert(DQT.UI.frame:GetWidth()==700 and DQT.UI.frame:GetHeight()==570,"Regular pickup screen uses medium dimensions")
+    assert(DQT.UI.frame.turnInContent:GetHeight()==fullPickupHeight,"Detailed pickup layout restores after compact mode")
+    DQT.db.display.compact=true
+    DQT.UI:RefreshCurrentDungeon()
     DQT.UI.frame.primaryButton.scripts.OnClick()
     assert(DQT.UI.currentView=="checklist","Back returns to selected dungeon")
     DQT.db=oldDB
     DQT.GetPlayerContext,DQT.GetQuestState,DQT.IsQuestComplete,GetRealZoneText=oldContext,oldState,oldComplete,oldZone
+    DQT.IsQuestActive = oldActive
 end
 print("Pickup routes passed: level 28 factions, states/chains, shared stops, ordering, missing APIs, navigation, compact and scrolling")

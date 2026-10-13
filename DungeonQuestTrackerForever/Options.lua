@@ -139,9 +139,9 @@ function DQT:GetDisplayDungeonStatus(key, context)
     local function MarkPrerequisites(quest)
         for _, prerequisite in ipairs(quest.prerequisites or {}) do
             local id = prerequisite.questID
-            if prerequisite.relationship == "required" and id and not seen[id] then
+            if prerequisite.relationship == "required" and id and not prerequisite.anyOf and not seen[id] then
                 seen[id] = true
-                if not self:IsQuestComplete(id) then
+                if not self:IsPrerequisiteSatisfied(prerequisite, context) then
                     blocking[id] = true
                     local parent = self:GetQuest(id)
                     if parent then MarkPrerequisites(parent) end

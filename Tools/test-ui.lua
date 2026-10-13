@@ -20,6 +20,26 @@ assert(#ui:GroupChecklistQuests(input) == 4, "Malformed cycles do not hang or lo
 DQT.GetQuest = originalGetQuest
 local oldDB = DQT.db
 DQT.db = {filters={ignoreGrayChecklist=false, ignoreRedChecklist=false, hideGrayDungeons=false, hideRedDungeons=false}}
+local originalShouldShowDungeon = DQT.ShouldShowDungeon
+DQT.ShouldShowDungeon = function() return false end
+ui.searchText = "  BLACKROCK  "
+ui:ShowDungeonList()
+local blackrockCount = 0
+for _, card in ipairs(ui.frame.dungeonCards) do
+    if card:IsShown() then
+        assert(string.find(string.lower(card.name.text), "blackrock", 1, true), "Search only shows matching dungeons")
+        blackrockCount = blackrockCount + 1
+    end
+end
+assert(blackrockCount == 3, "Search bypasses filters for Depths and both Spires")
+assert(DQT.db.filters.hideRedDungeons == false, "Search does not change saved filters")
+ui.searchText = "   "
+ui:ShowDungeonList()
+assert(ui.frame.listEmpty:IsShown(), "Whitespace search restores visibility filters")
+ui.searchText = ""
+ui:ShowDungeonList()
+assert(ui.frame.listEmpty:IsShown(), "Clearing search restores visibility filters")
+DQT.ShouldShowDungeon = originalShouldShowDungeon
 ui.searchText = "  wAiLiNg  "
 ui:ShowDungeonList()
 assert(ui.frame.dungeonCards[1].name.text == "Wailing Caverns", "Case-insensitive search")

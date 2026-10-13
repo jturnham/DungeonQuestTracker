@@ -156,8 +156,43 @@ function DQT:ShowQuestLootReminder(bossName, drops, preview, silent)
         frame = CreateFrame("Frame", "DungeonQuestTrackerForeverLootReminder", UIParent, BackdropTemplateMixin and "BackdropTemplate" or nil)
         frame:SetSize(360, 110)
         frame:SetPoint("TOP", UIParent, "TOP", 0, -150)
+        local position = self.db and self.db.lootReminders and self.db.lootReminders.position
+        local anchors = {TOP=true, TOPLEFT=true, TOPRIGHT=true, LEFT=true, CENTER=true, RIGHT=true, BOTTOM=true, BOTTOMLEFT=true, BOTTOMRIGHT=true}
+        if type(position) == "table" and anchors[position.point] and anchors[position.relativePoint]
+            and type(position.x) == "number" and type(position.y) == "number"
+            and math.abs(position.x) < 100000 and math.abs(position.y) < 100000 then
+            frame:ClearAllPoints()
+            frame:SetPoint(position.point, UIParent, position.relativePoint, position.x, position.y)
+        end
         frame:SetFrameStrata("HIGH")
         frame:EnableMouse(true)
+        frame:SetMovable(true)
+        frame:SetClampedToScreen(true)
+        frame:RegisterForDrag("LeftButton")
+        frame:SetScript("OnMouseDown", function() frame.suppressClick = nil end)
+        frame:SetScript("OnMouseUp", function(_, button)
+            if button == "LeftButton" and not frame.dragging and not frame.suppressClick then
+                frame.dismissRemaining = frame.dismissRemaining or 0.2
+                frame.dismissAlpha = frame:GetAlpha()
+            end
+        end)
+        frame:SetScript("OnDragStart", function()
+            frame.dragging = true
+            frame:StartMoving()
+        end)
+        frame:SetScript("OnDragStop", function()
+            frame:StopMovingOrSizing()
+            frame.dragging, frame.suppressClick = nil, true
+            local point, _, relativePoint, x, y = frame:GetPoint()
+            if DQT.db then
+                DQT.db.lootReminders = DQT.db.lootReminders or {}
+                DQT.db.lootReminders.position = {point=point, relativePoint=relativePoint, x=x, y=y}
+            end
+        end)
+        frame:SetScript("OnHide", function()
+            if frame.dragging then frame:StopMovingOrSizing() end
+            frame.dragging, frame.suppressClick = nil, nil
+        end)
         if frame.SetBackdrop then
             frame:SetBackdrop({ bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 16, insets = { left = 4, right = 4, top = 4, bottom = 4 } })
         else
@@ -175,10 +210,13 @@ function DQT:ShowQuestLootReminder(bossName, drops, preview, silent)
         frame.text:SetPoint("TOPLEFT", 56, -34)
         frame.text:SetWidth(272)
         frame.text:SetJustifyH("LEFT")
-        frame.close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
-        frame.close:SetPoint("TOPRIGHT", -2, -2)
-        frame.close:SetScript("OnClick", function() frame:Hide() end)
         frame:SetScript("OnUpdate", function(_, elapsed)
+            if frame.dismissRemaining then
+                frame.dismissRemaining = math.max(0, frame.dismissRemaining - elapsed)
+                frame:SetAlpha(frame.dismissAlpha * frame.dismissRemaining / 0.2)
+                if frame.dismissRemaining == 0 then frame:Hide() end
+                return
+            end
             frame.remaining = (frame.remaining or 0) - elapsed
             if frame.remaining <= 0 then
                 frame:Hide()
@@ -197,6 +235,7 @@ function DQT:ShowQuestLootReminder(bossName, drops, preview, silent)
     local icon = drops[1].itemID and SafeCall((C_Item and C_Item.GetItemIconByID) or GetItemIcon, drops[1].itemID)
     frame.icon:SetTexture(icon or "Interface\\Icons\\INV_Misc_Bag_10")
     frame.drops, frame.bossName, frame.remaining = drops, bossName, 15
+    frame.dismissRemaining, frame.dismissAlpha = nil, nil
     frame:SetAlpha(1)
     frame:Show()
     if not silent then
