@@ -14,7 +14,7 @@ for id, quest in pairs(DQT.quests) do
         local xp, source = DQT:GetQuestRewardXP(quest)
         assert(xp == quest.foreverXp and source == "Forever (published beta)", "Published reward label: " .. id)
         assert(not quest.xpEstimate and not quest.xpOutdated and quest.confidence ~= "verifiedInGame", "Published rewards do not claim local verification")
-        assert(quest.xpSource:find("https://wowforever.wclbox.com/en/fuben/", 1, true), "Published source preserved")
+        assert(quest.xpSource:find("https://wowforever.wclbox.com/en/fuben/", 1, true) or quest.xpSource:find("https://wowforevertalents.com/quests/", 1, true), "Published source preserved")
     elseif quest.xpReported then
         local xp, source = DQT:GetQuestRewardXP(quest)
         assert(xp == quest.foreverXp and source == "Forever (player reported)", "Reported reward label")
@@ -25,7 +25,8 @@ for id, quest in pairs(DQT.quests) do
         assert(source == "Forever (outdated; unverified)", "Stale reward label: " .. id)
     end
 end
-assert(count == 7 and published == 35, "Only explicitly published post-update rewards supersede estimates: " .. count .. " estimates, " .. published .. " published")
+assert(count == 7 and published == 37, "Only explicitly published post-update rewards supersede estimates: " .. count .. " estimates, " .. published .. " published")
+assert(DQT.quests[92457].foreverXp == 9400 and DQT.quests[98815].foreverXp == 1150, "October 16 published quest rewards")
 assert(DQT.quests[5723].foreverXp == 2150 and DQT.quests[5723].xpReported, "RFC player report")
 assert(DQT.quests[387].classicXp == 2650 and DQT.quests[387].foreverXp == 5550, "Stockade baseline retained separately from published XP")
 assert(DQT.quests[386].foreverXp == 4200, "Stockade estimate")

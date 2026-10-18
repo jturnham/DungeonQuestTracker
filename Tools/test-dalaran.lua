@@ -44,7 +44,7 @@ do
     for _,id in ipairs(DQT.dungeons["city-of-dalaran"].quests) do
         local quest=DQT:GetQuest(id)
         assert(quest.awaitingFinalVerification and quest.confidence=="needsReview" and not quest.verifiedForever,"Explicit provisional attunement")
-        assert(DQT:GetQuestRewardXP(quest)==0 and quest.questLevelUnverified,"No invented XP or color filtering")
+        assert(DQT:GetQuestRewardXP(quest)==(id==92457 and 9400 or 0) and quest.questLevelUnverified,"Only sourced XP replaces unknown reward; levels remain provisional")
     end
     assert(DQT:GetQuestAvailability(DQT.quests[92434],context)=="locked","Horde preparation enforced")
     complete[544],complete[545],complete[93680]=true,true,true
@@ -74,6 +74,12 @@ do
     UnitFactionGroup=function() return "Alliance" end
     route=DQT:GetDungeonPickupRoute("city-of-dalaran",nil,context)
     assert(HasPickup(route,92489) and HasPickup(route,92456) and HasPickup(route,92457),"Alliance external pickups routed at level 28")
+    local moderaStop
+    for _,stop in ipairs(route.stops) do
+        for _,entry in ipairs(stop.quests) do if entry.questID==92457 then moderaStop=stop end end
+    end
+    assert(moderaStop and moderaStop.location.zone=="Silverpine Forest" and moderaStop.x==68.7 and moderaStop.y==45.2,"Published Modera position produces a positioned pickup stop")
+    assert(DQT.quests[97287].verification.conflict:find("October 15",1,true),"Horde outdoor access change flagged without removing historical follow-up")
     complete[92458]=nil
     ready[92458]=true
     for _,id in ipairs({92489,92456,92457,92459}) do ready[id]=true end

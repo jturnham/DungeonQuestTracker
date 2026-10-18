@@ -102,7 +102,7 @@ for _, faction in ipairs({ "Alliance", "Horde" }) do
     local wetlands = DQT:GetDungeonQuestStatus("excavation-site-wetlands")
     assert(#wetlands.quests == (faction == "Horde" and 5 or 9), "Wetlands faction coverage")
     for _, row in ipairs(wetlands.quests) do
-        assert(DQT:GetQuestRewardXP(row.quest) == 0, "Unknown Wetlands XP not fabricated")
+        assert(DQT:GetQuestRewardXP(row.quest) == (row.questID == 98815 and 1150 or 0), "Only published Wetlands XP replaces unknown reward")
         assert(not DQT:IsQuestGray(row.quest, {level=30}) and not DQT:IsQuestRed(row.quest, {level=18}), "Provisional quest level not used for color exclusion")
     end
     assert(#DQT:GetDungeonQuestStatus("city-of-dalaran").quests == (faction=="Horde" and 9 or 6),"Dalaran faction quest and continuation coverage")

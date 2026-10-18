@@ -1,13 +1,13 @@
 local _, DQT = ...
 local source="https://www.wowhead.com/forever/guide/city-of-dalaran-dungeon-overview-location-rewards"
 local magus={name="Magus Wordeen Voidglare",zone="Hillsbrad Foothills",subzone="Tarren Mill"}
-local modera={name="Image of Archmage Modera",zone="Alterac Mountains",subzone="Outside Dalaran, beside Lordamere Lake (confirm exact position)"}
+local modera={name="Image of Archmage Modera",zone="Silverpine Forest",subzone="Outside Dalaran, beside Lordamere Lake",coordinates="68.7, 45.2"}
 local celindra={name="Archmage Celindra",zone="City of Dalaran",subzone="Violet Citadel (confirm exact position)"}
 local melisara={name="Melisara",zone="Hillsbrad Foothills",subzone="Tarren Mill"}
 local felben={name="Doctor Martin Felben",zone="Undercity",subzone="The Apothecarium"}
 local rexxie={name="Rexxie Copperclutch",zone="City of Dalaran",subzone="Near the sewer entrance"}
-local andromath={name="High Sorcerer Andromath",zone="Stormwind City",subzone="Mage Quarter"}
-local shylamiir={name="Shylamiir",zone="Stormwind City",subzone="The Park, herbalist shop"}
+local andromath={name="High Sorcerer Andromath",zone="Stormwind City",subzone="Wizard's Sanctum",coordinates="48.8, 87.6"}
+local shylamiir={name="Shylamiir",zone="Stormwind City",subzone="The Park, herbalist shop",coordinates="31.3, 62.9"}
 local records={
     [544]={name="Prison Break In",faction="Horde",pickup=magus,turnIn=magus,objectives="Recover the traitors' bloodstone artifacts at Lordamere Internment Camp and return to Tarren Mill."},
     [545]={name="Dalaran Patrols",faction="Horde",followUpOf=544,pickup=magus,turnIn=magus,objectives="Kill 6 Dalaran Summoners and 12 Elemental Slaves, then return to Tarren Mill.",prerequisites={{questID=544,relationship="required",note="Complete Prison Break In first; exact Forever chain requirements await final verification."}}},

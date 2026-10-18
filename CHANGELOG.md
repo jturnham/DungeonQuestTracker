@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.5 - 2026-10-18
+
+- Add published October 16 rewards for Starving Arcane (9400 XP) and Highland Hides (1150 XP), retaining explicit unverified scaling/source labels.
+- Update Dalaran, Wetlands and Hall of Thanes pickup/return coordinates from published beta logs, including Modera's Silverpine Forest map location.
+- Note the October 15 removal of Horde outdoor Dalaran access without assuming dungeon access or historical follow-ups were removed.
+- Remove outdated Wetlands missing-relic warnings following Blizzard's documented fix.
+
 ## 0.5.4 - 2026-10-13
 
 - Let dungeon searches bypass visibility filters without changing saved settings; clearing the search restores normal filtering.

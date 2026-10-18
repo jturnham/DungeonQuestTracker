@@ -235,6 +235,61 @@ for id,quest in pairs(DQT.quests) do
         quest.verification.sourceReview="2026-10-09: Dalaran guide and individual Forever quest IDs reviewed; dungeon opening confirmed by October 8 Blizzard notes. Awaiting final client verification."
         quest.verification.xp="Unknown Forever XP; no Classic reward or dungeon bonus assumed."
         quest.verification.level="Level 24 is reported for the new attunement steps; reused outdoor minimum levels and provisional level 33 need final verification."
-        quest.verification.conflict="Awaiting final verification: contact positions and prerequisite gates. Keeper Bel'varil's branch is optional; only one keyholder is needed to open the group entrance. No map coordinates or XP invented."
+        quest.verification.conflict="Awaiting final verification: prerequisite gates and remaining contacts. Keeper Bel'varil's branch is optional; one keyholder opens the group entrance. Modera and the Alliance city pickups have October 16 published coordinates; remaining positions and rewards are not assumed."
     end
+end
+
+-- Published client-log observations are evidence, not local character verification.
+local october18Rewards = {
+    [92457]={9400,"https://wowforevertalents.com/quests/starving-arcane-92457/"},
+    [98815]={1150,"https://wowforevertalents.com/quests/highland-hides-98815/"},
+}
+for id, reward in pairs(october18Rewards) do
+    local quest = DQT.quests[id]
+    quest.xpPreviousEstimate = quest.foreverXp
+    quest.foreverXp, quest.xpPublished, quest.xpSource = reward[1], true, reward[2]
+    quest.xpEstimate, quest.xpOutdated, quest.xpReported = nil, nil, nil
+    quest.sourceURLs[#quest.sourceURLs+1] = reward[2]
+    quest.verification.xpReview = "2026-10-18: matched individual quest ID to October 16 WFT beta client-log publication."
+    quest.verification.xp = "Published client-log reward; not independently verified locally. Observation level and overlevel scaling remain provisional; no blanket dungeon multiplier applied."
+end
+
+local reviewedLocations = {
+    [98815]={coordinates="8.6, 55.8"},
+    [95646]={coordinates="56.3, 40.5",subzone="The Green Belt"},
+    [95647]={coordinates="11.9, 58.8",subzone="Menethil Harbor",side="pickup"},
+    [95809]={coordinates="11.9, 58.8",subzone="Menethil Harbor",side="turnIn"},
+    [95795]={coordinates="25.7, 46.5",side="turnIn"},
+    [95810]={coordinates="38.8, 52.4",side="turnIn"},
+    [96403]={coordinates="32.0, 45.0"},
+    [96394]={coordinates="33.9, 48.1"},
+    [96393]={coordinates="39.5, 56.1",side="turnIn"},
+}
+DQT.quests[95647].pickup.name = "Caitlin Grassman"
+DQT.quests[95809].turnIn.name = "Caitlin Grassman"
+DQT.quests[95810].turnIn.name = "Prospector Whelgar"
+for id, update in pairs(reviewedLocations) do
+    local quest = DQT.quests[id]
+    for _, side in ipairs({"pickup","turnIn"}) do
+        if not update.side or update.side == side then
+            local location = quest[side]
+            for key, value in pairs(update) do if key ~= "side" then location[key] = value end end
+        end
+    end
+    local slug = quest.dungeon == "hall-of-thanes" and "the-hall-of-thanes" or "excavation-site-wetlands"
+    quest.sourceURLs[#quest.sourceURLs+1] = "https://wowforevertalents.com/dungeons/" .. slug .. "/"
+    quest.verification.sourceReview = "2026-10-18: pickup/return positions reviewed against October 16 published beta logs; other fields remain provisional."
+end
+for _, id in ipairs({92458,92457,92489,92456}) do
+    local quest = DQT.quests[id]
+    quest.sourceURLs[#quest.sourceURLs+1] = "https://wowforevertalents.com/dungeons/city-of-dalaran/"
+    quest.verification.sourceReview = "2026-10-18: pickup/return coordinates from October 16 published beta logs; remaining chain details await local confirmation."
+end
+local accessSource = "https://us.forums.blizzard.com/en/wow/t/2360696"
+DQT.quests[97287].objectives = "Take the Arcane Mote to Archmage Celindra. October 15 removed Horde outdoor-city access after the key chain; verify how this continuation is completed in the current build before entering hostile outdoor Dalaran."
+DQT.quests[97287].verification.conflict = "Blizzard removed Horde outdoor Dalaran access on October 15 without changing dungeon access. Current completion access/contact for Shrewd Negotiations needs verification; the historical continuation is retained, not assumed removed."
+DQT.quests[97287].sourceURLs[#DQT.quests[97287].sourceURLs+1] = accessSource
+for _, id in ipairs({98823,98824}) do
+    DQT.quests[id].sourceURLs[#DQT.quests[id].sourceURLs+1] = accessSource
+    DQT.quests[id].verification.sourceReview = "2026-10-18: Blizzard's October 8 notes confirm the Titan Relic is returned for this continuation."
 end
