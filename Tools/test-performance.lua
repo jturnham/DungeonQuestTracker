@@ -18,6 +18,9 @@ do
     DQT:GetDisplayDungeonStatus("ragefire-chasm")
     assert(contextCalls == 1 and priorityCalls == 0, "Checklist filtering skips unused rankings")
     contextCalls, priorityCalls = 0, 0
+    assert(DQT:BuildDungeonStatusPayload("ragefire-chasm"), "Party status payload available")
+    assert(contextCalls == 1 and priorityCalls == 0, "Party status skips unused turn-in ranking")
+    contextCalls, priorityCalls = 0, 0
     local savedSearch = DQT.UI.searchText
     DQT.UI.searchText = ""
     DQT.UI:ShowDungeonList()

@@ -25,6 +25,19 @@ DQT.optionDefinitions = {
     {key="filters.onlyReady", label="Show only dungeons with ready turn-ins"},
     {section="Turn-In Planner"},
     {key="filters.ignoreGrayTurnIns", label="Exclude gray quests from turn-in priority", tip="This explicitly hides gray ready quests from the planner. Other checklist and dungeon filters do not affect it."},
+    {section="Pickup Routes"},
+    {key="pickups.includeGray", label="Include gray pickup quests"},
+    {key="pickups.includeBreadcrumbs", label="Include optional pickup breadcrumbs"},
+    {key="pickups.includeClass", label="Include my class pickup quests"},
+    {key="pickups.usePlayerPosition", label="Start pickups from my map position", tip="Uses a valid player position only on the same map as recorded stops; otherwise uses the current-zone cluster."},
+    {key="pickups.finishAtEntrance", label="Finish pickup routes at the entrance", tip="Uses recorded entrance approaches where available. Unknown entrances remain text-only; cross-zone travel is not optimized."},
+    {section="Travel"},
+    {key="travel.useHearthstone",label="Include a ready Hearthstone in pickup routes",tip="Requires a known bind destination and a Hearthstone in your bags. Used at most once per itinerary because travel times are not yet measured. Confirm an existing bind in Travel while standing at your bound inn, or bind again to record it automatically."},
+    {key="travel.useFlights",label="Use known flights in pickup routes"},
+    {key="travel.allowUnknownFlights",label="Allow unverified flight knowledge",tip="Unknown flight points may be used with an explicit warning. Points marked not learned are still excluded."},
+    {key="travel.useTransports",label="Use recorded boats, zeppelins and tram routes",tip="Classic connections are provisional in Forever. Departure approaches and waiting times are not estimated."},
+    {key="travel.showSegments",label="Show same-map pickup guide lines",tip="Straight guide segments only, not walkable terrain paths or cross-zone travel lines."},
+    {key="travel.useTomTom",label="Send focused stops to TomTom when available",tip="Optional integration; only DQT-created waypoints are replaced or removed."},
     {section="Minimap And Party"},
     {key="minimap.hide", label="Show minimap button", invert=true},
     {key="party.respond", label="Respond to party quest-status requests"},
@@ -83,7 +96,21 @@ function DQT:InitializeOptions()
 end
 function DQT:ApplyOptions()
     if self.Minimap then self.Minimap:Refresh() end
+    if self.PickupMap and not self:GetOption("travel.useTomTom") then self.PickupMap:ClearWaypoint() end
+    if self.PickupMap then self.PickupMap:InvalidateRoute() end
     if self.UI then self.UI:RefreshCurrentDungeon() end
+    if self.PickupMap and self.PickupMap.provider and WorldMapFrame and WorldMapFrame:IsShown() then
+        self.PickupMap.provider:RefreshAllData()
+    end
+end
+function DQT:ResetPickupOptions()
+    if not self.db then return end
+    self.db.pickups = {}
+    for key, value in pairs(self.defaults.pickups) do self.db.pickups[key] = value end
+    for key in pairs(self.db.optionOverrides or {}) do
+        if key:match("^pickups%.") then self.db.optionOverrides[key] = nil end
+    end
+    self:ApplyOptions()
 end
 function DQT:SetOption(key, value)
     local option = definitions[key]
@@ -132,7 +159,7 @@ function DQT:GetQuestPickupType(quest)
     return "unknown"
 end
 function DQT:GetDisplayDungeonStatus(key, context)
-    context = context or self:GetPlayerContext()
+    context = context or self:PrepareQuestScan(self:GetPlayerContext())
     local raw = self:GetDungeonQuestStatus(key, true, true, context)
     if not raw then return nil end
     local blocking, seen = {}, {}

@@ -10,7 +10,11 @@ A World of Warcraft: Forever addon for finding, collecting and turning in dungeo
 - Faction, class, race and level-aware quest tracking.
 - Global turn-in priority based on your level, XP and potential reward loss after leveling.
 - Nearby turn-ins grouped together when doing so preserves XP priority.
-- Pickup routes for higher-level dungeons, starting in your current zone when eligible pickups are available.
+- Pickup routes for every dungeon, with independent inclusion settings, prerequisite tasks, refresh/reset and next-stop map focus.
+- Current-position pickup starts where the client supports them, plus optional recorded entrance approaches.
+- Flight-aware pickup itineraries with character-specific learned routes, manual flight knowledge, base fares and named boat/zeppelin/tram legs.
+- Optional ready Hearthstone shortcuts, with character-specific bind destinations and a single-use reservation across each pickup itinerary.
+- Optional same-map guide lines and TomTom next-stop focus, without requiring TomTom.
 - Numbered world-map pickup pins with combined tooltips for shared locations.
 - Compact and full display modes with saved preferences.
 - Filters for quest completion, availability, level range and pickup type.
@@ -61,7 +65,7 @@ Loot alerts cover known single-copy quest items from named mobs. Multi-item coll
 - Dire Maul: East, North and West
 - Scholomance and Stratholme: Main Gate and Service Gate
 
-Higher-level Classic quests are included through level 60 using Classic-source data. Their availability, chains and XP in Forever still need beta verification. There is no level-35 tracking cap; the normal level filters can be changed in Options.
+Higher-level Classic quests are included through level 60 using Classic-source data. Dungeons not verified during beta are marked **Provisional** in the list and checklist, including compact mode. Their availability, chains, levels and XP in Forever still need verification. There is no level-35 tracking cap; the normal level filters can be changed in Options.
 
 ## Planned Dungeon Coverage
 
@@ -110,7 +114,9 @@ Party status checks require responding members to have the addon installed. Ques
 
 **Quest XP values are in flux during the Forever beta and are updated as reliable information becomes available.** Rewards, locations and prerequisites may still be provisional. Turn-in priorities and predicted level-ups are estimates, not guarantees.
 
-Pickup routes suggest an order from recorded locations; they do not account for terrain, exact player position or cross-zone travel time. Missing or uncertain coordinates remain text-only.
+Pickup routes suggest an order from recorded locations, using your current map position when available. Transport-aware zone ordering prefers fewer legs and uses base fares as a tie-breaker, not travel time. Flight knowledge is stored per character; unknown flights are excluded unless enabled in Options. Open the flight-path control from a pickup route to review or edit learned nodes. The imported flight network and Classic transport links are provisional; terrain, ground approaches, waiting and flight durations are not estimated. Missing links remain explicit rather than dropping pickups.
+
+Entrance approaches are recorded for Ragefire Chasm, The Stockade and Hall of Thanes; other entrance destinations remain text-only until sourced. Optional guide lines connect adjacent stops on the same map only and are not terrain paths. Optional TomTom integration replaces/removes only DQT-created waypoints. Provisional and missing coordinates remain explicitly unverified or text-only.
 
 See the [changelog](https://github.com/jturnham/DungeonQuestTracker/blob/main/CHANGELOG.md) for release history.
 

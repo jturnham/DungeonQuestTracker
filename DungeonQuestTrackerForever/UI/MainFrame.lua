@@ -278,6 +278,7 @@ function UI:Create()
     frame.primaryButton:SetPoint("LEFT", frame.nav, "LEFT", 0, 0)
     frame.primaryButton:SetScript("OnClick", function()
         if UI.currentView == "options" then UI:CloseOptions()
+        elseif UI.currentView == "travel" then UI:CloseTravelOptions()
         elseif UI.currentView == "pickups" then DQT:OpenDungeon(UI.currentDungeonKey)
         elseif UI.currentView == "list" then
             if UI.currentDungeonKey then DQT:OpenDungeon(UI.currentDungeonKey) end
@@ -316,8 +317,27 @@ function UI:Create()
     frame.pickupStart:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     frame.pickupStart:SetScript("OnClick", nil)
     AddTooltip(frame.pickupStart, "Starting zone", function()
-        return (UI.pickupPlan and UI.pickupPlan.startReason or "") .. "\nRemaining zones are alphabetical, not travel-time optimized."
+        return (UI.pickupPlan and UI.pickupPlan.startZone or "") .. "\n" .. (UI.pickupPlan and UI.pickupPlan.startReason or "") .. "\nKnown transport connections can reorder zones; unresolved legs remain explicit. Not optimized for travel time."
     end)
+    local function RouteTool(field, texture, title, action)
+        local button=CreateFrame("Button",nil,frame.nav)
+        button:SetSize(24,24)
+        button:SetNormalTexture(texture)
+        button:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square","ADD")
+        button:SetScript("OnClick",action)
+        frame[field]=button
+        AddTooltip(button,title)
+    end
+    RouteTool("pickupNext","Interface\\Buttons\\UI-SpellbookIcon-NextPage-Up","Focus next pickup",function() UI:FocusNextPickup() end)
+    RouteTool("pickupRefresh","Interface\\Buttons\\UI-RefreshButton","Refresh pickup route",function()
+        if DQT.PickupMap then DQT.PickupMap:InvalidateRoute() end
+        UI:ShowPickups(true)
+    end)
+    RouteTool("pickupReset","Interface\\Icons\\INV_Misc_Gear_01","Reset pickup preferences",function()
+        if DQT.PickupMap then DQT.PickupMap:ClearRoute() end
+        DQT:ResetPickupOptions()
+    end)
+    RouteTool("pickupFlights","Interface\\Icons\\Ability_Mount_Wyvern_01","Flight paths",function() UI:ShowTravelOptions() end)
 
     frame.searchLabel = frame.nav:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     frame.searchLabel:SetPoint("LEFT", frame.nav, "LEFT", 370, 0)
@@ -408,7 +428,7 @@ function UI:Create()
     frame.filterSummary.text:SetJustifyH("LEFT")
     frame.filterSummary:SetScript("OnClick", function() UI:ShowOptions() end)
     AddTooltip(frame.filterSummary, function() return UI.currentView == "pickups" and "Pickup route assumptions" or "Filters" end, function()
-        if UI.currentView == "pickups" then return "Pickup routes include all level-eligible missing quests, independently of checklist color filters. Coordinate-space order is suggested within each zone; unknown coordinates are placed last. Zone travel, terrain, starting position and entrance arrival are not optimized. Recorded beta locations still need client verification." end
+        if UI.currentView == "pickups" then return "Pickup preferences are independent of checklist filters. Required preparation remains visible. Same-map order uses recorded coordinates; transport-aware zone order prefers fewer legs, then lower base fares. Entrances are approaches, not surveyed portals. Terrain, waiting and elapsed travel time are not modeled." end
         return DQT:GetFilterSummary()
     end)
 
@@ -454,7 +474,14 @@ function UI:UpdateNav()
     local listView = self.currentView == "list"
     self.frame.pickupButton:SetShown((self.currentView == "checklist" or self.currentView == "pickups") and DQT.pickupRouteDungeons[self.currentDungeonKey] == true)
     self.frame.pickupStart:SetShown(self.currentView == "pickups")
-    self.frame.pickupStart:SetWidth(self:IsCompact() and 190 or 290)
+    self.frame.pickupStart:SetWidth(self:IsCompact() and 90 or 190)
+    local previous=self.frame.pickupStart
+    for _,button in ipairs({self.frame.pickupNext,self.frame.pickupRefresh,self.frame.pickupReset,self.frame.pickupFlights}) do
+        button:ClearAllPoints()
+        button:SetPoint("LEFT",previous,"RIGHT",4,0)
+        button:SetShown(self.currentView=="pickups")
+        previous=button
+    end
     self.frame.filterSummary:SetShown(self.currentView ~= "options")
     self.frame.search:SetShown(listView)
     self.frame.searchLabel:SetShown(listView)
@@ -512,6 +539,8 @@ function UI:ClearRows()
     for _, row in ipairs(self.frame.rows) do row:Hide() end
     for _, card in ipairs(self.frame.dungeonCards) do card:Hide() end
     for _, row in ipairs(self.frame.turnInRows) do row:Hide(); row:SetScript("OnMouseUp",nil) end
+    for _,row in ipairs(self.frame.travelRows or {}) do row:Hide() end
+    if self.frame.hearthSettings then self.frame.hearthSettings:Hide() end
 end
 function UI:GroupChecklistQuests(quests)
     local groups, roots, result = {}, {}, {}
@@ -616,7 +645,7 @@ function UI:RenderChecklist(status)
     end
     self.frame.subtitle:SetText(string.format(
         "%s | %s | Done %d / %d | Ready %d | Active %d | Missing %d",
-        status.dungeon.name,
+        status.dungeon.name .. (status.dungeon.provisionalData and " [Provisional]" or ""),
         status.dungeon.recommendedLevel or "unknown",
         counts.completed or 0,
         #(status.quests or {}),
@@ -624,7 +653,7 @@ function UI:RenderChecklist(status)
         counts.active or 0,
         counts.missing or 0
     ))
-    if self:IsCompact() then self.frame.subtitle:SetText(status.dungeon.name) end
+    if self:IsCompact() then self.frame.subtitle:SetText(status.dungeon.name .. (status.dungeon.provisionalData and " [Provisional]" or "")) end
     self:FitContent()
     self:UpdateFilterSummary(status.hidden or 0)
 
@@ -691,6 +720,7 @@ function UI:RenderChecklist(status)
         row.reason:SetText(reason)
         row.tooltipText = (questStatus.stateReason or "") .. "\nPickup: " .. FormatLocation(quest.pickup) .. "\nTurn in: " .. FormatLocation(quest.turnIn)
         if quest.awaitingFinalVerification then row.tooltipText=row.tooltipText .. "\nAttunement: awaiting final verification." end
+        if status.dungeon.provisionalData then row.tooltipText=row.tooltipText .. "\nProvisional dungeon data; not verified during beta." end
         if #chainNotes > 0 then row.tooltipText = row.tooltipText .. "\nChain: " .. table.concat(chainNotes, " ") end
         local canShare, shareReason = false, "Only active or ready quests can be shared."
         if questStatus.state == "active" or questStatus.state == "ready" then
@@ -823,12 +853,15 @@ function UI:ShowPickups(preserveScroll)
     self.frame.turnInScroll:Show()
     local plan = DQT:GetDungeonPickupRoute(self.currentDungeonKey)
     self.pickupPlan = plan
+    self.frame.pickupNext:SetEnabled(#plan.stops>0 or plan.destination~=nil or (plan.readyReturns and #plan.readyReturns>0))
     if DQT.PickupMap then DQT.PickupMap:SetRoute(plan) end
-    self.frame.pickupStart:SetText(plan.zones[1] or "No pickup stops")
+    local startLabel=plan.zones[1] or "No pickup stops"
+    if self:IsCompact() and #startLabel>11 then startLabel=startLabel:sub(1,8).."..." end
+    self.frame.pickupStart:SetText(startLabel)
     self.frame.pickupStart:SetEnabled(false)
     self.frame.subtitle:SetText(plan.dungeon.name .. " | Pickups | Level " .. tostring(plan.context.level or "?") .. " | " .. #plan.stops .. " stops")
     self:FitContent()
-    self.frame.filterSummary.text:SetText("Pickups | Suggested order | Beta locations")
+    self.frame.filterSummary.text:SetText("Pickups | Suggested order" .. (plan.dungeon.provisionalData and " | Provisional" or "") .. (plan.excluded>0 and " | "..plan.excluded.." excluded" or ""))
     local entries = {}
     for i, stop in ipairs(plan.stops) do
         local names, shortNames = {}, {}
@@ -838,12 +871,35 @@ function UI:ShowPickups(preserveScroll)
         end
         entries[#entries+1] = {stop=stop, rank=tostring(i), title=FormatLocation(stop.location), compactDetail=table.concat(shortNames,"\n"), detail=table.concat(names,"\n") .. (not stop.x and "\nNo coordinates; stop order provisional." or "")}
     end
+    if plan.destination then
+        local stop=plan.destination
+        entries[#entries+1]={stop=stop,rank="E",title="Entrance: "..FormatLocation(stop.location),compactDetail=stop.location.note or "Location unverified",
+            detail=(stop.location.note or "Entrance coordinates are not recorded; this destination is text-only.").."\nTransport legs do not estimate terrain, waiting or elapsed travel time."}
+    end
+    for _,entry in ipairs(plan.progress) do
+        entries[#entries+1]={stop=entry.stop,rank=entry.state=="ready" and "T" or "-",title=(entry.state=="ready" and "Turn in: " or "Finish: ")..entry.quest.name,
+            compactDetail=FormatLocation(entry.location),detail=entry.reason.."\nReturn to: "..FormatLocation(entry.location)}
+    end
+    if plan.itinerary then
+        local byStop,ordered={},{}
+        for _,entry in ipairs(entries) do if entry.stop then byStop[entry.stop]=entry end end
+        for _,step in ipairs(plan.itinerary) do
+            if step.kind=="travel" then
+                local detail=step.route and DQT.Travel:Describe(step.route)
+                    or "No permitted recorded transport connection. Flight knowledge, walking links or transport coverage may be incomplete; arrange this leg separately."
+                ordered[#ordered+1]={rank="->",title="Travel: "..step.fromZone.." -> "..step.toZone,
+                    compactDetail=step.route and (step.route.hops.." transport leg(s) | "..step.route.fare.." copper base") or "Unresolved connection",detail=detail}
+            elseif byStop[step.stop] then ordered[#ordered+1]=byStop[step.stop] end
+        end
+        for _,entry in ipairs(entries) do if not entry.stop then ordered[#ordered+1]=entry end end
+        entries=ordered
+    end
     for _, group in ipairs({{plan.blocked,"Blocked"},{plan.inside,"Dungeon / item pickup"},{plan.unknown,"Unknown pickup"}}) do
         for _, entry in ipairs(group[1]) do
             entries[#entries+1] = {rank="-",title=group[2] .. ": " .. entry.quest.name, compactDetail=FormatLocation(entry.quest.pickup), detail=FormatLocation(entry.quest.pickup) .. "\n" .. (entry.reason or "") .. (entry.notes ~= "" and "\n" .. entry.notes or "")}
         end
     end
-    if #entries == 0 then entries[1] = {rank="-",title="No missing pickups for your character.",detail="Active, ready and completed quests are excluded."} end
+    if #entries == 0 then entries[1] = {rank="-",title=#(plan.dungeon.quests or {})==0 and "No quests recorded yet." or "No missing pickups for your character.",detail="Owned quests and excluded pickups are omitted; unrecorded data remains unknown."} end
     local y = 0
     for i, entry in ipairs(entries) do
         local row = self.frame.turnInRows[i]
@@ -874,9 +930,21 @@ function UI:ShowPickups(preserveScroll)
     self.frame:Show()
 end
 
+function UI:FocusNextPickup()
+    if self.currentView~="pickups" then return end
+    self:ShowPickups(true)
+    local plan=self.pickupPlan
+    local stop=plan and (plan.stops[1] or plan.destination)
+    for _,step in ipairs(plan and plan.itinerary or {}) do if step.stop then stop=step.stop; break end end
+    if not stop or not DQT.PickupMap then return end
+    local ok,reason=DQT.PickupMap:OpenStop(stop)
+    if not ok then DQT:Print(reason) end
+end
+
 function UI:RefreshCurrentDungeon()
     if not self.frame or not self.frame:IsShown() then return end
     if self.currentView == "options" then self:RefreshOptions(); return end
+    if self.currentView == "travel" then self:ShowTravelOptions(); return end
     if self.currentView == "list" then self:ShowDungeonList(true); return end
     if self.currentView == "turnins" then self:ShowTurnIns(true); return end
     if self.currentView == "pickups" then self:ShowPickups(true); return end
@@ -920,7 +988,7 @@ function UI:ShowDungeonList(preserveScroll)
             local art = dungeon.art or "Interface\\DialogFrame\\UI-DialogBox-Background-Dark"
             if card.artPath ~= art then card.art:SetTexture(art); card.artPath = art end
             card.dungeonKey = key
-            card.name:SetText(dungeon.name)
+            card.name:SetText(dungeon.name .. (dungeon.provisionalData and " [Provisional]" or ""))
             card.dungeonName = dungeon.name
             card.notes = dungeon.notes
             card.meta:SetText(string.format("Level %s | %s | %s", tostring(dungeon.minLevel or "?"), dungeon.recommendedLevel or "unknown", dungeon.location or "location unknown"))

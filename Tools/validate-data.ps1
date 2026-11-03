@@ -26,8 +26,10 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Data audit or regression tests failed.' }
     & node (Join-Path $PSScriptRoot 'test-level35.cjs') $dependencies 'Tools/test-loot-coverage.lua'
     if ($LASTEXITCODE -ne 0) { throw 'Loot coverage tests failed.' }
-    & node (Join-Path $PSScriptRoot 'test-level35.cjs') $dependencies 'Tools/test-pickup-routes.lua' 'Tools/test-pickup-map.lua' 'Tools/test-dalaran.lua'
+    & node (Join-Path $PSScriptRoot 'test-level35.cjs') $dependencies 'Tools/test-pickup-routes.lua' 'Tools/test-pickup-map.lua' 'Tools/test-dalaran.lua' 'Tools/test-pickup-extensions.lua'
     if ($LASTEXITCODE -ne 0) { throw 'Pickup route tests failed.' }
+    & node (Join-Path $PSScriptRoot 'test-level35.cjs') $dependencies 'Tools/test-travel.lua' 'Tools/test-hearth.lua'
+    if ($LASTEXITCODE -ne 0) { throw 'Travel routing tests failed.' }
     & node (Join-Path $PSScriptRoot 'test-level35.cjs') $dependencies 'Tools/test-turnin-grouping.lua'
     if ($LASTEXITCODE -ne 0) { throw 'Turn-in grouping tests failed.' }
 } finally { Pop-Location }

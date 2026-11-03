@@ -582,7 +582,7 @@ function DQT:GetTurnInPriority(status, context)
 end
 
 function DQT:GetGlobalTurnInPriority()
-    local context = self:GetPlayerContext()
+    local context = self:PrepareQuestScan(self:GetPlayerContext())
     local xpToLevel = 0
     if context.maxXp and context.maxXp > 0 then
         xpToLevel = math.max(0, context.maxXp - SafeNumber(context.currentXp, 0))
@@ -617,7 +617,7 @@ end
 function DQT:GetDungeonQuestStatus(dungeonKey, includeUnavailable, skipTurnIns, context)
     local dungeon = self:GetDungeon(dungeonKey)
     if not dungeon then return nil end
-    context = context or self:GetPlayerContext()
+    context = context or self:PrepareQuestScan(self:GetPlayerContext())
 
     local rows = {}
     local counts = { completed = 0, ready = 0, active = 0, missing = 0, locked = 0, unavailable = 0 }
@@ -704,7 +704,7 @@ function DQT:ShareQuest(questID, questName)
 end
 
 function DQT:ShareDungeonQuests(dungeonKey)
-    local status = self:GetDungeonQuestStatus(dungeonKey)
+    local status = self:GetDungeonQuestStatus(dungeonKey, false, true)
     if not status then return 0, 0 end
 
     if not GetAddonChannel() then self:Print("Join a party before sharing quests."); return 0, 0 end
@@ -729,7 +729,7 @@ function DQT:ShareDungeonQuests(dungeonKey)
 end
 
 function DQT:BuildDungeonStatusPayload(dungeonKey)
-    local status = self:GetDungeonQuestStatus(dungeonKey)
+    local status = self:GetDungeonQuestStatus(dungeonKey, false, true)
     if not status then return nil end
 
     local pieces = { "STATUS", dungeonKey }

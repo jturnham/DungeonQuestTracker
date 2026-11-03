@@ -5,7 +5,9 @@ for key, dungeon in pairs(DQT.dungeons) do
         assert(#dungeon.quests == 0, "Placeholder must not invent quests: " .. key)
         assert(dungeon.entryLevelUnverified and dungeon.source, "Placeholder provenance missing")
         assert(#dungeon.factions == 2, "Placeholder must support both factions")
+        assert(dungeon.provisionalData and dungeon.betaAvailability=="not-tested", "Untested placeholder must be visibly provisional")
     end
+    assert(type(dungeon.provisionalData)=="boolean" and dungeon.betaAvailability,"Dungeon beta provenance missing: "..key)
 end
 assert(placeholders == 5, "Only announced Forever dungeons without quest evidence should remain empty")
 local first, second = DQT:GetOrderedDungeonKeys(), DQT:GetOrderedDungeonKeys()
@@ -22,6 +24,20 @@ for _, key in ipairs({"deadmines","shadowfang-keep","blackfathom-deeps"}) do
 end
 for _, key in ipairs({"zul-farrak","maraudon","sunken-temple","blackrock-depths","dire-maul-east","dire-maul-west","dire-maul-north","lower-blackrock-spire","upper-blackrock-spire","scholomance","stratholme-main-gate","stratholme-service-gate"}) do
     assert(#DQT.dungeons[key].quests > 0 and not DQT.dungeons[key].placeholder, "Classic quest coverage missing: " .. key)
+    assert(DQT.dungeons[key].provisionalData and DQT.dungeons[key].notes:find("Provisional data",1,true),"Non-beta Classic catalogue must be labelled provisional: "..key)
+end
+do
+    local ui, search, db = DQT.UI, DQT.UI.searchText, DQT.db
+    DQT.db={display={compact=false}}
+    ui.searchText="blackrock"
+    for _,compact in ipairs({false,true}) do
+        DQT.db.display.compact=compact
+        ui:ShowDungeonList()
+        for i=1,3 do assert(ui.frame.dungeonCards[i].name:GetText():find("[Provisional]",1,true),"Both card layouts show provisional label") end
+        ui:ShowDungeon(DQT:GetDisplayDungeonStatus("blackrock-depths"))
+        assert(ui.frame.subtitle:GetText():find("[Provisional]",1,true),"Both checklist layouts show provisional label")
+    end
+    ui.searchText,DQT.db=search,db
 end
 local classQuests = {[8422]="WARLOCK",[8425]="WARRIOR",[9053]="DRUID",[8413]="SHAMAN",[8253]="MAGE",[8232]="HUNTER",[8257]="PRIEST",[8236]="ROGUE",[8418]="PALADIN"}
 for id, class in pairs(classQuests) do

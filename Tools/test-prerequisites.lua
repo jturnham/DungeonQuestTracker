@@ -41,4 +41,8 @@ do
     assert(not DQT:ValidatePartyQuest(2842,decoded))
     C_QuestLog, IsQuestFlaggedCompleted, UnitLevel = oldLog, oldHistory, oldLevel
 end
+for _, id in ipairs(DQT.dungeons["ruins-of-lordaeron"].quests) do
+    assert(DQT.quests[id].minLevel == 15,"Ruins pickup minimum from November 2 notes: "..id)
+    assert(DQT.quests[id].verification.prerequisites:find("post-November-2",1,true),"Changed Ruins chains remain explicitly pending")
+end
 print("Prerequisites passed: required chains, optional referrals, active-log gates, OR/AND branches and bounded party sync.")

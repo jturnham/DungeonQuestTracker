@@ -10,6 +10,12 @@ for key, dungeon in pairs(DQT.dungeons) do
     assert(Text(key) and Text(dungeon.name), "Dungeon name/key missing")
     assert(Integer(dungeon.minLevel, 1, 100), "Dungeon level invalid: " .. key)
     assert(type(dungeon.quests) == "table", "Quest list missing: " .. key)
+    if dungeon.entrance then
+        local location=dungeon.entrance
+        assert(Text(location.name) and Text(location.zone) and location.source:match("^https://"),"Entrance provenance missing: "..key)
+        local x,y=(location.coordinates or ""):match("^(%d+%.?%d*)%s*,%s*(%d+%.?%d*)$")
+        assert(tonumber(x) and tonumber(y) and tonumber(x)<=100 and tonumber(y)<=100,"Entrance coordinates invalid: "..key)
+    end
     local seen = {}
     for _, id in ipairs(dungeon.quests) do
         assert(Integer(id, 1, 1000000) and DQT.quests[id], "Unresolved dungeon quest: " .. tostring(id))
@@ -40,6 +46,11 @@ for id, quest in pairs(DQT.quests) do
         local location = quest[field]
         assert(type(location) == "table" and Text(location.name) and Text(location.zone), "Invalid " .. field .. ": " .. id)
         if location.coordinates then assert(Text(location.coordinates), "Invalid coordinates: " .. id) end
+        if location.mapID then assert(Integer(location.mapID,1,1000000),"Invalid explicit map ID: "..id) end
+    end
+    for _,location in ipairs(quest.pickupAlternatives or {}) do
+        assert(Text(location.name) and Text(location.zone) and Text(location.source),"Alternative giver provenance missing: "..id)
+        if location.mapID then assert(Integer(location.mapID,1,1000000),"Invalid alternative map ID: "..id) end
     end
     for _, field in ipairs({"classicXp", "foreverXp"}) do
         if quest[field] ~= nil then assert(Integer(quest[field], 0, 1000000), "Invalid XP: " .. id) end

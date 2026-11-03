@@ -205,6 +205,36 @@ for _, row in ipairs(placeholders) do
     }
 end
 
+-- The beta's published dungeon list is not proof that every recorded quest was tested.
+local betaDungeons = {
+    ["ragefire-chasm"]=true, ["ruins-of-lordaeron"]=true, ["hall-of-thanes"]=true,
+    ["deadmines"]=true, ["wailing-caverns"]=true, ["shadowfang-keep"]=true,
+    ["the-stockade"]=true, ["excavation-site-wetlands"]=true, ["blackfathom-deeps"]=true,
+    ["city-of-dalaran"]=true, ["gnomeregan"]=true, ["razorfen-kraul"]=true,
+    ["razorfen-downs"]=true, ["uldaman"]=true, ["scarlet-monastery-graveyard"]=true,
+    ["scarlet-monastery-library"]=true, ["scarlet-monastery-armory"]=true,
+}
+DQT.dungeons["ragefire-chasm"].entrance = {
+    name="Ragefire Chasm entrance",zone="Orgrimmar",subzone="Cleft of Shadow",coordinates="52.8, 49.6",
+    source="https://www.warcrafttavern.com/wow-classic/guides/ragefire-chasm/",
+    note="Classic entrance coordinates; confirm in Forever. Orgrimmar is hostile to Alliance.",
+}
+DQT.dungeons["the-stockade"].entrance = {
+    name="The Stockade approach",zone="Stormwind City",subzone="Warden Thelwater, outside the instance",coordinates="41.2, 58.0",
+    source="https://www.wowhead.com/classic/guide/cielos-dungeon-quests-guide-for-wow-classic-28028",
+    note="Recorded quest-giver approach, not a surveyed portal position. Stormwind is hostile to Horde.",
+}
+DQT.dungeons["hall-of-thanes"].entrance = {
+    name="Hall of Thanes approach",zone="Ironforge",subzone="Thom Filch, Old Ironforge bridge",coordinates="32.0, 45.0",
+    source="https://wowforevertalents.com/dungeons/the-hall-of-thanes/",
+    note="Published beta quest-giver approach, not a surveyed portal position. Ironforge is hostile to Horde.",
+}
+for key, dungeon in pairs(DQT.dungeons) do
+    dungeon.betaAvailability = betaDungeons[key] and "available" or "not-tested"
+    if key == "scarlet-monastery-cathedral" then dungeon.betaAvailability = "unconfirmed" end
+    dungeon.provisionalData = not betaDungeons[key]
+end
+
 
 
 

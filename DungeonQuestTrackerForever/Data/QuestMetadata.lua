@@ -293,3 +293,28 @@ for _, id in ipairs({98823,98824}) do
     DQT.quests[id].sourceURLs[#DQT.quests[id].sourceURLs+1] = accessSource
     DQT.quests[id].verification.sourceReview = "2026-10-18: Blizzard's October 8 notes confirm the Titan Relic is returned for this continuation."
 end
+
+-- The November 2 notes specify pickup levels, but do not identify new chain edges.
+for _, id in ipairs(DQT.dungeons["ruins-of-lordaeron"].quests) do
+    local quest = DQT.quests[id]
+    quest.minLevel = 15
+    quest.sourceURLs[#quest.sourceURLs+1] = accessSource
+    quest.verification.sourceReview = "2026-11-03: Blizzard's November 2 notes set Ruins dungeon quest pickup levels to 15. Exact revised prerequisite links await updated quest data; existing links retained provisionally."
+    quest.verification.prerequisites = "Awaiting post-November-2 prerequisite verification. Do not infer specific chain links from the general patch announcement."
+    quest.verification.conflict = "November 2 changed Ruins prerequisites. Existing chain links are provisional until updated quest data is available; minimum pickup level 15 is confirmed by the notes."
+end
+
+for _, dungeon in pairs(DQT.dungeons) do
+    if dungeon.provisionalData then
+        local caveat = dungeon.betaAvailability == "unconfirmed"
+            and "Provisional data: wing-specific beta testing is unconfirmed. "
+            or "Provisional data: not verified during the beta. "
+        dungeon.notes = caveat .. (dungeon.notes or "")
+    end
+end
+for _, quest in pairs(DQT.quests) do
+    if DQT.dungeons[quest.dungeon].provisionalData then
+        quest.provisionalData = true
+        quest.verification.dungeonAvailability = "Provisional dungeon coverage; Forever availability, quest chains, levels and rewards need verification."
+    end
+end

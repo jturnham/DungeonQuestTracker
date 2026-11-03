@@ -1,5 +1,26 @@
 # Changelog
 
+## Unreleased
+
+## 0.6.0 - 2026-11-03
+
+- Include an optional ready Hearthstone in pickup itineraries only when its destination, bag ownership and client cooldown are known. Record new binds automatically or confirm an existing bind zone in Travel while at the bound inn. Reserve it once across the complete itinerary; unmeasured travel never resets its hour cooldown.
+
+- Add a versioned provisional travel network with 67 flight records and 288 directed base-fare connections, plus sourced Classic boat, zeppelin and tram links. No runtime downloads or guessed durations.
+- Record character-specific learned flights from supported taxi-map observations, add manual flight knowledge controls, and distinguish unknown from explicitly unlearned routes. Unknown flights require opt-in.
+- Add transport-aware pickup-zone ordering, explicit unresolved legs, recent quoted fare labels and ready prerequisite return itineraries without simulating future quest completion.
+- Add optional same-map guide segments and feature-detected TomTom focus, cleaning up only DQT-created lines and waypoints.
+
+- Expand pickup routes to all 35 dungeon/wing entries, with independent gray/breadcrumb/class preferences, refresh/reset controls and next-stop map focus.
+- Use guarded same-map player positions, explicit map/floor IDs and recorded alternative contacts. Keep different coordinate spaces separate and retain zone-cluster fallbacks.
+- Add optional entrance destinations and distinct/shared entrance pins, with sourced provisional approaches for Ragefire Chasm, The Stockade and Hall of Thanes. Unknown entrances remain text-only.
+- Show active/ready required prerequisites as objective/turn-in tasks rather than new pickups; preserve required preparation when optional route filters would otherwise hide it.
+
+- Label all non-beta dungeon coverage as provisional in the dungeon list and checklist, including compact mode. Retain sourced higher-level Classic quests and five empty announced-Forever placeholders; uncertain Cathedral beta coverage is explicitly provisional.
+
+- Reuse per-refresh quest-log snapshots in turn-in, checklist, pickup and status scans; skip unused turn-in rankings when sharing quests or sending party status.
+- Set Ruins of Lordaeron quest pickup levels to 15 from Blizzard's November 2 notes. Flag exact prerequisite changes for verification when updated quest data is available; do not invent replacement links or XP values.
+
 ## 0.5.5 - 2026-10-18
 
 - Add published October 16 rewards for Starving Arcane (9400 XP) and Highland Hides (1150 XP), retaining explicit unverified scaling/source labels.

@@ -37,6 +37,27 @@ do
     assert(infoCalls < oldInfo/4,"Dungeon list must avoid repeatedly scanning the live quest log")
     assert(historyCalls < oldHistoryCalls,"Shared histories and prerequisites are checked once per refresh")
     print("Dungeon list API calls: quest-log info "..oldInfo.." -> "..infoCalls.."; history "..oldHistoryCalls.." -> "..historyCalls)
+    ready[1098]=true
+    for _, test in ipairs({
+        {name="Global turn-ins",run=function() return DQT:GetGlobalTurnInPriority().quests end},
+        {name="Checklist",run=function() return DQT:GetDisplayDungeonStatus("gnomeregan").quests end},
+        {name="Pickup route",run=function() return DQT:GetDungeonPickupRoute("gnomeregan").stops end},
+    }) do
+        DQT.PrepareQuestScan=function(_,context) return context end
+        infoCalls=0
+        local expected=test.run()
+        local before=infoCalls
+        DQT.PrepareQuestScan=oldScan
+        infoCalls=0
+        local result=test.run()
+        assert(#result==#expected,test.name.." retains result count")
+        for i,row in ipairs(expected) do
+            assert(result[i].questID==row.questID and result[i].state==row.state and result[i].key==row.key,test.name.." retains order and states")
+        end
+        assert(infoCalls < before,test.name.." avoids repeated quest-log reads")
+        print(test.name.." quest-log reads: "..before.." -> "..infoCalls)
+    end
+    ready[1098]=nil
     DQT.UI.searchText="Wailing Caverns"
     DQT.UI:ShowDungeonList()
     local card=DQT.UI.frame.dungeonCards[1]
