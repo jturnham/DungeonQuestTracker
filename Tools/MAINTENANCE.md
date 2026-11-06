@@ -24,12 +24,14 @@ execute them; local checks do not establish that a hosted workflow has run.
 
 ## Data proposals
 
-`node Tools/audit-launch-data.cjs Tools 2026-11-05` audits the trusted bundled
-catalogue against fresh public quest pages and writes an ignored per-dungeon/quest
-report under Docs. Replace the date as appropriate. `--reparse` reuses that review
-directory's downloaded pages; it is not a new fetch/verification date. Missing XP
-is distinct from zero, mixed Classic references remain labelled, and series links
-are only review candidates. No audit result changes runtime data automatically.
+Tools contains shared addon validation/tests, release packaging, translation
+extraction, reviewed data import helpers and the manual XP-report reviewer.
+New standalone tools and data files are ignored unless explicitly allowlisted.
+One-off research audits, third-party database comparisons, personal repair scripts,
+downloaded pages and reports belong under ignored Docs, not in this directory.
+The shared quest-source parser is pure and fixture-tested; it performs no network
+requests or source updates. Missing XP is distinct from zero, mixed Classic
+references remain labelled, and series links are only review candidates.
 
 Personal beta-repair scripts/data stay under ignored Docs and explicit filename
 ignore rules. Release packaging rejects embedded private repair markers as well

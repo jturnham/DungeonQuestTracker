@@ -90,7 +90,7 @@ for _, row in ipairs(rows) do
     if row[7] == "necklace" then quest.pickupType = "drop"
     elseif row[7] == "discs" or row[7] == "bowl" or row[7] == "paladin" then quest.pickupType = "object" end
     if row[10] then
-        quest.prerequisites = {{questID=row[10],relationship="required",note="Complete the preceding chain step; levels and eligibility need beta confirmation."}}
+        quest.prerequisites = {{questID=row[10],relationship="required",note="Complete the preceding chain step; Forever levels and eligibility need confirmation."}}
     end
     DQT.quests[id], added[id] = quest, row[10]
 end
@@ -135,7 +135,7 @@ end
 DQT.quests[98824].objectives = "Bring the Titan Relic to High Explorer Magellas. The October 8 fix returns the relic after Lost Relic so this chain can continue."
 DQT.quests[98823].objectives = "Deliver the Titan Relic to Muln Earthfury. The October 8 fix returns the relic after Elder Knowledge so this chain can continue."
 local lumina = {name="Lumina Windsinger",zone="Silverpine Forest",subzone="Crypt",coordinates="43.0, 40.0"}
-local alba = {name="Alba Fairmoon",zone="Westfall",subzone="Confirm the contact's current location in beta"}
+local alba = {name="Alba Fairmoon",zone="Westfall",subzone="Confirm the contact's current location"}
 local reviewed = {
     [92753]={name="Destruction in Deadmines",dungeon="deadmines",faction="Alliance",minLevel=14,questLevel=14,pickup=alba,turnIn={name="Alba Fairmoon",zone="Westfall",subzone="Deadmines exit, hills behind Moonbrook"},objectives="Plant the explosives in Gilnid's forge, then meet Alba outside the Deadmines exit.",prerequisites={{questID=92752,external=true,relationship="required",note="Complete Explosive Consultation in Alba's Testing the Wells chain."}}},
     [92819]={name="Destruction in Deadmines",dungeon="deadmines",faction="Alliance",minLevel=14,questLevel=14,followUpOf=92753,pickup={name="Alba Fairmoon",zone="Westfall",subzone="Deadmines exit"},turnIn={name="Alba Fairmoon",zone="Westfall",subzone="Deadmines exit"},objectives="Use the detonator to finish Alba's dungeon chain.",prerequisites={{questID=92753,relationship="required",note="Complete the explosives step inside Deadmines."}}},

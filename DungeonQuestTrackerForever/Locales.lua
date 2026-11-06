@@ -1,0 +1,85 @@
+local _,DQT=...
+if DQT.localesLoaded then return end
+DQT.localesLoaded=true
+-- Partial UI packs. Untranslated text and all quest/NPC/map identities retain
+-- their source values; these dictionaries never provide name-matching aliases.
+DQT:RegisterLocale("frFR",{
+    ["Dungeons"]="Donjons",["Turn-ins"]="Quêtes à rendre",["Back"]="Retour",["Options"]="Options",
+    ["Tools"]="Outils",["Travel"]="Voyage",["Profiles"]="Profils",["Bug report"]="Signaler un problème",
+    ["Why hidden?"]="Pourquoi est-ce masqué ?",["Party readiness"]="Progression du groupe",["Check party"]="Vérifier le groupe",
+    ["Refresh"]="Actualiser",["Reset"]="Réinitialiser",["Copy text"]="Copier le texte",["Close"]="Fermer",
+    ["Create copy"]="Créer une copie",["Use profile"]="Utiliser le profil",["Delete profile"]="Supprimer le profil",
+    ["Profile name"]="Nom du profil",["Expected"]="Résultat attendu",["Actual"]="Résultat obtenu",
+    ["Reset window"]="Réinitialiser la fenêtre",["Reset loot alert"]="Réinitialiser l'alerte de butin",
+    ["XP records"]="Relevés d'EXP",["Mute notices"]="Masquer les notifications",["Summary"]="Résumé",
+    ["Copy export"]="Copier l'export",["Clear records"]="Effacer les relevés",["XP Records | Manual export"]="Relevés d'EXP | Export manuel",
+    ["Display"]="Affichage",["Dungeon List"]="Liste des donjons",["Checklist"]="Liste des quêtes",
+    ["Turn-In Planner"]="Ordre de remise des quêtes",["Pickup Routes"]="Itinéraires de collecte",
+    ["Minimap And Party"]="Minicarte et groupe",["Loot Reminders"]="Rappels de butin",
+    ["Completed"]="Terminée",["Ready"]="À rendre",["In progress"]="En cours",["Missing"]="Non prise",["Locked"]="Verrouillée",["Unavailable"]="Indisponible",
+    ["XP unknown"]="EXP inconnue",["No response means unknown; it does not establish that an addon is missing."]="Une absence de réponse ne prouve pas que l'addon est absent.",
+    ["Record flight times on this character"]="Enregistrer les durées de vol de ce personnage",
+    ["Prefer the fastest measured transport route"]="Privilégier les transports mesurés les plus rapides",
+    ["Preview later prerequisite objectives and returns"]="Afficher les étapes et retours futurs des prérequis",
+    ["Include a ready Hearthstone in pickup routes"]="Inclure la pierre de foyer disponible dans les itinéraires",
+    ["Use known flights in pickup routes"]="Utiliser les trajets aériens connus",
+    ["Show same-map pickup guide lines"]="Afficher les lignes de guidage sur la même carte",
+    ["Show minimap button"]="Afficher le bouton de la minicarte",
+    ["Select a dungeon first."]="Sélectionnez d'abord un donjon.",["You: %s"]="Vous : %s",
+    ["%s | Party readiness"]="%s | Progression du groupe",["%s: %s"]="%s : %s",
+})
+DQT:RegisterLocale("deDE",{
+    ["Dungeons"]="Dungeons",["Turn-ins"]="Questabgabe",["Back"]="Zurück",["Options"]="Optionen",
+    ["Tools"]="Werkzeuge",["Travel"]="Reise",["Profiles"]="Profile",["Bug report"]="Fehlerbericht",
+    ["Why hidden?"]="Warum ausgeblendet?",["Party readiness"]="Gruppenfortschritt",["Check party"]="Gruppe prüfen",
+    ["Refresh"]="Aktualisieren",["Reset"]="Zurücksetzen",["Copy text"]="Text kopieren",["Close"]="Schließen",
+    ["Create copy"]="Kopie erstellen",["Use profile"]="Profil verwenden",["Delete profile"]="Profil löschen",
+    ["Profile name"]="Profilname",["Expected"]="Erwartetes Ergebnis",["Actual"]="Tatsächliches Ergebnis",
+    ["Reset window"]="Fenster zurücksetzen",["Reset loot alert"]="Beutehinweis zurücksetzen",
+    ["XP records"]="EP-Aufzeichnungen",["Mute notices"]="Hinweise ausblenden",["Summary"]="Übersicht",
+    ["Copy export"]="Export kopieren",["Clear records"]="Aufzeichnungen löschen",["XP Records | Manual export"]="EP-Aufzeichnungen | Manueller Export",
+    ["Display"]="Anzeige",["Dungeon List"]="Dungeonliste",["Checklist"]="Questliste",
+    ["Turn-In Planner"]="Abgabeplanung",["Pickup Routes"]="Questannahmerouten",
+    ["Minimap And Party"]="Minikarte und Gruppe",["Loot Reminders"]="Beutehinweise",
+    ["Completed"]="Abgeschlossen",["Ready"]="Abgabebereit",["In progress"]="In Arbeit",["Missing"]="Nicht angenommen",["Locked"]="Gesperrt",["Unavailable"]="Nicht verfügbar",
+    ["XP unknown"]="EP unbekannt",["No response means unknown; it does not establish that an addon is missing."]="Keine Antwort bedeutet unbekannt; sie beweist nicht, dass das Addon fehlt.",
+    ["Record flight times on this character"]="Flugzeiten für diesen Charakter aufzeichnen",
+    ["Prefer the fastest measured transport route"]="Schnellste gemessene Transportverbindung bevorzugen",
+    ["Preview later prerequisite objectives and returns"]="Spätere Voraussetzungsziele und Rückwege anzeigen",
+    ["Include a ready Hearthstone in pickup routes"]="Verfügbaren Ruhestein in Questannahmerouten einplanen",
+    ["Use known flights in pickup routes"]="Bekannte Flugverbindungen verwenden",
+    ["Show same-map pickup guide lines"]="Hilfslinien auf derselben Karte anzeigen",
+    ["Show minimap button"]="Minikartenbutton anzeigen",
+    ["Select a dungeon first."]="Wähle zuerst einen Dungeon aus.",["You: %s"]="Du: %s",
+    ["%s | Party readiness"]="%s | Gruppenfortschritt",["%s: %s"]="%s: %s",
+})
+local spanish={
+    ["Dungeons"]="Mazmorras",["Turn-ins"]="Entregas",["Back"]="Volver",["Options"]="Opciones",
+    ["Tools"]="Herramientas",["Travel"]="Viaje",["Profiles"]="Perfiles",["Bug report"]="Informar de un error",
+    ["Why hidden?"]="¿Por qué está oculto?",["Party readiness"]="Progreso del grupo",["Check party"]="Comprobar grupo",
+    ["Refresh"]="Actualizar",["Reset"]="Restablecer",["Copy text"]="Copiar texto",["Close"]="Cerrar",
+    ["Create copy"]="Crear copia",["Use profile"]="Usar perfil",["Delete profile"]="Eliminar perfil",
+    ["Profile name"]="Nombre del perfil",["Expected"]="Resultado esperado",["Actual"]="Resultado obtenido",
+    ["Reset window"]="Restablecer ventana",["Reset loot alert"]="Restablecer alerta de botín",
+    ["XP records"]="Registros de experiencia",["Mute notices"]="Ocultar avisos",["Summary"]="Resumen",
+    ["Copy export"]="Copiar exportación",["Clear records"]="Borrar registros",["XP Records | Manual export"]="Registros de experiencia | Exportación manual",
+    ["Display"]="Interfaz",["Dungeon List"]="Lista de mazmorras",["Checklist"]="Lista de misiones",
+    ["Turn-In Planner"]="Plan de entregas",["Pickup Routes"]="Rutas de recogida",
+    ["Minimap And Party"]="Minimapa y grupo",["Loot Reminders"]="Avisos de botín",
+    ["Completed"]="Completada",["Ready"]="Lista para entregar",["In progress"]="En curso",["Missing"]="Sin aceptar",["Locked"]="Bloqueada",["Unavailable"]="No disponible",
+    ["XP unknown"]="Experiencia desconocida",["No response means unknown; it does not establish that an addon is missing."]="La falta de respuesta no demuestra que el addon no esté instalado.",
+    ["Record flight times on this character"]="Registrar tiempos de vuelo de este personaje",
+    ["Prefer the fastest measured transport route"]="Preferir la ruta de transporte medida más rápida",
+    ["Preview later prerequisite objectives and returns"]="Mostrar objetivos y entregas futuras de requisitos",
+    ["Include a ready Hearthstone in pickup routes"]="Incluir la piedra de hogar disponible en las rutas",
+    ["Use known flights in pickup routes"]="Usar rutas de vuelo conocidas",
+    ["Show same-map pickup guide lines"]="Mostrar líneas de guía en el mismo mapa",
+    ["Show minimap button"]="Mostrar botón del minimapa",
+    ["Select a dungeon first."]="Selecciona primero una mazmorra.",["You: %s"]="Tú: %s",
+    ["%s | Party readiness"]="%s | Progreso del grupo",["%s: %s"]="%s: %s",
+}
+DQT:RegisterLocale("esES",spanish)
+DQT:RegisterLocale("esMX",spanish)
+for _,name in ipairs({"frFR","deDE","esES","esMX"}) do
+    DQT:RegisterLocale(name,{["In Progress"]=DQT:Translate("In progress",name)})
+end

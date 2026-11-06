@@ -22,7 +22,7 @@ function UI:ShowTravelOptions()
         header=CreateFrame("Button",nil,self.frame.turnInContent,"UIPanelButtonTemplate")
         header:SetHeight(36)
         header:SetScript("OnClick",function()
-            DQT.Travel:RecordHearth()
+            DQT.Travel:RecordHearth(true)
             UI:ShowTravelOptions()
         end)
         UI.AddTooltip(header,"Confirm your existing bind location","Only click while standing at the inn where your Hearthstone is bound. Records this zone for the current bind name on this character. Binding again records the zone automatically. Unknown destinations are skipped.")
@@ -34,7 +34,17 @@ function UI:ShowTravelOptions()
     local hearth=DQT.Travel:Hearth(player.faction,player.class)
     header:SetText(hearth and ("Hearth ready: "..hearth.name) or "At your bound inn? Confirm bind is here")
     header:Show()
-    local y,index=42,0
+    local reset=self.frame.clearTravelTimings
+    if not reset then
+        reset=CreateFrame("Button",nil,self.frame.turnInContent,"UIPanelButtonTemplate")
+        reset:SetHeight(28)
+        reset:SetScript("OnClick",function() DQT.Travel:ClearTimings(); UI:ShowTravelOptions() end)
+        UI.AddTooltip(reset,"Clear measured flight times","Clears this character's measurements for the current client build. Learned flight points and recorded approaches are kept.")
+        self.frame.clearTravelTimings=reset
+    end
+    reset:ClearAllPoints(); reset:SetPoint("TOPLEFT",self.frame.turnInContent,"TOPLEFT",0,-40)
+    reset:SetWidth(width); reset:SetText("Clear measured flight times (current build)"); reset:Show()
+    local y,index=74,0
     for _,id in ipairs(DQT.Travel.ids) do
         local node=DQT.Travel.nodes[id]
         if (node.faction=="Both" or node.faction==faction) and (not node.class or node.class==player.class) then

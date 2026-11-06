@@ -306,9 +306,8 @@ end
 
 for _, dungeon in pairs(DQT.dungeons) do
     if dungeon.provisionalData then
-        local caveat = dungeon.betaAvailability == "unconfirmed"
-            and "Provisional data: wing-specific beta testing is unconfirmed. "
-            or "Provisional data: not verified during the beta. "
+        local caveat = dungeon.placeholder and "Quest information has not been added yet. "
+            or "Classic-source quest data; Forever changes still need review. "
         dungeon.notes = caveat .. (dungeon.notes or "")
     end
 end

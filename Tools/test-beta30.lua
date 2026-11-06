@@ -17,10 +17,10 @@ do
     assert(DQT.quests[95647].prerequisites[1].relationship == "breadcrumb", "Optional Caitlin lead-in must not lock direct pickup")
     assert(DQT.quests[95795].followUpOf==95772 and DQT.quests[95795].prerequisites[1].questID==95772
         and DQT.quests[95795].pickupType=="object","Fallen in the Fen follows Songblade Search at the body")
-    assert(DQT.quests[6563].foreverXp == 1750 and DQT.quests[6563].xpReported, "Outside BFD objective has no fabricated bonus")
+    assert(DQT.quests[6563].foreverXp == 1750 and DQT.quests[6563].xpPublished, "Published outside BFD reward has no fabricated bonus")
     local reports = 0
     for _, quest in pairs(DQT.quests) do if quest.xpReported then reports=reports+1 end end
-    assert(reports == 16, "Quest-specific reports only; no inferred multiplier")
+    assert(reports == 14, "Quest-specific reports only; two replaced by matching published rewards")
     local oldLog, oldFaction = C_QuestLog, UnitFactionGroup
     C_QuestLog = {IsOnQuest=function(id) return id == 98823 or id == 6521 or id == 95795 end, ReadyForTurnIn=function(id) return id == 98823 or id == 6521 or id == 95795 end, IsQuestFlaggedCompleted=function() return false end}
     UnitFactionGroup = function() return "Horde" end

@@ -3,9 +3,10 @@ DQTForbiddenEventRegistrations = 0
 local player = { faction = "Horde", class = "WARRIOR", race = "Orc", level = 30 }
 local completed, ready = {}, {}
 local methods = {}
-local function widget()
-    return setmetatable({ shown = true, height = 470, scroll = 0, scripts = {} }, {
-        __index = function(_, key)
+local function widget(kind)
+    return setmetatable({ kind=kind, shown = true, height = 470, scroll = 0, scripts = {} }, {
+        __index = function(self, key)
+            if rawget(self,"kind")=="EditBox" and key=="GetStringHeight" then return nil end
             if methods[key] then return methods[key] end
             for _, prefix in ipairs({"Set", "Get", "Clear", "Enable", "Disable", "Register", "Start", "Stop", "Has", "Create", "Is"}) do
                 if key:sub(1, #prefix) == prefix then return function() end end
@@ -14,7 +15,7 @@ local function widget()
     })
 end
 function methods:CreateTexture() return widget() end
-function methods:CreateFontString() return widget() end
+function methods:CreateFontString() return widget("FontString") end
 function methods:Hide() self.shown = false end
 function methods:Show() self.shown = true end
 function methods:IsShown() return self.shown end
@@ -57,7 +58,7 @@ function methods:RegisterEvent(event)
     self.events[event] = true
 end
 function methods:SetScrollChild(child) self.child = child end
-function CreateFrame() local frame = widget(); frame.TitleBg = widget(); return frame end
+function CreateFrame(kind) local frame = widget(kind); frame.TitleBg = widget(); return frame end
 UIParent = widget()
 Minimap = widget()
 SlashCmdList = {}

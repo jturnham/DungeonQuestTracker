@@ -5,7 +5,7 @@ const {createRequire}=require('node:module');
 const dependencies=process.argv[2]||__dirname;
 const parser=createRequire(path.resolve(dependencies,'package.json'))('luaparse');
 const root=path.resolve(__dirname,'../DungeonQuestTrackerForever');
-const files=['Options.lua',...fs.readdirSync(path.join(root,'UI')).filter(name=>name.endsWith('.lua')).map(name=>'UI/'+name)];
+const files=['Core.lua','Options.lua','Enhancements.lua','Notifications.lua','Travel.lua','TravelPlanning.lua',...fs.readdirSync(path.join(root,'UI')).filter(name=>name.endsWith('.lua')).map(name=>'UI/'+name)];
 const strings=new Set();
 function add(value) { if (value?.type==='StringLiteral'&&typeof value.value==='string'&&value.value) strings.add(value.value); }
 function walk(node) {
@@ -17,6 +17,7 @@ function walk(node) {
     if (name==='AddTooltip') { add(node.arguments[1]); add(node.arguments[2]); }
     if (name==='CreateButton') add(node.arguments[1]);
     if (name==='ShowUtility') { add(node.arguments[0]); add(node.arguments[1]); }
+    if (name==='Format') add(node.arguments[0]);
   }
   for (const value of Object.values(node)) {
     if (Array.isArray(value)) value.forEach(walk); else if (value&&typeof value==='object') walk(value);

@@ -8,9 +8,36 @@ Thumbs.db
 release/
 # Local research, testing records and implementation notes; never package or publish.
 Docs/
+# Local Questie comparison tools; reports are already covered by Docs/.
+/Tools/compare-questie-xp.cjs
+/Tools/test-questie-comparison.cjs
 # Personal beta-to-live repair helpers, never addon distribution files.
 **/BetaSettingsRepair.lua
 **/prepare-live-beta-repair.cjs
 **/test-beta-repair.lua
 **/LocalMigration.lua
 node_modules/
+# Only addon maintenance, validation and release tooling belongs in Tools.
+# New standalone scripts/data are local by default until deliberately allowlisted.
+/Tools/*
+!/Tools/MAINTENANCE.md
+!/Tools/XP-REVIEW.md
+!/Tools/package.json
+!/Tools/pnpm-lock.yaml
+!/Tools/package-release.ps1
+!/Tools/validate-data.ps1
+!/Tools/validate-data.cjs
+!/Tools/data-proposal.cjs
+!/Tools/review-xp.cjs
+!/Tools/xp-baseline.cjs
+!/Tools/travel-parser.cjs
+!/Tools/quest-source-parser.cjs
+!/Tools/import-classic-dungeons.cjs
+!/Tools/import-travel-data.cjs
+!/Tools/extract-locales.cjs
+!/Tools/test-*.lua
+!/Tools/test-*.cjs
+!/Tools/test-package.ps1
+# Explicit exclusions take precedence over the shared test filename patterns.
+/Tools/test-questie-comparison.cjs
+/Tools/test-beta-repair.lua

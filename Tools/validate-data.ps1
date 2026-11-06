@@ -13,6 +13,11 @@ try {
         if ($trackedDocs.Count -gt 0) { throw 'Docs contains tracked local-only files.' }
         & git check-ignore -- Docs/DATA_VERIFICATION.md | Out-Null
         if ($LASTEXITCODE -ne 0) { throw 'Docs must be ignored.' }
+        $trackedTools = @(& git ls-files -- Tools)
+        if ($LASTEXITCODE -ne 0) { throw 'Could not check tracked tools.' }
+        $ignoredTools = @(& git check-ignore --no-index -- $trackedTools)
+        if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne 1) { throw 'Could not check the Tools allowlist.' }
+        if ($ignoredTools.Count -gt 0) { throw ('Nonessential/local-only tools are tracked: ' + ($ignoredTools -join ', ')) }
     }
     & node (Join-Path $PSScriptRoot 'validate-data.cjs') $dependencies
     if ($LASTEXITCODE -ne 0) { throw 'Static validation failed.' }
@@ -20,10 +25,16 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'XP review tests failed.' }
     & node (Join-Path $PSScriptRoot 'test-launch-sources.cjs') $dependencies
     if ($LASTEXITCODE -ne 0) { throw 'Launch source parsing tests failed.' }
+    & node (Join-Path $PSScriptRoot 'test-locales.cjs') $dependencies
+    if ($LASTEXITCODE -ne 0) { throw 'Locale pack validation failed.' }
     & node (Join-Path $PSScriptRoot 'test-data-proposal.cjs') $dependencies
     if ($LASTEXITCODE -ne 0) { throw 'Data proposal tests failed.' }
     & node (Join-Path $PSScriptRoot 'test-level35.cjs') $dependencies 'Tools/test-optional.lua'
     if ($LASTEXITCODE -ne 0) { throw 'Optional feature tests failed.' }
+    & node (Join-Path $PSScriptRoot 'test-level35.cjs') $dependencies 'Tools/test-tools-menu.lua'
+    if ($LASTEXITCODE -ne 0) { throw 'Tools menu tests failed.' }
+    & node (Join-Path $PSScriptRoot 'test-level35.cjs') $dependencies 'Tools/test-capabilities.lua'
+    if ($LASTEXITCODE -ne 0) { throw 'Party capability tests failed.' }
     & node (Join-Path $PSScriptRoot 'test-level35.cjs') $dependencies 'Tools/test-xp-recorder.lua'
     if ($LASTEXITCODE -ne 0) { throw 'XP recorder tests failed.' }
     & node (Join-Path $PSScriptRoot 'test-level35.cjs') $dependencies 'Tools/test-dungeon-review.lua'
@@ -42,6 +53,10 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Pickup route tests failed.' }
     & node (Join-Path $PSScriptRoot 'test-level35.cjs') $dependencies 'Tools/test-travel.lua' 'Tools/test-hearth.lua'
     if ($LASTEXITCODE -ne 0) { throw 'Travel routing tests failed.' }
+    & node (Join-Path $PSScriptRoot 'test-level35.cjs') $dependencies 'Tools/test-travel-planning.lua'
+    if ($LASTEXITCODE -ne 0) { throw 'Extended travel planning tests failed.' }
+    & node (Join-Path $PSScriptRoot 'test-level35.cjs') $dependencies 'Tools/test-review-regressions.lua'
+    if ($LASTEXITCODE -ne 0) { throw 'Review regression tests failed.' }
     & node (Join-Path $PSScriptRoot 'test-level35.cjs') $dependencies 'Tools/test-turnin-grouping.lua'
     if ($LASTEXITCODE -ne 0) { throw 'Turn-in grouping tests failed.' }
     & (Join-Path $PSScriptRoot 'test-package.ps1')

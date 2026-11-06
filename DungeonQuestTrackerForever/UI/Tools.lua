@@ -1,5 +1,19 @@
 local _,DQT=...
 local UI,Safe,L=DQT.UI,DQT.SafeOptional,DQT.L
+function UI:ResizeCopyText(editBox,scroll)
+    -- EditBox has no GetStringHeight API. Measure wrapped text with a FontString.
+    local measure=editBox.dqtTextMeasure
+    if not measure then
+        measure=editBox:CreateFontString(nil,"ARTWORK","ChatFontNormal")
+        measure:Hide()
+        editBox.dqtTextMeasure=measure
+    end
+    local font=Safe(editBox.GetFontObject,editBox)
+    measure:SetFontObject(font or "ChatFontNormal")
+    measure:SetWidth(math.max(1,Safe(editBox.GetWidth,editBox) or 1))
+    measure:SetText(editBox:GetText() or "")
+    editBox:SetHeight(math.max(Safe(scroll.GetHeight,scroll) or 1,measure:GetStringHeight()+20))
+end
 function UI:ApplyWindowPreferences()
     local scale=(DQT:GetOption("display.scale") or 100)/100
     for _,frame in ipairs({self.frame or false,self.utility or false,self.xpRecords or false}) do
@@ -7,8 +21,9 @@ function UI:ApplyWindowPreferences()
             local fit=scale
             local sw,sh=Safe(UIParent.GetWidth,UIParent),Safe(UIParent.GetHeight,UIParent)
             local width,height=Safe(frame.GetWidth,frame),Safe(frame.GetHeight,frame)
-            if type(sw)=="number" and type(sh)=="number" and type(width)=="number" and type(height)=="number" and width>0 and height>0 then
-                fit=math.max(0.5,math.min(fit,(sw-24)/width,(sh-24)/height))
+            if type(sw)=="number" and type(sh)=="number" and type(width)=="number" and type(height)=="number"
+                and sw>24 and sh>24 and sw<math.huge and sh<math.huge and width>0 and height>0 and width<math.huge and height<math.huge then
+                fit=math.min(fit,(sw-24)/width,(sh-24)/height)
             end
             Safe(frame.SetScale,frame,fit); Safe(frame.SetClampedToScreen,frame,true)
         end
@@ -63,7 +78,7 @@ function UI:ShowUtility(title,text,actions,kind)
         frame.text=CreateFrame("EditBox",nil,frame.scroll)
         frame.text:SetMultiLine(true); frame.text:SetAutoFocus(false)
         frame.text:SetFontObject("ChatFontNormal"); frame.text:SetMaxLetters(64000)
-        frame.text:SetScript("OnTextChanged",function(self) self:SetHeight(math.max(frame.scroll:GetHeight(),self:GetStringHeight()+20)) end)
+        frame.text:SetScript("OnTextChanged",function(self) UI:ResizeCopyText(self,frame.scroll) end)
         frame.text:SetScript("OnEscapePressed",function(self) self:ClearFocus(); frame:Hide() end)
         frame.scroll:SetScrollChild(frame.text)
         frame.buttons={}

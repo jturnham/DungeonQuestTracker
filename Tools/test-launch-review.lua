@@ -1,4 +1,11 @@
 do
+    assert(DQT.quests[92432].foreverXp==650 and DQT.quests[92459].foreverXp==270,"Exact-ID published Dalaran referral rewards")
+    assert(DQT.quests[92432].pickup.name=="Emissary Jacques" and DQT.quests[92432].pickup.coordinates=="48.3, 60.0","Known referral pickup is no longer unknown")
+    for _,id in ipairs({96984,92458,96986,96988,96987,92489,92456,92457}) do
+        assert(DQT.quests[id].detailsSourceReviewed and not DQT.quests[id].verifiedForever,"Source-reviewed details do not claim a local client observation")
+    end
+    assert(DQT.quests[97287].verification.conflict,"Keep unresolved Horde follow-up access warning")
+    assert(DQT.quests[95697].pickup.name=="Borstan" and DQT.quests[98823].pickup.name=="Bashana Runetotem","Reviewed contact names have no stale beta warning")
     local oldComplete,oldActive,oldContext=DQT.IsQuestComplete,DQT.IsQuestActive,DQT.GetPlayerContext
     local oldState=DQT.GetQuestState
     local done,active,ready={},{},{}

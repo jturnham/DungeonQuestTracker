@@ -94,7 +94,7 @@ do
     DQT.UI:ShowDungeon(DQT:GetDungeonQuestStatus("city-of-dalaran"))
     local labelled=false
     for _,row in ipairs(DQT.UI.frame.rows) do
-        if row.tooltipText and row.tooltipText:find("awaiting final verification",1,true) then labelled=true end
+        if row.tooltipText and row.tooltipText:find("Quest requirements or contact details need verification",1,true) then labelled=true end
     end
     assert(labelled,"Attunement verification caveat visible in quest tooltips")
     C_QuestLog,UnitFactionGroup=oldLog,oldFaction

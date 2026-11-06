@@ -23,7 +23,7 @@ for _, id in ipairs({3982,4001,4002,4003,4004,4242,4263,4282,4361,4363,4743,4765
 end
 local required = {[1654]=1653,[5728]=5727,[7647]=7646,[6569]=6568,[8948]=8947,[8995]=8994}
 for id, parent in pairs(required) do
-    DQT.quests[id].prerequisites = {{questID=parent,relationship="required",external=true,note="Complete the preceding chain step (#" .. parent .. "). Source reviewed October 12; confirm beta eligibility."}}
+    DQT.quests[id].prerequisites = {{questID=parent,relationship="required",external=true,note="Complete the preceding chain step (#" .. parent .. "). Source reviewed October 12; confirm Forever eligibility."}}
 end
 local alternatives = {
     [3444]={3380,3445},

@@ -78,6 +78,9 @@ function Maps:GetPins(plan, mapID)
     for _,stop in ipairs(plan and plan.stops or {}) do stops[#stops+1]=stop end
     if plan and plan.destination then stops[#stops+1]=plan.destination end
     for _,entry in ipairs(plan and plan.progress or {}) do if entry.stop then stops[#stops+1]=entry.stop end end
+    for _,step in ipairs(plan and plan.itinerary or {}) do
+        for _,stop in ipairs(step.transportStops or {}) do stops[#stops+1]=stop end
+    end
     for index, stop in ipairs(stops) do
         if stop.x and stop.y and stop.x >= 0 and stop.x <= 100 and stop.y >= 0 and stop.y <= 100 then
             local zone=stop.location.mapID or stop.location.zone
@@ -95,8 +98,9 @@ function Maps:GetPins(plan, mapID)
                     shared.stops[#shared.stops+1]=entry
                     if stop.kind=="entrance" then shared.entrance=true end
                     if stop.kind=="turnIn" then shared.turnIn=true end
+                    if stop.kind=="transport" then shared.transport=true end
                 else
-                    pins[#pins+1] = {index=index,stop=stop,stops={entry},mapID=id,x=stop.x/100,y=stop.y/100,entrance=stop.kind=="entrance",turnIn=stop.kind=="turnIn"}
+                    pins[#pins+1] = {index=index,stop=stop,stops={entry},mapID=id,x=stop.x/100,y=stop.y/100,entrance=stop.kind=="entrance",turnIn=stop.kind=="turnIn",transport=stop.kind=="transport"}
                 end
             end
         end
@@ -190,7 +194,7 @@ function DQTFPickupPinMixin:OnLoad()
 end
 function DQTFPickupPinMixin:OnAcquired(pin)
     self.pickup=pin
-    local marker=pin.entrance and "E" or pin.turnIn and "T" or tostring(pin.index)
+    local marker=pin.entrance and "E" or pin.turnIn and "T" or pin.transport and "F" or tostring(pin.index)
     self.number:SetText(marker .. (#pin.stops>1 and "+" or ""))
     local focused=false
     for _,entry in ipairs(pin.stops) do if entry.stop.key and entry.stop.key==Maps.focusKey then focused=true end end
@@ -201,11 +205,11 @@ function DQTFPickupPinMixin:OnMouseEnter()
     local pin=self.pickup
     if not pin or not GameTooltip then return end
     GameTooltip:SetOwner(self,"ANCHOR_RIGHT")
-    GameTooltip:SetText(pin.entrance and "Dungeon entrance approach" or pin.turnIn and "Prerequisite turn-in" or (#pin.stops > 1 and "Pickups at this location" or "Quest pickup"))
+    GameTooltip:SetText(pin.entrance and "Dungeon entrance approach" or pin.turnIn and "Prerequisite turn-in" or pin.transport and "Recorded transport approach" or (#pin.stops > 1 and "Pickups at this location" or "Quest pickup"))
     GameTooltip:AddLine(pin.stop.location.zone,0.8,0.8,0.8,true)
     for _, pickup in ipairs(pin.stops) do
         GameTooltip:AddLine(" ")
-        local prefix=pickup.stop.kind=="entrance" and "Entrance: " or pickup.stop.kind=="turnIn" and "Turn in: " or "Stop "..pickup.index..": "
+        local prefix=pickup.stop.kind=="entrance" and "Entrance: " or pickup.stop.kind=="turnIn" and "Turn in: " or pickup.stop.kind=="transport" and "Transport approach: " or "Stop "..pickup.index..": "
         GameTooltip:AddLine(prefix .. pickup.stop.location.name,1,1,1,true)
         for _, entry in ipairs(pickup.stop.quests) do
             GameTooltip:AddLine("  " .. (entry.preparation and "Preparation: " or "") .. entry.quest.name,1,0.82,0,true)

@@ -137,7 +137,7 @@ function DQT:BuildBugReport(id,expected,actual)
 end
 function DQT:PartyReadiness(key)
     local dungeon=self:GetDungeon(key)
-    if not dungeon then return "Select a dungeon first." end
+    if not dungeon then return self.L["Select a dungeon first."] end
     local members={}
     local raid=Safe(IsInRaid)
     local count=raid and Safe(GetNumGroupMembers) or Safe(GetNumSubgroupMembers) or Safe(GetNumPartyMembers) or 0
@@ -153,20 +153,31 @@ function DQT:PartyReadiness(key)
     local context=self:PrepareQuestScan(self:GetPlayerContext())
     local now=Safe(GetTime) or Safe(time) or 0
     local entries=self.partyStatus and self.partyStatus[key] or {}
-    local lines={dungeon.name.." | Party readiness", "Snapshot: refresh to update. Replies older than 120 seconds are stale.",
-        "No response means unknown; it does not establish that an addon is missing.",""}
+    local lines={self:Format("%s | Party readiness",dungeon.name), self.L["Snapshot: refresh to update. Replies older than 120 seconds are stale."],
+        self.L["No response means unknown; it does not establish that an addon is missing."],""}
+    for _,name in ipairs(members) do
+        local capability=self.partyCapabilities and self.partyCapabilities[name]
+        local age=capability and type(capability.time)=="number" and now-capability.time
+        local label="Version unknown (legacy client or no capability reply)"
+        if age and age>=0 and age<=120 then
+            label="Reported DQT "..capability.version.." | "..(capability.protocol==1 and "compatible status protocol" or "unsupported status protocol "..capability.protocol)
+                .." | quest-data sharing "..(capability.sync and "on" or "off")
+        elseif age then label="Version reply is stale" end
+        lines[#lines+1]=self:Format("%s: %s",Clean(name,100),label)
+    end
+    lines[#lines+1]=""
     if #members==0 then lines[#lines+1]="Solo or no identifiable group members." end
     for _,id in ipairs(dungeon.quests or {}) do
         local quest=self:GetQuest(id)
         if quest then
             lines[#lines+1]=quest.name.." ("..id..")"
-            lines[#lines+1]="You: "..self:GetQuestState(id,quest,context)
+            lines[#lines+1]=self:Format("You: %s",self:GetQuestState(id,quest,context))
             for _,name in ipairs(members) do
                 local entry=entries[name]
                 local age=entry and type(entry.time)=="number" and now-entry.time
                 local state=entry and entry.quests and entry.quests[id]
                 local text=age and age>=0 and (age<=120 and (state or "unknown / partial reply") or "stale") or "unknown / no response"
-                lines[#lines+1]=Clean(name,100)..": "..text
+                lines[#lines+1]=self:Format("%s: %s",Clean(name,100),text)
             end
             lines[#lines+1]=""
         end

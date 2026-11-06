@@ -12,6 +12,7 @@ local function Now()
 end
 local function Allowed(node,faction,class) return node and (node.faction=="Both" or node.faction==faction) and (not node.class or node.class==class) end
 local function Better(a,b)
+    if a and b and a.timed and b.timed and a.seconds~=b.seconds then return a.seconds<b.seconds end
     return not b or a.hops<b.hops or (a.hops==b.hops and (a.fare<b.fare or (a.fare==b.fare and a.tie<b.tie)))
 end
 local cities={Orgrimmar=true,Undercity=true,Ironforge=true,["Thunder Bluff"]=true,["Stormwind City"]=true}
@@ -84,9 +85,13 @@ function Travel:HearthRecord()
     self.sessionHearth=self.sessionHearth or {}
     return self.sessionHearth,"session"
 end
-function Travel:RecordHearth()
+function Travel:RecordHearth(requireAtInn)
     local bind,zone=Safe(GetBindLocation),Safe(GetRealZoneText)
     if type(bind)~="string" or bind=="" or type(zone)~="string" or zone=="" then return end
+    if requireAtInn and (not Safe(IsResting) or (bind~=zone and bind~=Safe(GetSubZoneText) and bind~=Safe(GetMinimapZoneText))) then
+        DQT:Print("Stand at your bound inn before confirming its location, or bind again to record it automatically.")
+        return
+    end
     local records,key=self:HearthRecord()
     records[key]={name=bind,zone=zone}
     self:HearthChanged(true)
@@ -126,7 +131,10 @@ function Travel:Hearth(faction,class)
     local now=Now()
     local function Number(value) return type(value)=="number" and value==value and value>=0 and value<math.huge end
     if not Number(count) or count<1 or not Number(start) or not Number(duration) or enabled~=1 or not now then return end
-    if duration>0 and (start>now or start+duration>now) then return end
+    if duration>0 and (start>now or start+duration>now) then
+        if start<=now and self.ScheduleHearthRefresh then self:ScheduleHearthRefresh(start+duration-now) end
+        return
+    end
     return {name=record.name,zone=record.zone}
 end
 function Travel:ForkContext(context)
@@ -135,24 +143,30 @@ function Travel:ForkContext(context)
     return copy
 end
 function Travel:Consume(route,context)
-    if route and route.hearth then context.hearthUsed=true end
+    if route and route.hearth then
+        context.hearthUsed=true
+        context.hearthReadyAt=(context.provenElapsed or 0)+3600
+    end
+    -- Observed/average journey times never prove that a future cooldown expires.
+    context.provenElapsed=(context.provenElapsed or 0)+(route and route.minimumSeconds or 0)
 end
 function Travel:Context(faction,class)
     return {faction=faction,known=self:Character(),allowUnknown=DQT:GetOption("travel.allowUnknownFlights"),
         class=class,flights=DQT:GetOption("travel.useFlights"),transports=DQT:GetOption("travel.useTransports"),
-        hearth=self:Hearth(faction,class),cache={}}
+        hearth=self:Hearth(faction,class),timingRecords=self:TimingRecords() or false,preferTime=DQT:GetOption("travel.preferMeasuredTime"),provenElapsed=0,cache={}}
 end
 function Travel:InZone(node,zone)
     if zone=="Stormwind" then zone="Stormwind City" end
     if cities[node.name] then return zone==node.name end
     return node.zone==zone
 end
-function Travel:PathsFrom(zone,context)
-    if context.cache[zone] then return context.cache[zone] end
+function Travel:PathsFrom(zone,context,measured)
+    local cacheKey=zone..(measured and ":timed" or ":legs")
+    if context.cache[cacheKey] then return context.cache[cacheKey] end
     local best,visited={},{}
     for _,id in ipairs(self.ids) do
         local node=self.nodes[id]
-        if Allowed(node,context.faction,context.class) and self:InZone(node,zone) then best[id]={hops=0,fare=0,tie=id} end
+        if Allowed(node,context.faction,context.class) and self:InZone(node,zone) then best[id]={hops=0,fare=0,tie=id,seconds=0,timed=measured,minimumSeconds=0} end
     end
     for _=1,#self.ids do
         local choice
@@ -163,30 +177,36 @@ function Travel:PathsFrom(zone,context)
             local target=self.nodes[edge.to]
             local permitted=Allowed(target,context.faction,context.class) and (not edge.faction or edge.faction==context.faction)
             if edge.mode=="flight" then
-                for _,id in ipairs({edge.from,edge.to}) do
-                    if context.known[id]==false or (context.known[id]~=true and not context.allowUnknown) then permitted=false end
-                end
+                local fromKnown,toKnown=context.known[edge.from],context.known[edge.to]
+                if fromKnown==false or toKnown==false or (not context.allowUnknown and (fromKnown~=true or toKnown~=true)) then permitted=false end
                 permitted=permitted and context.flights
             else permitted=permitted and context.transports end
             if permitted and not visited[edge.to] then
+                local seconds,minimum=self:EdgeTiming(edge,context)
+                if not measured or seconds then
                 local previous=best[choice]
-                local candidate={hops=previous.hops+1,fare=previous.fare+edge.fare,tie=previous.tie..">"..edge.to,edge=edge,parent=choice}
+                local candidate={hops=previous.hops+1,fare=previous.fare+edge.fare,tie=previous.tie..">"..edge.to,edge=edge,parent=choice,timed=measured,
+                    seconds=previous.seconds and seconds and previous.seconds+seconds or nil,minimumSeconds=previous.minimumSeconds+(minimum or 0)}
                 if Better(candidate,best[edge.to]) then best[edge.to]=candidate end
+                end
             end
         end
     end
-    context.cache[zone]=best
+    context.cache[cacheKey]=best
     return best
 end
 function Travel:NetworkRoute(fromZone,toZone,context)
     if not fromZone or not toZone or fromZone==toZone then return end
-    local paths=self:PathsFrom(fromZone,context)
+    for attempt=1,(context.preferTime and 2 or 1) do
+    local measured=context.preferTime and attempt==1
+    local paths=self:PathsFrom(fromZone,context,measured)
     local target
     for _,id in ipairs(self.ids) do
         if self:InZone(self.nodes[id],toZone) and paths[id] and paths[id].hops>0 and (not target or Better(paths[id],paths[target])) then target=id end
     end
-    if not target then return end
-    local result={fromZone=fromZone,toZone=toZone,hops=paths[target].hops,fare=paths[target].fare,tie=paths[target].tie,edges={},provisional=true}
+    if target then
+    local result={fromZone=fromZone,toZone=toZone,hops=paths[target].hops,fare=paths[target].fare,tie=paths[target].tie,edges={},provisional=true,
+        seconds=paths[target].seconds,minimumSeconds=paths[target].minimumSeconds,timed=measured,timingFallback=context.preferTime and not measured}
     local id=target
     while paths[id].edge do
         local edge=paths[id].edge
@@ -200,17 +220,21 @@ function Travel:NetworkRoute(fromZone,toZone,context)
         if quote and now and now-quote.time>=0 and now-quote.time<300 then result.quotedFare=quote.fare end
     end
     return result
+    end
+    end
 end
 function Travel:Route(fromZone,toZone,context)
     if not fromZone or not toZone or fromZone==toZone then return end
     local normal=self:NetworkRoute(fromZone,toZone,context)
     local bind=context.hearth
-    if not bind or context.hearthUsed or bind.zone==fromZone then return normal end
+    local reusable=context.hearthUsed and context.hearthReadyAt and (context.provenElapsed or 0)>=context.hearthReadyAt
+    if not bind or (context.hearthUsed and not reusable) or bind.zone==fromZone then return normal end
+    if normal and normal.timed then return normal end -- Hearth cast/loading time is not measured.
     local onward=bind.zone~=toZone and self:NetworkRoute(bind.zone,toZone,context) or nil
     if bind.zone~=toZone and not onward then return normal end
     local route={fromZone=fromZone,toZone=toZone,hops=1+(onward and onward.hops or 0),
         fare=onward and onward.fare or 0,tie="hearth:"..bind.name,hearth=true,edges={},
-        provisional=onward and onward.provisional,assumed=onward and onward.assumed}
+        provisional=onward and onward.provisional,assumed=onward and onward.assumed,minimumSeconds=onward and onward.minimumSeconds or 0}
     -- Preserve the hearth when a conventional route is equally good.
     if normal and (normal.hops<route.hops or (normal.hops==route.hops and normal.fare<=route.fare)) then return normal end
     route.edges[1]={mode="hearthstone",fromLabel=fromZone,toLabel=bind.name}
@@ -245,7 +269,10 @@ function Travel:Describe(route)
         parts[#parts+1]=edge.mode..": "..(edge.fromLabel or self.nodes[edge.from].name).." -> "..(edge.toLabel or self.nodes[edge.to].name)
     end
     local price=route.quotedFare and ("Recent quoted fare: "..route.quotedFare.." copper") or ("Base fare: "..route.fare.." copper before discounts")
-    return table.concat(parts,"\n").."\n"..price..(route.hearth and "\nUse your ready Hearthstone. Reserved once for this itinerary; the hour cooldown is not assumed to expire during unmeasured travel." or "")..(route.assumed and "\nSome flight nodes are assumed learned." or "").."\nContinue to the pickup on foot. Ground approaches, waiting and flight times are not estimated. Transport data is provisional."
+    local timing=route.seconds and ("\nMeasured/sourced transport estimate: "..math.ceil(route.seconds).." seconds. Walking and waiting are additional.") or "\nJourney time is unknown."
+    if route.timed then timing=timing.." Fastest among fully timed recorded transport paths; not a door-to-door guarantee." end
+    if route.timingFallback then timing=timing.." Missing timing: using fewest transport legs instead." end
+    return table.concat(parts,"\n").."\n"..price..timing..(route.hearth and "\nUse your ready Hearthstone. Another use requires proven minimum travel to cover the hour cooldown; estimates do not count." or "")..(route.assumed and "\nSome flight nodes are assumed learned." or "").."\nContinue to the pickup on foot. Ground approaches and waiting are not timed. Transport data is provisional."
 end
 function Travel:ReadyReturns(progress,currentZone,context)
     local returns,zones={},{}
@@ -272,7 +299,7 @@ function Travel:BuildItinerary(plan,currentZone,context)
         if from and zone and from~=zone then
             local route=self:Route(from,zone,context)
             self:Consume(route,context)
-            steps[#steps+1]={kind="travel",route=route,fromZone=from,toZone=zone}
+            steps[#steps+1]={kind="travel",route=route,fromZone=from,toZone=zone,transportStops=self:TransportStops(route)}
         end
         steps[#steps+1]={kind=kind,stop=stop}
         from=zone or from
@@ -306,7 +333,11 @@ function Travel:ObserveTaxi()
             end
         end
     end
+    local direct={}
+    for index in pairs(matched) do if Safe(GetNumRoutes,index)==1 then direct[index]=true end end
+    self.taxiSelection=current and {from=current,targets=matched,direct=direct,time=Now()} or nil
     if current then
+        if self.ObserveApproach then self:ObserveApproach(current) end
         local now=Now()
         for index,id in pairs(matched) do
             local fare=Safe(TaxiNodeCost,index)

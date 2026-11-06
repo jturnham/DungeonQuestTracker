@@ -1,7 +1,7 @@
 local addonName, DQT = ...
 
 DQT.name = addonName
-DQT.version = "0.6.1"
+DQT.version = "0.6.2"
 
 DQT.defaults = {
     partyDataSync = false,
@@ -14,7 +14,7 @@ DQT.defaults = {
     characterProfiles = {},
     notifications = {entry=false,chains=false},
     pickups = {includeGray=true, includeBreadcrumbs=true, includeClass=true, usePlayerPosition=true, finishAtEntrance=false},
-    travel = {useFlights=true,useTransports=true,useHearthstone=true,allowUnknownFlights=false,showSegments=false,useTomTom=false},
+    travel = {useFlights=true,useTransports=true,useHearthstone=true,allowUnknownFlights=false,showSegments=false,useTomTom=false,recordFlightTimes=false,preferMeasuredTime=false,includeFutureSteps=false},
     travelCharacters = {},
     lootReminders = { enabled = true, duration=15, sound=true, soundPreset=1, masterChannel=true },
     minimap = { hide = false, angle = 225 },

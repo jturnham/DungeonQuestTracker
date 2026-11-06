@@ -6,6 +6,7 @@ local function Busy()
     return Safe(InCombatLockdown) or Safe(UnitAffectingCombat,"player") or (StaticPopup_Visible and Safe(StaticPopup_Visible))
         or (QuestFrame and Safe(QuestFrame.IsShown,QuestFrame)) or (GossipFrame and Safe(GossipFrame.IsShown,GossipFrame))
         or (DQT.UI and DQT.UI.utility and DQT.UI.utility:IsShown())
+        or (DQT.UI and DQT.UI.xpRecords and DQT.UI.xpRecords:IsShown())
 end
 function Notices:InstanceKey()
     local inside,kind=Safe(IsInInstance)

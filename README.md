@@ -76,7 +76,7 @@ Loot alerts cover known single-copy quest items from named mobs. Multi-item coll
 - Dire Maul: East, North and West
 - Scholomance and Stratholme: Main Gate and Service Gate
 
-Higher-level Classic quests are included through level 60 using Classic-source data. Dungeons not verified during beta are marked **Provisional** in the list and checklist, including compact mode. Their availability, chains, levels and XP in Forever still need verification. There is no level-35 tracking cap; the normal level filters can be changed in Options. Raids are outside the addon's current scope.
+Higher-level Classic quests are included through level 60 using Classic-source data. Entries whose Forever quest details still need review are marked **Provisional** in the list and checklist, including compact mode. There is no level-35 tracking cap; the normal level filters can be changed in Options. Raids are outside the addon's current scope.
 
 ## Planned Dungeon Coverage
 
@@ -144,17 +144,23 @@ Toggle **+ / Fav** on dungeon cards to save favorites for your character. Favori
 
 Use **Tools** in Options or `/dqt tools` for profiles and position resets. Creating a profile copies current presentation, filters, alert and route preferences; selecting it applies them to this character. Profiles do not copy flights, hearth destinations, XP records, favorites or party sharing/data-sync consent. Profile names accept 1-32 letters, numbers, spaces, underscores or hyphens. The active profile and Default cannot be deleted.
 
-Party status checks require responding members to have the addon installed. Quest sharing uses the game's eligibility rules. Party data sync is opt-in on both clients; received records are marked unverified and do not supply XP for ranking.
+Party status checks require responding members to have the addon installed. On-demand version replies show the reported addon version, status-protocol compatibility and quest-data sharing setting. Older clients may still return quest status without version information; silence remains unknown. Quest sharing uses the game's eligibility rules. Party data sync is opt-in on both clients; received records are marked unverified and do not supply XP for ranking.
 
 Party readiness uses the existing on-demand check, with no background polling. Replies expire after two minutes; no response is **unknown**, not proof that a player lacks the addon. Refresh the readiness snapshot to update its age labels.
 
 Entry summaries and chain notifications are opt-in. Chain tracking establishes an initial baseline rather than notifying about everything available on login. Notifications do not accept/share quests automatically. Entry matching currently uses exact, unambiguous known names; unidentified instances or wings remain unresolved.
 
+The UI includes partial French, German and Spanish translations selected from your client language. Untranslated text falls back to English. Quest, NPC, zone and flight-point identities keep their recorded names; translated UI labels are not used to guess quest or map identities. The translation packs still need native-speaker and live-client layout review.
+
 ## Quest Data And Routing
 
 Quest records distinguish published rewards, player reports, estimates, Classic fallbacks and unknown values. Rewards, locations and prerequisites may still be provisional as Forever data changes. Turn-in priorities and predicted level-ups depend on that data and are estimates.
 
-Pickup routes suggest an order from recorded locations, using your current map position when available. Transport-aware zone ordering prefers fewer legs and uses base fares as a tie-breaker, not travel time. Flight knowledge is stored per character; unknown flights are excluded unless enabled in Options. Open the flight-path control from a pickup route to review or edit learned nodes. The imported flight network and Classic transport links are provisional; terrain, ground approaches, waiting and flight durations are not estimated. Missing links remain explicit rather than dropping pickups.
+Pickup routes suggest an order from recorded locations, using your current map position when available. By default, transport-aware zone ordering prefers fewer legs and uses base fares as a tie-breaker. Flight knowledge is stored per character; unknown flights are excluded unless enabled in Options. Open Travel from a pickup route to review learned nodes, confirm your bind location or clear measured flight times. Missing links remain explicit rather than dropping pickups.
+
+Travel Options also offer flight-time recording and a fastest-measured-transport preference. Recording is local to your character and client build, measures only uninterrupted direct flights with known endpoints, and never uploads data. Fully timed transport paths can be compared by duration; routes without enough timing fall back to fewer legs. Walking, waiting and loading times are not included, so this is not a fastest door-to-door guarantee. Measurements are estimates for future trips and never justify assuming a second Hearthstone is ready. A second use requires separately sourced, guaranteed minimum journey time covering the hour cooldown; no such minimum times are currently bundled.
+
+Opening a recognised flight master records your nearby map position as a flight approach. These locations appear in the itinerary and map as transport markers; they are player observations, not surveyed NPC positions or walking paths. An optional future-step preview lists prerequisite objectives, later returns and locked pickups separately, with their conditions. It does not complete quests, unlock pickups or change next-stop guidance. Objective areas are shown only where sourced; missing areas remain text instructions.
 
 Entrance approaches are recorded for Ragefire Chasm, The Stockade and Hall of Thanes; other entrance destinations remain text-only until sourced. Optional guide lines connect adjacent stops on the same map only and are not terrain paths. Optional TomTom integration replaces/removes only DQT-created waypoints. Provisional and missing coordinates remain explicitly unverified or text-only.
 

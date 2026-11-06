@@ -24,7 +24,7 @@ for _, key in ipairs({"deadmines","shadowfang-keep","blackfathom-deeps"}) do
 end
 for _, key in ipairs({"zul-farrak","maraudon","sunken-temple","blackrock-depths","dire-maul-east","dire-maul-west","dire-maul-north","lower-blackrock-spire","upper-blackrock-spire","scholomance","stratholme-main-gate","stratholme-service-gate"}) do
     assert(#DQT.dungeons[key].quests > 0 and not DQT.dungeons[key].placeholder, "Classic quest coverage missing: " .. key)
-    assert(DQT.dungeons[key].provisionalData and DQT.dungeons[key].notes:find("Provisional data",1,true),"Non-beta Classic catalogue must be labelled provisional: "..key)
+    assert(DQT.dungeons[key].provisionalData and DQT.dungeons[key].notes:find("Classic-source quest data",1,true),"Unreviewed Forever changes retain a specific Classic-data warning: "..key)
 end
 do
     local ui, search, db = DQT.UI, DQT.UI.searchText, DQT.db

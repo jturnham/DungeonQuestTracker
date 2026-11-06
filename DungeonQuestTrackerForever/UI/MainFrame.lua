@@ -551,6 +551,7 @@ function UI:ClearRows()
     for _, row in ipairs(self.frame.turnInRows) do row:Hide(); row:SetScript("OnMouseUp",nil) end
     for _,row in ipairs(self.frame.travelRows or {}) do row:Hide() end
     if self.frame.hearthSettings then self.frame.hearthSettings:Hide() end
+    if self.frame.clearTravelTimings then self.frame.clearTravelTimings:Hide() end
 end
 function UI:GroupChecklistQuests(quests)
     local groups, roots, result = {}, {}, {}
@@ -725,14 +726,13 @@ function UI:RenderChecklist(status)
             reason = reason .. "\nDungeon follow-up: " .. (parent and parent.name or "Quest") .. " (#" .. quest.followUpOf .. ")."
         end
         if quest.partySupplied then reason = reason .. "\nParty supplied: " .. tostring(quest.source) .. " (v" .. tostring(quest.sourceVersion or "unknown") .. "); needs review, XP excluded."
-        elseif quest.awaitingFinalVerification then reason = reason .. "\nAttunement: awaiting final verification."
-        elseif quest.confidence == "needsReview" then reason = reason .. "\nBeta data: needs in-game verification." end
+        elseif quest.awaitingFinalVerification and not quest.detailsSourceReviewed then reason = reason .. "\nQuest requirements or contact details need verification." end
         if quest.verification and quest.verification.conflict then reason = reason .. "\nSource conflict: " .. quest.verification.conflict end
         if #chainNotes > 0 then reason = reason .. "\nChain: " .. table.concat(chainNotes, " ") end
         row.reason:SetText(reason)
         row.tooltipText = (questStatus.stateReason or "") .. "\nPickup: " .. FormatLocation(quest.pickup) .. "\nTurn in: " .. FormatLocation(quest.turnIn)
-        if quest.awaitingFinalVerification then row.tooltipText=row.tooltipText .. "\nAttunement: awaiting final verification." end
-        if status.dungeon.provisionalData then row.tooltipText=row.tooltipText .. "\nProvisional dungeon data; not verified during beta." end
+        if quest.awaitingFinalVerification and not quest.detailsSourceReviewed then row.tooltipText=row.tooltipText .. "\nQuest requirements or contact details need verification." end
+        if status.dungeon.provisionalData then row.tooltipText=row.tooltipText .. "\nClassic-source quest data; Forever changes still need review." end
         if #chainNotes > 0 then row.tooltipText = row.tooltipText .. "\nChain: " .. table.concat(chainNotes, " ") end
         local canShare, shareReason = false, "Only active or ready quests can be shared."
         if questStatus.state == "active" or questStatus.state == "ready" then
@@ -901,6 +901,10 @@ function UI:ShowPickups(preserveScroll)
                     or "No permitted recorded transport connection. Flight knowledge, walking links or transport coverage may be incomplete; arrange this leg separately."
                 ordered[#ordered+1]={rank="->",title="Travel: "..step.fromZone.." -> "..step.toZone,
                     compactDetail=step.route and (step.route.hops.." transport leg(s) | "..step.route.fare.." copper base") or "Unresolved connection",detail=detail}
+                for _,stop in ipairs(step.transportStops or {}) do
+                    ordered[#ordered+1]={stop=stop,rank="F",title="Transport approach: "..FormatLocation(stop.location),
+                        compactDetail="Observed approach, not a surveyed path",detail=(stop.location.source or "Recorded location").."\nWalk to the flight master; this marker does not establish a walkable ground path."}
+                end
             elseif byStop[step.stop] then ordered[#ordered+1]=byStop[step.stop] end
         end
         for _,entry in ipairs(entries) do if not entry.stop then ordered[#ordered+1]=entry end end
@@ -910,6 +914,12 @@ function UI:ShowPickups(preserveScroll)
         for _, entry in ipairs(group[1]) do
             entries[#entries+1] = {rank="-",title=group[2] .. ": " .. entry.quest.name, compactDetail=FormatLocation(entry.quest.pickup), detail=FormatLocation(entry.quest.pickup) .. "\n" .. (entry.reason or "") .. (entry.notes ~= "" and "\n" .. entry.notes or "")}
         end
+    end
+    for _,entry in ipairs(plan.futureSteps or {}) do
+        local verb=entry.kind=="pickup" and "Pick up" or entry.kind=="turnIn" and "Return" or "Objective"
+        entries[#entries+1]={rank="?",title="Later (conditional): "..verb.." - "..entry.quest.name,
+            compactDetail=entry.location and FormatLocation(entry.location) or "See quest log",
+            detail=entry.condition.."\n"..(entry.location and FormatLocation(entry.location) or entry.quest.objectives or "Follow the quest log.")..(entry.location and entry.location.note and "\n"..entry.location.note or "").."\nPreview only: this step is not ready, does not unlock quests, and is excluded from next-stop guidance."}
     end
     if #entries == 0 then entries[1] = {rank="-",title=#(plan.dungeon.quests or {})==0 and "No quests recorded yet." or "No missing pickups for your character.",detail="Owned quests and excluded pickups are omitted; unrecorded data remains unknown."} end
     local y = 0

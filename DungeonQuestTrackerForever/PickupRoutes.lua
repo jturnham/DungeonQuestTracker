@@ -283,6 +283,9 @@ function DQT:GetDungeonPickupRoute(key, startZone, context)
     for _, list in ipairs({result.blocked,result.inside,result.unknown,result.progress}) do
         table.sort(list,function(a,b) return a.questID < b.questID end)
     end
-    if travelContext then result.itinerary=self.Travel:BuildItinerary(result,currentZone,travelContext) end
+    if travelContext then
+        result.itinerary=self.Travel:BuildItinerary(result,currentZone,travelContext)
+        result.futureSteps=self.Travel:FutureSteps(result,context)
+    end
     return result
 end

@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict');
-const {parseSource}=require('./audit-launch-data.cjs');
+const {parseSource}=require('./quest-source-parser.cjs');
 assert.equal(parseSource('<main>Experience: 1,350When you return</main>','https://example.com').xp,1350);
 assert.equal(parseSource('<main>XP2,400 35s</main>','https://example.com').xp,2400);
 assert.equal(parseSource('<main>XP120</main>','https://example.com').xp,120);

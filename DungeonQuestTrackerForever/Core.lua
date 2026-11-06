@@ -409,7 +409,7 @@ function DQT:GetQuestRewardXP(quest)
     if quest.partySupplied then return 0, "Party supplied (XP unverified)" end
     if quest.foreverXp then
         if quest.xpGuide then return quest.foreverXp, "Forever (published guide; provisional)" end
-        if quest.xpPublished then return quest.foreverXp, "Forever (published beta)" end
+        if quest.xpPublished then return quest.foreverXp, "Forever (published)" end
         if quest.xpReported then return quest.foreverXp, "Forever (player reported)" end
         if quest.xpEstimate then return quest.foreverXp, "Forever (Oct 1 estimate)" end
         if quest.xpOutdated then return quest.foreverXp, "Forever (outdated; unverified)" end
@@ -425,7 +425,7 @@ function DQT:IsQuestRewardXPKnown(quest)
 end
 
 function DQT:FormatTurnInXP(item)
-    if item.xpKnown == false then return "XP unknown" end
+    if item.xpKnown == false then return self.L["XP unknown"] end
     return tostring(item.effectiveXp or 0) .. " XP"
 end
 
@@ -801,6 +801,9 @@ function DQT:RequestPartyDungeonStatus(dungeonKey)
         self:Print("Party addon messaging is unavailable."); return false
     end
     self.partyRequestTimes[dungeonKey] = Now()
+    if not self.capabilityRequestTime or Now()-self.capabilityRequestTime>=30 then
+        if SendAddon(partyPrefix,"CAPQ|1",channel) then self.capabilityRequestTime=Now() end
+    end
     self.partyStatus[dungeonKey] = {}
     self:SendDungeonStatus(dungeonKey)
     if self.OfferQuestData then self:OfferQuestData(dungeonKey) end
@@ -882,7 +885,9 @@ function DQT:NormalizePartySender(sender)
     local count = CallAPI(GetNumGroupMembers) or CallAPI(GetNumRaidMembers) or 0
     local raid = CallAPI(IsInRaid)
     local partyCount = CallAPI(GetNumSubgroupMembers) or CallAPI(GetNumPartyMembers) or 4
-    for index = 1, raid and count or partyCount do
+    local size=raid and count or partyCount
+    size=type(size)=="number" and size==size and size<math.huge and math.min(40,math.max(0,math.floor(size))) or 0
+    for index = 1, size do
         local full, short = FullName((raid and "raid" or "party") .. index)
         if full and (sender:lower() == full:lower() or sender:lower() == short:lower()) then return full end
     end
@@ -895,6 +900,30 @@ function DQT:HandleAddonMessage(prefix, message, channel, sender)
     sender = self:NormalizePartySender(sender)
     if not sender then return end
     local command, rest = message:match("^(%w+)|?(.*)$")
+    if command=="CAPQ" then
+        if rest~="1" or not self:GetOption("party.respond") then return end
+        self.capabilityResponseTimes=self.capabilityResponseTimes or {}
+        local last=self.capabilityResponseTimes[sender]
+        if last and Now()-last<30 then return end
+        local payload="CAP|1|"..self.version.."|"..(self:GetOption("partyDataSync") and "1" or "0")
+        if SendAddon(partyPrefix,payload,"WHISPER",sender) then self.capabilityResponseTimes[sender]=Now() end
+        return
+    elseif command=="CAP" then
+        local protocol,version,sync=rest:match("^(%d%d?)|(%d+%.%d+%.%d+)|([01])$")
+        if not protocol or tonumber(protocol)<1 or #version>24 then return end
+        self.partyCapabilities=self.partyCapabilities or {}
+        local previous=self.partyCapabilities[sender]
+        local now=Now()
+        local age=previous and now-previous.time
+        if age and age>=0 and age<5 then return end
+        if previous and age and age>=0 and age<120 and previous.protocol==tonumber(protocol) and previous.version==version and previous.sync==(sync=="1") then
+            previous.time=now
+            return -- Refresh freshness without rebuilding an unchanged readiness view.
+        end
+        self.partyCapabilities[sender]={protocol=tonumber(protocol),version=version,sync=sync=="1",time=now}
+        self:RequestUIRefresh()
+        return
+    end
     if self.HandleQuestDataMessage and self:HandleQuestDataMessage(command, rest, sender) then return end
     if command == "REQ" then
         if not self:GetOption("party.respond") then return end
@@ -1107,6 +1136,9 @@ DQT.events:SetScript("OnEvent", function(_, event, ...)
 
     if event == "GROUP_ROSTER_UPDATE" then
         DQT.partyStatus = {}
+        DQT.partyCapabilities = {}
+        DQT.capabilityResponseTimes = {}
+        DQT.capabilityRequestTime = nil
         DQT.partyResponseTimes = {}
         DQT.autoBroadcastTimes = {}
         if DQT.ResetQuestDataTransfers then DQT:ResetQuestDataTransfers() end

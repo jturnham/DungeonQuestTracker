@@ -5,21 +5,21 @@ DQT.dungeons = {
         name = "Razorfen Downs", minLevel = 25, recommendedLevel = "37-46",
         factions = { "Alliance", "Horde" }, location = "Southern Barrens, east of Razorfen Kraul",
         art = "Interface\\LFGFrame\\UI-LFG-BACKGROUND-RazorfenDowns",
-        notes = "Open in the beta from level 25. Quest pickup levels and recommended range still use Classic data; entry level does not imply that every quest is available. Prepare the Kraul scroll chain for An Unholy Alliance.",
+        notes = "Prepare the Kraul scroll chain for An Unholy Alliance. Quest pickup levels and recommended range use Classic data; entry level does not imply that every quest is available.",
         quests = { 3341, 3636, 6626, 3523, 3525, 6521 },
     },
     ["uldaman"] = {
         name = "Uldaman", minLevel = 30, recommendedLevel = "41-51",
         factions = { "Alliance", "Horde" }, location = "Badlands, northern excavation tunnels",
         art = "Interface\\LFGFrame\\UI-LFG-BACKGROUND-Uldaman",
-        notes = "Open in the beta from level 30. Prepare quests in Badlands, Ironforge, Loch Modan, Orgrimmar or Undercity. Necklace and Platinum Disc chains continue outside the dungeon. Quest levels and rewards remain provisional Classic data.",
+        notes = "Prepare quests in Badlands, Ironforge, Loch Modan, Orgrimmar or Undercity. Necklace and Platinum Disc chains continue outside the dungeon. Quest levels and rewards use Classic data where Forever values are unavailable.",
         quests = { 2342, 1360, 2398, 2240, 2202, 17, 704, 1139, 2198, 2283, 2418, 709, 2278, 1956, 722 },
     },
     ["scarlet-monastery-cathedral"] = {
         name = "Scarlet Monastery: Cathedral", minLevel = 21, recommendedLevel = "38-46",
         factions = { "Alliance", "Horde" }, location = "Tirisfal Glades, Scarlet Monastery",
         art = "Interface\\LFGFrame\\UI-LFG-BACKGROUND-ScarletMonastery",
-        notes = "Bring the Scarlet Key from the Library. Mograine and Whitemane complete the Cathedral portion of the monastery boss quests; Library and Armory kills are required too. Wing-specific beta availability still needs confirmation.",
+        notes = "Bring the Scarlet Key from the Library. Mograine and Whitemane complete the Cathedral portion of the monastery boss quests; Library and Armory kills are required too. Forever wing availability still needs confirmation.",
         quests = { 1113, 1048, 1053 },
     },
     ["ragefire-chasm"] = {
@@ -29,7 +29,7 @@ DQT.dungeons = {
         factions = { "Horde" },
         location = "Orgrimmar, Cleft of Shadow",
         art = "Interface\\LFGFrame\\UI-LFG-BACKGROUND-RagefireChasm",
-        notes = "Gather quests in Orgrimmar, Thunder Bluff, and Undercity before heading in. The lost satchel quest continues inside the dungeon; its starting point still needs confirmation in the beta.",
+        notes = "Gather quests in Orgrimmar, Thunder Bluff, and Undercity before heading in. The lost satchel quest continues inside the dungeon; its starting point still needs confirmation.",
         quests = { 5723, 5722, 5724, 5728, 5729, 5730, 5761, 5725 },
     },
     ["ruins-of-lordaeron"] = {
@@ -39,7 +39,7 @@ DQT.dungeons = {
         factions = { "Horde" },
         location = "Ruins above Undercity, entrance near 72.5, 11.4",
         art = "Interface\\LFGFrame\\UI-LFG-BACKGROUND-ShadowfangKeep",
-        notes = "A new dungeon in the ruins above Undercity, with quests for both factions. Some quests start from items found inside. Pickup locations and rewards may still change during the beta.",
+        notes = "A dungeon in the ruins above Undercity, with quests for both factions. Some quests start from items found inside. Horde characters should prepare the Rear Guard Patrol and A Recipe For Death chains before travelling.",
         quests = { 92401, 92421, 92422, 95216, 95204, 97288, 95250, 95195, 95189, 92415 },
     },
     ["hall-of-thanes"] = {
@@ -77,7 +77,7 @@ DQT.dungeons = {
         factions = { "Alliance", "Horde" },
         location = "The Barrens, southwest of Crossroads",
         art = "Interface\\LFGFrame\\UI-LFG-BACKGROUND-WailingCaverns",
-        notes = "Pick up quests in Ratchet and above the cave entrance, and check the Thunder Bluff quest chains before heading in. Some beta quests have unclear faction requirements, so they currently appear for both factions.",
+        notes = "Pick up quests in Ratchet and above the cave entrance, and check the Thunder Bluff quest chains before heading in. Some quests have unclear faction requirements, so they currently appear for both factions.",
         quests = { 1489, 1490, 1486, 1491, 962, 959, 1487, 914, 6981, 3369, 3370 },
     },    ["deadmines"] = {
         name = "The Deadmines",
@@ -95,7 +95,7 @@ DQT.dungeons = {
         factions = { "Alliance", "Horde" },
         location = "Wetlands, above Whelgar's Excavation Site",
         art = "Interface\\LFGFrame\\UI-LFG-BACKGROUND-Uldaman",
-        notes = "Pick up quests from level 24; beta patch notes recommend 26-31. Caitlin's Ashenvale lead-in is optional. The Titan Relic starts faction-specific return chains and is returned for the next step after the first turn-in. Rewards and some contacts still need confirmation.",
+        notes = "Pick up quests from level 24; recommended range 26-31. Caitlin's Ashenvale lead-in is optional. The Titan Relic starts faction-specific return chains and is returned for the next step after the first turn-in. See individual quests for reward estimates.",
         quests = {95697,95664,98815,95772,95646,95647,95810,95663,95682,95737},
     },
     ["blackfathom-deeps"] = {
@@ -135,7 +135,7 @@ DQT.dungeons = {
         factions = { "Alliance", "Horde" },
         location = "Dun Morogh; Horde teleporter from Booty Bay after Scooty's quests",
         art = "Interface\\LFGFrame\\UI-LFG-BACKGROUND-Gnomeregan",
-        notes = "There are quests both inside and outside the instance, including an escort and ring follow-ups. Horde characters can prepare the Booty Bay teleporter before travelling. Some XP rewards still need beta confirmation.",
+        notes = "There are quests both inside and outside the instance, including an escort and ring follow-ups. Horde characters can prepare the Booty Bay teleporter before travelling. Some XP rewards are still unknown; see individual reward notes.",
         quests = { 2841, 2842, 2843, 2922, 2924, 2926, 2928, 2929, 2930, 2962, 2904, 2951, 2945, 2947, 2948, 2949, 2950 },
     },
     ["scarlet-monastery-library"] = {
@@ -200,7 +200,7 @@ for _, row in ipairs(placeholders) do
         factions={"Alliance", "Horde"}, quests={}, placeholder=true,
         entryLevelUnverified=true, newInForever=announced[row[1]] or nil,
         location="Entrance location awaiting verification",
-        notes="Quest coverage is not implemented yet. No quests or XP rewards are listed. The level range is a planning guide, not a verified entry requirement or confirmation of beta availability.",
+        notes="Quest coverage is not implemented yet. No quests or XP rewards are listed. The level range is a planning guide, not a verified entry requirement.",
         source=announced[row[1]] and "https://eu.forums.blizzard.com/en/wow/t/kroldok-stronghold/628618" or "https://www.wowhead.com/classic/guide/classic-dungeons-overview",
     }
 end
@@ -227,7 +227,7 @@ DQT.dungeons["the-stockade"].entrance = {
 DQT.dungeons["hall-of-thanes"].entrance = {
     name="Hall of Thanes approach",zone="Ironforge",subzone="Thom Filch, Old Ironforge bridge",coordinates="32.0, 45.0",
     source="https://wowforevertalents.com/dungeons/the-hall-of-thanes/",
-    note="Published beta quest-giver approach, not a surveyed portal position. Ironforge is hostile to Horde.",
+    note="Published quest-giver approach, not a surveyed portal position. Ironforge is hostile to Horde.",
 }
 for key, dungeon in pairs(DQT.dungeons) do
     dungeon.betaAvailability = betaDungeons[key] and "available" or "not-tested"

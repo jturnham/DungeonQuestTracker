@@ -102,3 +102,53 @@ end
 for _,quest in pairs(DQT.quests) do
     quest.verification.launchXPReview="2026-11-05: current source sweep. Rewards retain their explicit published/report/estimate/Classic/unknown provenance; no global recalibration or missing-field-to-zero conversion."
 end
+
+-- November 6 source review: distinguish reviewed fields from local observations.
+-- Historical source dates remain in the audit metadata; they are not UI warnings.
+local reviewedRewards={
+    [167]={1550,"oh-brother"},[168]={1350,"collecting-memories"},
+    [1051]={3300,"vorrel-s-revenge"},[1221]={5000,"blueleaf-tubers"},
+    [1275]={2400,"researching-the-corruption"},[1489]={290,"hamuul-runetotem"},
+    [2418]={3500,"power-stones"},[6563]={1750,"the-essence-of-aku-mai"},
+}
+for id,reward in pairs(reviewedRewards) do
+    local quest=DQT.quests[id]
+    local url="https://wowforevertalents.com/quests/"..reward[2].."-"..id.."/"
+    quest.foreverXp,quest.xpPublished,quest.xpSource=reward[1],true,url
+    quest.xpGuide,quest.xpEstimate,quest.xpReported,quest.xpOutdated=nil,nil,nil,nil
+    quest.sourceURLs[#quest.sourceURLs+1]=url
+    quest.verification.xpReview="2026-11-06: current individual reward page matches this quest ID and amount. Published reward replaces the estimate, player-report or Classic-fallback label; no claim of a new local observation."
+end
+local reputationSource="https://wowforevertalents.com/reputations/kirin-tor/"
+for id,xp in pairs({[92432]=650,[92459]=270}) do
+    local quest=DQT.quests[id]
+    quest.foreverXp,quest.xpPublished,quest.xpSource=xp,true,reputationSource
+    quest.xpGuide,quest.xpEstimate,quest.xpReported,quest.xpOutdated=nil,nil,nil,nil
+    quest.sourceURLs[#quest.sourceURLs+1]=reputationSource
+    quest.verification.xpReview="2026-11-06: exact quest ID matched through the Kirin Tor reward table's quest link. Published client-cache/log reward; not a new local observation."
+end
+for _,id in ipairs({96984,92458,96986,96988,96987,92489,92456,92457}) do
+    DQT.quests[id].detailsSourceReviewed=true
+end
+DQT.quests[96984].objectives="Recover the Arcane Mote inside the City of Dalaran and return to Magus Wordeen Voidglare in Tarren Mill."
+DQT.quests[96984].prerequisites[1].note="Complete Blood in the Streets, then collect the dungeon quest and sewer key from Modera's image."
+DQT.quests[92458].objectives="Recover the Arcane Mote inside the City of Dalaran and return to Modera's image beside Lordamere Lake."
+DQT.quests[92457].objectives="Defeat 8 Seeking Remnants, 8 Saturated Remnants and 8 Mana Echoes inside the dungeon, then return to Modera's image beside Lordamere Lake."
+DQT.quests[92432].pickup={name="Emissary Jacques",zone="Hillsbrad Foothills",subzone="Southshore",coordinates="48.3, 60.0"}
+DQT.quests[92432].objectives="Report to Modera's image beside Lordamere Lake."
+local contacts={
+    [95697]={pickup="Borstan",turnIn="Borstan"},
+    [95663]={pickup="Zaruk"},[95772]={turnIn="Daewyn Songblade's body"},
+    [95647]={turnIn="Ardin Grassman"},[95664]={turnIn="Bashana Runetotem"},
+    [98823]={pickup="Bashana Runetotem"},
+}
+for id,sides in pairs(contacts) do
+    for side,name in pairs(sides) do DQT.quests[id][side].name=name end
+end
+DQT.quests[95664].objectives="Take the Titan Relic to Bashana Runetotem on Elder Rise in Thunder Bluff."
+DQT.quests[95647].prerequisites[1].note="Seeking Caitlin is an optional introduction from Llana in Astranaar; Lost in the Thicket Things can be picked up directly from Caitlin in Menethil Harbor."
+-- Sourced objective areas, not surveyed walking paths or exact spawn locations.
+DQT.quests[356].routeObjectives={{name="Balnir Farmstead patrol area",zone="Tirisfal Glades",coordinates="76, 61",
+    source="https://wowforever.wclbox.com/en/renwu/356",sourceReviewed=true,note="Approximate published objective area; follow the quest log for targets."}}
+DQT.quests[450].routeObjectives={{name="Berard's Journal, Pyrewood Village",zone="Silverpine Forest",coordinates="43, 73",
+    source="https://wowforever.wclbox.com/en/renwu/450",sourceReviewed=true,note="Approximate published objective area; the journal is in Pyrewood Village."}}
