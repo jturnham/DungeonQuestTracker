@@ -55,7 +55,7 @@ function UI:CreateOptions()
                 control:SetPoint("TOPRIGHT", row, "TOPRIGHT", -8, -4)
                 control:SetAutoFocus(false)
                 control:SetNumeric(true)
-                control:SetMaxLetters(2)
+                control:SetMaxLetters(3)
                 local function Commit(self)
                     if not DQT:SetOption(option.key, self:GetText()) then self:SetText(tostring(DQT:GetOption(option.key))) end
                     self:ClearFocus()
@@ -85,6 +85,19 @@ function UI:CreateOptions()
                 end)
             end
             control.option = option
+            if option.number then
+                control:SetScript("OnTabPressed",function(self)
+                    self:ClearFocus()
+                    for index,value in ipairs(frame.optionControls) do
+                        if value==self then
+                            for offset=1,#frame.optionControls do
+                                local nextControl=frame.optionControls[(index+offset-1)%#frame.optionControls+1]
+                                if nextControl.option.number then nextControl:SetFocus(); return end
+                            end
+                        end
+                    end
+                end)
+            end
             frame.optionControls[#frame.optionControls+1] = control
             local label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
             label:SetPoint("TOPLEFT", row, "TOPLEFT", 30, -6)
@@ -94,14 +107,19 @@ function UI:CreateOptions()
             label:SetText(option.label)
             local entry = {row=row,label=label,control=control,option=option}
             frame.optionRows[#frame.optionRows+1] = entry
-            if option.key == "lootReminders.enabled" then
+            if option.key == "lootReminders.enabled" or option.key == "xpRecorder.enabled" then
                 label:SetWidth(490)
                 local preview = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
                 preview:SetSize(130, 24)
                 preview:SetPoint("TOPRIGHT", row, "TOPRIGHT", -8, -2)
-                preview:SetText("Preview Alert")
-                preview:SetScript("OnClick", function() DQT:PreviewQuestLootReminder() end)
-                frame.lootReminderPreview = preview
+                if option.key=="xpRecorder.enabled" then
+                    preview:SetText(DQT.L["XP Records"])
+                    preview:SetScript("OnClick",function() UI:ShowXPRecords() end)
+                else
+                    preview:SetText(DQT.L["Preview Alert"])
+                    preview:SetScript("OnClick", function() DQT:PreviewQuestLootReminder() end)
+                    frame.lootReminderPreview = preview
+                end
                 entry.preview = preview
             end
             if option.tip then UI.AddTooltip(control, option.label, option.tip) end
@@ -111,14 +129,19 @@ function UI:CreateOptions()
     local resetFilters = CreateFrame("Button", nil, frame.optionsContent, "UIPanelButtonTemplate")
     resetFilters:SetSize(140, 24)
     resetFilters:SetPoint("TOPLEFT", frame.optionsContent, "TOPLEFT", 0, -y-12)
-    resetFilters:SetText("Reset Filters")
+    resetFilters:SetText(DQT.L["Reset Filters"])
     resetFilters:SetScript("OnClick", function() DQT:ResetFilters() end)
     local resetMinimap = CreateFrame("Button", nil, frame.optionsContent, "UIPanelButtonTemplate")
     resetMinimap:SetSize(170, 24)
     resetMinimap:SetPoint("LEFT", resetFilters, "RIGHT", 12, 0)
-    resetMinimap:SetText("Reset Minimap Position")
+    resetMinimap:SetText(DQT.L["Reset Minimap Position"])
     resetMinimap:SetScript("OnClick", function() DQT:ResetMinimapPosition() end)
     frame.resetFilters, frame.resetMinimap = resetFilters, resetMinimap
+    frame.tools=CreateFrame("Button",nil,frame.optionsContent,"UIPanelButtonTemplate")
+    frame.tools:SetSize(88,24)
+    frame.tools:SetPoint("LEFT",resetMinimap,"RIGHT",12,0)
+    frame.tools:SetText(DQT.L["Tools"])
+    frame.tools:SetScript("OnClick",function() UI:ShowTools() end)
     frame.optionsContent:SetHeight(y+60)
 end
 function UI:LayoutOptions()
@@ -161,7 +184,7 @@ function UI:ShowOptions()
     self:CreateOptions()
     self:UpdateNav()
     self.frame.content:Hide()
-    self.frame.subtitle:SetText("Options")
+    self.frame.subtitle:SetText(DQT.L["Options"])
     self:FitContent()
     self.frame.optionsScroll:Show()
     self:RefreshOptions()

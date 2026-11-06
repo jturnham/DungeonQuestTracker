@@ -2,6 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const {createRequire} = require('node:module');
 const {load} = createRequire(path.resolve(process.argv[2], 'package.json'))('cheerio');
+const {parseIndex,parseConnections}=require('./travel-parser.cjs');
 const root = path.resolve(__dirname, '..');
 const base = 'https://www.warcraftforever.wiki';
 const cache = path.join(root, 'Docs', 'travel-source-cache.json');
@@ -11,55 +12,21 @@ async function page(url) {
     const response = await fetch(url, {signal: AbortSignal.timeout(20000)});
     if (!response.ok) throw new Error(`${response.status}: ${url}`);
     pages[url] = await response.text();
+    if (Buffer.byteLength(pages[url])>8000000) throw new Error('Source page exceeds size limit');
   }
   return load(pages[url]);
 }
 async function main() {
   const $ = await page(base + '/wiki/Flight_Paths');
-  const nodes = [];
-  $('table').each((_, table) => {
-    const headings = $(table).find('tr').first().text();
-    if (!headings.includes('Flight point') || !headings.includes('Faction')) return;
-    $(table).find('tr').slice(1).each((_, row) => {
-      const cells = $(row).children('td');
-      if (cells.length !== 4) return;
-      const name = cells.eq(0).text().trim(), zone = cells.eq(1).text().trim();
-      const faction = cells.eq(2).text().trim();
-      if (!['Alliance', 'Horde', 'Both'].includes(faction)) throw new Error('Invalid faction');
-      nodes.push({id: `${name}|${faction}`, name, zone, faction,
-        source: base + cells.eq(0).find('a').attr('href')});
-    });
-  });
+  const nodes = parseIndex($,base);
   if (nodes.length < 40) throw new Error('Flight index incomplete');
   const links = [];
   const missing = [];
   for (const url of [...new Set(nodes.map(n => n.source))]) {
     const doc = await page(url);
-    const heading = doc('#Flight_connections').closest('.mw-heading');
-    let faction;
-    let count = 0;
-    heading.nextUntil('.mw-heading').each((_, element) => {
-      const text = doc(element).text().trim();
-      if (/^Alliance flight master/.test(text)) faction = 'Alliance';
-      if (/^Horde flight master/.test(text)) faction = 'Horde';
-      if (element.tagName !== 'table') return;
-      for (const from of nodes.filter(n => n.source === url && (!faction || n.faction === faction))) {
-        doc(element).find('tr').slice(1).each((_, row) => {
-          const cells = doc(row).children('td');
-          const name = cells.eq(0).find('a').first().text().trim() || cells.eq(0).text().trim();
-          const fare = Number(cells.last().attr('data-sort-value'));
-          const rowFaction = cells.length === 4 ? cells.eq(2).text().trim() : from.faction;
-          const targets = nodes.filter(n => n.name === name &&
-            (n.faction === rowFaction || n.faction === 'Both' || rowFaction === 'Both'));
-          if (!Number.isInteger(fare) || fare < 0 || !targets.length) throw new Error(`Unresolved flight ${from.id} -> ${name}`);
-          for (const to of targets) {
-            links.push({from: from.id, to: to.id, fare, faction:rowFaction, source: url});
-            count++;
-          }
-        });
-      }
-    });
-    if (!count) missing.push(url);
+    const connections=parseConnections(doc,url,nodes);
+    links.push(...connections);
+    if (!connections.length) missing.push(url);
     fs.writeFileSync(cache, JSON.stringify(pages));
   }
   nodes.sort((a,b) => a.id.localeCompare(b.id, 'en'));
@@ -71,7 +38,8 @@ async function main() {
   output.push('}, edges={');
   for (const e of links) output.push(`    {from=${quote(e.from)},to=${quote(e.to)},fare=${e.fare},mode="flight",${e.faction==='Both'?'':`faction=${quote(e.faction)},`}source=${quote(e.source)}},`);
   output.push('}}', '');
-  fs.writeFileSync(path.join(root,'DungeonQuestTrackerForever','Data','TravelData.lua'),output.join('\n'));
+  require('./data-proposal.cjs').writeProposal({root,relativePath:'Data/TravelData.lua',content:output.join('\n'),
+    sources:[base+'/wiki/Flight_Paths',...nodes.map(node=>node.source)],build:'70374',dependencies:process.argv[2]});
   console.log(JSON.stringify({nodes:nodes.length,directedFlights:links.length,missingConnectionPages:missing},null,2));
 }
 main().catch(error => {console.error(error.message); process.exitCode=1;});

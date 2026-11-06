@@ -44,7 +44,7 @@ do
     for _,id in ipairs(DQT.dungeons["city-of-dalaran"].quests) do
         local quest=DQT:GetQuest(id)
         assert(quest.awaitingFinalVerification and quest.confidence=="needsReview" and not quest.verifiedForever,"Explicit provisional attunement")
-        assert(DQT:GetQuestRewardXP(quest)==(id==92457 and 9400 or 0) and quest.questLevelUnverified,"Only sourced XP replaces unknown reward; levels remain provisional")
+        assert(DQT:GetQuestRewardXP(quest)==(quest.foreverXp or 0) and quest.questLevelUnverified,"Only sourced XP replaces unknown reward; levels remain provisional")
     end
     assert(DQT:GetQuestAvailability(DQT.quests[92434],context)=="locked","Horde preparation enforced")
     complete[544],complete[545],complete[93680]=true,true,true

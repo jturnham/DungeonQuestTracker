@@ -408,6 +408,7 @@ function DQT:GetQuestRewardXP(quest)
     if not quest then return 0, "none" end
     if quest.partySupplied then return 0, "Party supplied (XP unverified)" end
     if quest.foreverXp then
+        if quest.xpGuide then return quest.foreverXp, "Forever (published guide; provisional)" end
         if quest.xpPublished then return quest.foreverXp, "Forever (published beta)" end
         if quest.xpReported then return quest.foreverXp, "Forever (player reported)" end
         if quest.xpEstimate then return quest.foreverXp, "Forever (Oct 1 estimate)" end
@@ -416,6 +417,16 @@ function DQT:GetQuestRewardXP(quest)
     end
     if quest.classicXp then return quest.classicXp, "Classic" end
     return 0, "unknown"
+end
+
+function DQT:IsQuestRewardXPKnown(quest)
+    return quest and not quest.partySupplied and not quest.xpOutdated
+        and (quest.foreverXp ~= nil or quest.classicXp ~= nil) or false
+end
+
+function DQT:FormatTurnInXP(item)
+    if item.xpKnown == false then return "XP unknown" end
+    return tostring(item.effectiveXp or 0) .. " XP"
 end
 
 function DQT:GetQuestColorInfo(questLevel, playerLevel)
@@ -458,6 +469,8 @@ function DQT:GetTurnInRisk(quest, context)
     local currentXp, currentColor = self:GetQuestXpEfficiencyAtLevel(quest, level)
     local nextXp, nextColor = self:GetQuestXpEfficiencyAtLevel(quest, level + 1)
     local loss = math.max(0, currentXp - nextXp)
+    -- A difficulty color does not establish the client's exact reduced reward.
+    if currentColor == "gray" or nextColor == "gray" then loss = 0 end
 
     if currentColor ~= nextColor or loss > 0 then
         if nextColor == "gray" then return "gray-next-level", loss, currentColor, nextColor end
@@ -471,8 +484,9 @@ function DQT:BuildTurnInItem(row, dungeonKey, dungeon, context, xpToLevel)
     local quest = row.quest
     local rawXp, xpSource = self:GetQuestRewardXP(quest)
     local effectiveXp, currentColor = self:GetQuestXpEfficiency(quest, context)
+    local xpKnown = self:IsQuestRewardXPKnown(quest) and currentColor ~= "gray"
     local risk, xpLossOnLevel, _, nextColor = self:GetTurnInRisk(quest, context)
-    local dings = xpToLevel > 0 and effectiveXp >= xpToLevel
+    local dings = xpKnown and xpToLevel > 0 and effectiveXp >= xpToLevel
     local atLevelRisk = risk ~= "stable" and risk ~= "unknown"
     local priorityScore = effectiveXp
 
@@ -489,6 +503,7 @@ function DQT:BuildTurnInItem(row, dungeonKey, dungeon, context, xpToLevel)
         dungeon = dungeon,
         rawXp = rawXp,
         xpSource = xpSource,
+        xpKnown = xpKnown,
         effectiveXp = effectiveXp,
         currentColor = currentColor,
         nextColor = nextColor,
@@ -530,14 +545,14 @@ function DQT:GroupTurnInsByLocation(turnIns, context)
     for index=1,#turnIns do
         local current = turnIns[index]
         spent = spent + current.effectiveXp
-        if spent >= budget or current.xpSource == "unknown" or current.quest.partySupplied then return end
+        if spent >= budget or current.xpKnown == false or current.xpSource == "unknown" or current.quest.partySupplied then return end
         local locationKey = TurnInLocationKey(current.quest)
         if locationKey then
             local candidateIndex = index+2
             while candidateIndex <= #turnIns do
                 local candidate = turnIns[candidateIndex]
                 if TurnInLocationKey(candidate.quest) == locationKey then
-                    local safe = candidate.xpSource ~= "unknown" and not candidate.quest.partySupplied
+                    local safe = candidate.xpKnown ~= false and candidate.xpSource ~= "unknown" and not candidate.quest.partySupplied
                     local originalSpent = spent
                     for skipped=index+1,candidateIndex-1 do
                         local other = turnIns[skipped]
@@ -546,7 +561,7 @@ function DQT:GroupTurnInsByLocation(turnIns, context)
                         if originalSpent + candidate.effectiveXp >= budget then
                             safe=false; break
                         end
-                        if other.xpSource == "unknown" or other.quest.partySupplied then safe=false; break end
+                        if other.xpKnown == false or other.xpSource == "unknown" or other.quest.partySupplied then safe=false; break end
                         originalSpent = originalSpent + other.effectiveXp
                     end
                     if safe then
@@ -955,7 +970,7 @@ function DQT:PrintTurnIns()
     for index, item in ipairs(turnIns) do
         local dingText = item.dings and " - levels you" or ""
         local dungeonName = item.dungeon and item.dungeon.name or "Unknown dungeon"
-        self:Print(string.format("%d. [%s] %s: %d XP%s -> %s", index, dungeonName, item.quest.name, item.effectiveXp, dingText, item.quest.turnIn and item.quest.turnIn.name or "Unknown"))
+        self:Print(string.format("%d. [%s] %s: %s%s -> %s", index, dungeonName, item.quest.name, self:FormatTurnInXP(item), dingText, item.quest.turnIn and item.quest.turnIn.name or "Unknown"))
     end
 end
 
@@ -1027,6 +1042,17 @@ local function HandleSlashCommand(input)
 
     if command == "debug" then DQT:Debug(tonumber(rest)); return end
     if command == "options" then DQT.UI:ShowOptions(); return end
+    if command == "tools" then DQT.UI:ShowTools(); return end
+    if command == "report" then DQT.UI:ShowBugReport(tonumber(rest)); return end
+    if command == "party" then DQT.UI:ShowPartyReadiness(DQT.UI.currentDungeonKey); return end
+    if command == "profiles" then DQT.UI:ShowProfiles(); return end
+    if command == "filters" then DQT.UI:ShowFilterReasons(); return end
+    if command == "notices" and rest=="mute" then DQT.Notifications:Suppress(); return end
+    if command == "xp" then
+        if rest=="clear confirm" then DQT.XPRecorder:Clear(); DQT:Print("Local XP observations cleared.")
+        else DQT.UI:ShowXPRecords() end
+        return
+    end
     if command == "minimap" then DQT:SetOption("minimap.hide", not DQT:GetOption("minimap.hide")); return end
     if command == "sync" and DQT.SetQuestDataSync then DQT:SetQuestDataSync(rest); return end
     if command == "help" or command == "?" then DQT:ShowHelp(); return end
@@ -1041,9 +1067,11 @@ local function FlushUIRefresh(_, elapsed)
     DQT.events:SetScript("OnUpdate", nil)
     refreshElapsed = nil
     if DQT.UI and DQT.UI.RefreshCurrentDungeon then DQT.UI:RefreshCurrentDungeon() end
+    if DQT.UI and DQT.UI.RefreshUtility then DQT.UI:RefreshUtility() end
 end
 function DQT:RequestUIRefresh()
-    if refreshElapsed or not self.UI or not self.UI.frame or not self.UI.frame:IsShown() then return end
+    if refreshElapsed or not self.UI then return end
+    if not (self.UI.frame and self.UI.frame:IsShown()) and not (self.UI.utility and self.UI.utility:IsShown()) then return end
     refreshElapsed = 0
     self.events:SetScript("OnUpdate", FlushUIRefresh)
 end
@@ -1061,6 +1089,7 @@ DQT.events:SetScript("OnEvent", function(_, event, ...)
         DungeonQuestTrackerDB = CopyDefaults(DQT.defaults, DungeonQuestTrackerDB)
         DQT.db = DungeonQuestTrackerDB
         DQT:InitializeOptions()
+        if DQT.InitializeEnhancements then DQT:InitializeEnhancements() end
         if DQT.InitializeQuestDataSync then DQT:InitializeQuestDataSync() end
         DQT.loaded = true
         DQT:InitializeComms()

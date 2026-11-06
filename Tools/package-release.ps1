@@ -1,3 +1,4 @@
+param([string]$OutputDirectory)
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 $addon = Join-Path $root 'DungeonQuestTrackerForever'
@@ -7,7 +8,10 @@ if (-not $match.Success) { throw 'Missing semantic version in TOC.' }
 $version = $match.Groups[1].Value
 $config = Get-Content -LiteralPath (Join-Path $addon 'Config.lua') -Raw
 if ($config -notmatch ('DQT\.version = "' + [regex]::Escape($version) + '"')) { throw 'Config and TOC versions disagree.' }
-$release = Join-Path $root 'release'
+foreach ($runtime in Get-ChildItem -LiteralPath $addon -Recurse -File -Filter '*.lua') {
+    if ((Get-Content -LiteralPath $runtime.FullName -Raw) -match 'BEGIN PRIVATE LOCAL BETA SETTINGS REPAIR|DQTBETAREPAIR|__VARIABLES__') { throw 'Personal beta repair code must never be packaged.' }
+}
+$release = if ($OutputDirectory) { [IO.Path]::GetFullPath($OutputDirectory) } else { Join-Path $root 'release' }
 New-Item -ItemType Directory -Path $release -Force | Out-Null
 $stage = Join-Path $release ('staging-' + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $stage | Out-Null
@@ -23,7 +27,7 @@ try {
         foreach ($entry in $entries) {
             $name = $entry.FullName.Replace('\', '/')
             if (-not $name.StartsWith('DungeonQuestTrackerForever/') -or $name.Contains('../')) { throw "Unexpected archive path: $name" }
-            if ($name -match 'IMPLEMENTATION_CHECKLIST|(^|/)(Docs|Tools|\.git)/') { throw "Development file in archive: $name" }
+            if ($name -match 'IMPLEMENTATION_CHECKLIST|BetaSettingsRepair|LocalMigration|prepare-live-beta-repair|test-beta-repair|(^|/)(Docs|Tools|\.git)/') { throw "Development file in archive: $name" }
         }
         $expected = @('DungeonQuestTrackerForever/DungeonQuestTrackerForever.toc', 'DungeonQuestTrackerForever/LICENSE')
         $expected += @($toc | Where-Object { $_ -match '\.(lua|xml)$' } | ForEach-Object { 'DungeonQuestTrackerForever/' + $_.Replace('\', '/') })

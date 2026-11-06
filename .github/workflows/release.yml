@@ -1,0 +1,66 @@
+name: Publish tagged release (manual)
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag matching the addon version (for example v0.7.0)
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  build:
+    if: github.repository == 'jturnham/DungeonQuestTracker'
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Select and verify existing tag
+        shell: pwsh
+        env:
+          TARGET_TAG: ${{ inputs.tag }}
+        run: |
+          if ($env:TARGET_TAG -notmatch '^v\d+\.\d+\.\d+$') { throw 'Invalid release tag' }
+          git fetch origin "refs/tags/$env:TARGET_TAG`:refs/tags/$env:TARGET_TAG"
+          if ($LASTEXITCODE -ne 0) { throw 'Tag not found' }
+          git checkout --detach "refs/tags/$env:TARGET_TAG"
+          if ($LASTEXITCODE -ne 0) { throw 'Tag checkout failed' }
+          $version = $env:TARGET_TAG.Substring(1)
+          $toc = Get-Content DungeonQuestTrackerForever/DungeonQuestTrackerForever.toc -Raw
+          if ($toc -notmatch ('(?m)^## Version: ' + [regex]::Escape($version) + '\s*$')) { throw 'Tag/TOC mismatch' }
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - name: Validate and package selected tag
+        shell: pwsh
+        run: |
+          npm install --global pnpm@11.25.0
+          if ($LASTEXITCODE -ne 0) { throw 'pnpm installation failed' }
+          pnpm install --dir Tools --frozen-lockfile --ignore-scripts
+          if ($LASTEXITCODE -ne 0) { throw 'Dependency installation failed' }
+          ./Tools/validate-data.ps1 -DependencyDirectory ./Tools
+          ./Tools/package-release.ps1 -OutputDirectory ./release/ci
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-package
+          path: release/ci/*.zip
+          if-no-files-found: error
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: release-package
+          path: package
+      - name: Publish verified package
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TARGET_TAG: ${{ inputs.tag }}
+        run: |
+          gh release create "$TARGET_TAG" package/*.zip --verify-tag --generate-notes --title "DungeonQuestTrackerForever ${TARGET_TAG#v}"

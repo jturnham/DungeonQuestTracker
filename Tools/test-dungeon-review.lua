@@ -13,7 +13,7 @@ assert(placeholders == 5, "Only announced Forever dungeons without quest evidenc
 local first, second = DQT:GetOrderedDungeonKeys(), DQT:GetOrderedDungeonKeys()
 for index, key in ipairs(first) do assert(key == second[index], "Dungeon order must be stable") end
 for _, id in ipairs({92753,92819,95036,95042,95111}) do
-    assert(DQT.quests[id] and not DQT.quests[id].foreverXp, "New reward must remain unknown")
+    assert(DQT.quests[id] and (not DQT.quests[id].foreverXp or DQT.quests[id].xpGuide), "New rewards require explicit provisional provenance")
 end
 assert(DQT.quests[92819].followUpOf == 92753)
 assert(DQT.quests[95111].followUpOf == 95036)

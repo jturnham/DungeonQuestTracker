@@ -1,6 +1,20 @@
 # Changelog
 
-## Unreleased
+## 0.6.1 - 2026-11-05
+
+- Extend the zero-XP sweep with 15 additional source-linked provisional rewards: seven Dalaran quests, four separate Unending Torment stages, both Destruction in Deadmines stages, Seeking the Kor Gem and An Underrated Talent. Keep unresolved/conflicting rewards unknown across turn-ins, recorder summaries and diagnostics; add catalogue-wide missing-reward regression coverage.
+- Add 12 provisional, source-linked published guide rewards, including Fallen in the Fen (6,150), Heartwoven (6,150), Prehistoric Prism (6,950), and The Wrath of Rath'mael (4,600). Show unknown/unverified or gray-scaled turn-in XP as unknown rather than a false zero, and keep uncertain rewards from establishing safe route regrouping.
+- Add launch-reported Ruins preparation chains: both Rear Guard Patrol steps before The Wrath of Rath'mael, and all three A Recipe For Death steps before The New Plague. Include their pickup/return records and retain unknown preparation XP explicitly.
+- Review dated individual reward pages: Nara Wildmane is 120 XP (replacing the 115 estimate), and Chief Engineer Scooty is 280 XP (separate from its 275 Classic fallback). Other uncertain/dated rewards retain their provenance; no blanket launch multiplier applied.
+- Explicitly ignore personal beta-repair helpers and reject repair code in release packaging. Personal repair data remains local-only.
+
+- Add per-character favorites, reusable preference profiles, bounded addon scaling, larger quest text and position resets without copying travel knowledge, XP observations or sharing consent.
+- Add configurable loot-alert duration, sound presets/mute/channel; scrollable on-demand party readiness; opt-in combat-deferred entry/chain notices and session suppression.
+- Add local diagnostic previews/manual reports, structured filter explanations, English-fallback UI localization hooks, compact status labels and keyboard navigation for supported inputs.
+- Add locked validation dependencies, read-only validation CI/test artifacts and separately dispatched tagged-release publication. Importers now emit provenance-labelled review proposals rather than overwriting runtime data.
+
+- Add opt-in local dungeon quest XP recording, bounded retention, raw event/reward-panel context and an XP Records summary/manual export screen. No automatic uploads or changes to turn-in ranking.
+- Add a manual observation issue template and data-only offline reviewer that cross-checks trusted bundled quest/reward provenance, flags conflicts and suspicious context, deduplicates exact reports and requires independent maintainer verification. No automatic data promotion or crowd-vote acceptance.
 
 ## 0.6.0 - 2026-11-03
 

@@ -81,7 +81,7 @@ function MinimapButton:Create()
     button:SetScript("OnEnter", function(self)
         if not GameTooltip then return end
         GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-        GameTooltip:SetText("DungeonQuestTrackerForever")
+        GameTooltip:SetText(DQT.L["DungeonQuestTrackerForever"])
         GameTooltip:AddLine("Left-click: open dungeon list", 1, 1, 1)
         GameTooltip:AddLine("Right-click: open turn-ins", 1, 1, 1)
         GameTooltip:AddLine("Drag: move button", 0.75, 0.75, 0.75)

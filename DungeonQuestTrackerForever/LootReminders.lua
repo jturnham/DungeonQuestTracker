@@ -234,12 +234,13 @@ function DQT:ShowQuestLootReminder(bossName, drops, preview, silent)
     frame:SetHeight(math.max(96, (frame.text:GetStringHeight() or 48) + 50))
     local icon = drops[1].itemID and SafeCall((C_Item and C_Item.GetItemIconByID) or GetItemIcon, drops[1].itemID)
     frame.icon:SetTexture(icon or "Interface\\Icons\\INV_Misc_Bag_10")
-    frame.drops, frame.bossName, frame.remaining = drops, bossName, 15
+    frame.drops, frame.bossName, frame.remaining = drops, bossName, self:GetOption("lootReminders.duration")
     frame.dismissRemaining, frame.dismissAlpha = nil, nil
     frame:SetAlpha(1)
     frame:Show()
-    if not silent then
-        SafeCall((C_Sound and C_Sound.PlaySound) or PlaySound, (SOUNDKIT and SOUNDKIT.RAID_WARNING) or 8959, "Master")
+    if not silent and self:GetOption("lootReminders.sound") then
+        local sounds={(SOUNDKIT and SOUNDKIT.RAID_WARNING) or 8959,(SOUNDKIT and SOUNDKIT.READY_CHECK) or 8960,(SOUNDKIT and SOUNDKIT.TELL_MESSAGE) or 3081}
+        SafeCall((C_Sound and C_Sound.PlaySound) or PlaySound,sounds[self:GetOption("lootReminders.soundPreset")],self:GetOption("lootReminders.masterChannel") and "Master" or "SFX")
     end
 end
 

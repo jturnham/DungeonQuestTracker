@@ -2,6 +2,16 @@ local _, DQT = ...
 
 DQT.optionDefinitions = {
     {section="Display"},
+    {key="display.scale",label="Window scale (%)",number=true,min=70,max=150},
+    {key="display.largeText",label="Larger quest and dungeon text"},
+    {key="display.favoritesFirst",label="Sort favorite dungeons first"},
+    {key="notifications.entry",label="Show dungeon-entry preparation summary (opt-in)"},
+    {key="notifications.chains",label="Notify when quest chains become available (opt-in)"},
+    {key="lootReminders.duration",label="Loot alert duration (seconds)",number=true,min=3,max=60},
+    {key="lootReminders.sound",label="Play loot alert sound"},
+    {key="lootReminders.soundPreset",label="Alert sound: 1 warning, 2 ready check, 3 tell",number=true,min=1,max=3},
+    {key="lootReminders.masterChannel",label="Play alert sound on Master channel",tip="Off uses the SFX channel. Game volume settings still apply."},
+    {key="xpRecorder.enabled",label="Record dungeon quest XP locally (opt-in)",tip="Stores up to 500 observations for 90 days. No uploads or ranking changes. Open XP Records to inspect, copy an anonymous export or clear records. Event rewards are not assumed to be base XP."},
     {key="display.compact", label="Use compact mode", tip="Text-only dungeon and quest lists in a smaller window. Options always uses the full window width."},
     {key="lootReminders.enabled", label="Show boss quest-loot reminders", tip="Brief on-screen reminder to check a defeated boss for known quest items. A reminder does not guarantee the item dropped."},
     {section="Quest Checklist"},
@@ -46,7 +56,10 @@ DQT.optionDefinitions = {
     {key="partyDataSync", label="Enable party quest-data sync", tip="Opt-in on both clients. Received records stay separate and unverified XP is excluded from ranking."},
 }
 local definitions = {}
-for _, option in ipairs(DQT.optionDefinitions) do if option.key then definitions[option.key] = option end end
+for _, option in ipairs(DQT.optionDefinitions) do
+    if option.key then definitions[option.key] = option end
+    for _,field in ipairs({"section","label","tip"}) do if option[field] then option[field]=DQT.L[option[field]] end end
+end
 local function Lookup(table, key)
     local group, field = key:match("^(%w+)%.(%w+)$")
     if group then
@@ -68,7 +81,7 @@ function DQT:GetOption(key)
     local value = self.db and Lookup(self.db, key)
     if option.number then
         if type(value) ~= "number" or value ~= value or value == math.huge or value == -math.huge then value = Lookup(self.defaults, key) end
-        return math.max(0, math.min(60, math.floor(value)))
+        return math.max(option.min or 0, math.min(option.max or 60, math.floor(value)))
     end
     if type(value) ~= "boolean" then value = Lookup(self.defaults, key) end
     return value
@@ -95,6 +108,9 @@ function DQT:InitializeOptions()
     for key in pairs(definitions) do Store(self.db, key, self:GetOption(key)) end
 end
 function DQT:ApplyOptions()
+    if self.SaveActiveProfile then self:SaveActiveProfile() end
+    if self.UI and self.UI.ApplyWindowPreferences then self.UI:ApplyWindowPreferences() end
+    if self.Notifications then self.Notifications:OptionsChanged() end
     if self.Minimap then self.Minimap:Refresh() end
     if self.PickupMap and not self:GetOption("travel.useTomTom") then self.PickupMap:ClearWaypoint() end
     if self.PickupMap then self.PickupMap:InvalidateRoute() end
@@ -118,7 +134,7 @@ function DQT:SetOption(key, value)
     if option.number then
         value = tonumber(value)
         if not value or value ~= value or math.abs(value) == math.huge then return false end
-        value = math.max(0, math.min(60, math.floor(value)))
+        value = math.max(option.min or 0, math.min(option.max or 60, math.floor(value)))
     elseif type(value) ~= "boolean" then return false end
     Store(self.db, key, value)
     self.db.optionOverrides = type(self.db.optionOverrides) == "table" and self.db.optionOverrides or {}
@@ -179,34 +195,41 @@ function DQT:GetDisplayDungeonStatus(key, context)
     for _, row in ipairs(raw.quests) do
         if row.state ~= "completed" and row.state ~= "unavailable" and not self:IsQuestGray(row.quest, context) and not (self:GetOption("filters.ignoreRedChecklist") and self:IsQuestRed(row.quest, context)) then MarkPrerequisites(row.quest) end
     end
-    local result = {key=key, dungeon=raw.dungeon, quests={}, counts={completed=0, ready=0, active=0, missing=0, locked=0, unavailable=0}, hidden=0, raw=raw}
+    local result = {key=key, dungeon=raw.dungeon, quests={}, counts={completed=0, ready=0, active=0, missing=0, locked=0, unavailable=0}, hidden=0, raw=raw,exclusions={}}
     for _, row in ipairs(raw.quests) do
         local quest, visible = row.quest, true
+        local reasons={}
+        local function Exclude(reason) visible=false; reasons[#reasons+1]=reason end
         local protectTracked = (row.state == "active" or row.state == "ready") and not self:GetOption("filters.hideTrackedDungeons")
         local available = self:GetQuestAvailability(quest, context) ~= "unavailable"
-        if not available and not self:GetOption("filters.showUnavailable") then visible=false end
-        if row.state == "completed" and not self:GetOption("filters.showCompleted") then visible=false end
-        if quest.classes and not self:GetOption("filters.showClassRestricted") then visible=false end
-        if quest.breadcrumbOnly and not self:GetOption("filters.includeBreadcrumbs") then visible=false end
+        if not available and not self:GetOption("filters.showUnavailable") then Exclude("faction/class/race unavailable") end
+        if row.state == "completed" and not self:GetOption("filters.showCompleted") then Exclude("completed quests hidden") end
+        if quest.classes and not self:GetOption("filters.showClassRestricted") then Exclude("class quests hidden") end
+        if quest.breadcrumbOnly and not self:GetOption("filters.includeBreadcrumbs") then Exclude("optional breadcrumbs hidden") end
         local pickupType = self:GetQuestPickupType(quest)
-        if (pickupType == "drop" or pickupType == "object") and not self:GetOption("filters.includeItemQuests") then visible=false end
+        if (pickupType == "drop" or pickupType == "object") and not self:GetOption("filters.includeItemQuests") then Exclude("item/object starts hidden") end
         if row.state ~= "ready" and not protectTracked and not blocking[row.questID] then
-            if self:GetOption("filters.ignoreGrayChecklist") and self:IsQuestGray(quest, context) then visible=false end
-            if row.state == "locked" and not quest.questLevelUnverified and quest.questLevel < context.level and not self:GetOption("filters.showLowLevelLocked") then visible=false end
+            if self:GetOption("filters.ignoreGrayChecklist") and self:IsQuestGray(quest, context) then Exclude("gray quest hidden") end
+            if row.state == "locked" and not quest.questLevelUnverified and quest.questLevel < context.level and not self:GetOption("filters.showLowLevelLocked") then Exclude("lower-level locked quest hidden") end
         end
-        if row.state ~= "ready" and not protectTracked and self:GetOption("filters.ignoreRedChecklist") and self:IsQuestRed(quest, context) then visible=false end
+        if row.state ~= "ready" and not protectTracked and self:GetOption("filters.ignoreRedChecklist") and self:IsQuestRed(quest, context) then Exclude("red quest hidden") end
         if visible then
             result.quests[#result.quests+1] = row
             result.counts[row.state] = result.counts[row.state]+1
-        else result.hidden=result.hidden+1 end
+        else
+            result.hidden=result.hidden+1
+            result.exclusions[#result.exclusions+1]={questID=row.questID,reasons=reasons}
+        end
     end
     return result
 end
 function DQT:ShouldShowDungeon(status, context)
     context = context or self:GetPlayerContext()
     local counts, raw = status.counts, status.raw
-    if self:GetOption("filters.onlyMissing") and counts.missing+counts.locked+counts.active+counts.ready == 0 then return false end
-    if self:GetOption("filters.onlyReady") and counts.ready == 0 then return false end
+    local reasons={}
+    local function Exclude(reason) reasons[#reasons+1]=reason end
+    if self:GetOption("filters.onlyMissing") and counts.missing+counts.locked+counts.active+counts.ready == 0 then Exclude("no unfinished visible quests") end
+    if self:GetOption("filters.onlyReady") and counts.ready == 0 then Exclude("no ready visible quests") end
     local relevant, tracked = false, false
     for _, row in ipairs(raw.quests) do
         if self:GetQuestAvailability(row.quest, context) ~= "unavailable" then
@@ -214,25 +237,25 @@ function DQT:ShouldShowDungeon(status, context)
             if row.state == "active" or row.state == "ready" then tracked=true end
         end
     end
-    if #status.dungeon.quests > 0 and #status.quests == 0 then return false end
-    if #status.quests == 0 and not self:DungeonHasVisibleQuests(status.key, context) then return false end
-    if not relevant and #status.quests > 0 and not self:GetOption("filters.showUnavailable") then return false end
-    if tracked and not self:GetOption("filters.hideTrackedDungeons") then return true end
+    if #status.dungeon.quests > 0 and #status.quests == 0 then Exclude("all quest rows hidden") end
+    if #status.quests == 0 and not self:DungeonHasVisibleQuests(status.key, context) then Exclude("no faction-eligible quest coverage") end
+    if not relevant and #status.quests > 0 and not self:GetOption("filters.showUnavailable") then Exclude("no eligible quests") end
+    if tracked and not self:GetOption("filters.hideTrackedDungeons") then return #reasons==0,reasons end
     local level = context.level
     local low, high = tostring(status.dungeon.recommendedLevel):match("(%d+)%D+(%d+)")
     low, high = tonumber(low) or status.dungeon.minLevel, tonumber(high) or status.dungeon.minLevel
     if level > 0 then
-        if self:GetOption("filters.hideGrayDungeons") and self:GetQuestColorInfo(high, level) == "gray" then return false end
-        if self:GetOption("filters.hideRedDungeons") and self:GetQuestColorInfo(low, level) == "red" then return false end
-        if self:GetOption("filters.hideLowDungeons") and high+self:GetOption("filters.lowLevelGap") < level then return false end
-        if self:GetOption("filters.hideHighDungeons") and low-self:GetOption("filters.highLevelGap") > level then return false end
+        if self:GetOption("filters.hideGrayDungeons") and self:GetQuestColorInfo(high, level) == "gray" then Exclude("gray dungeon hidden") end
+        if self:GetOption("filters.hideRedDungeons") and self:GetQuestColorInfo(low, level) == "red" then Exclude("red dungeon hidden") end
+        if self:GetOption("filters.hideLowDungeons") and high+self:GetOption("filters.lowLevelGap") < level then Exclude("below configured level range") end
+        if self:GetOption("filters.hideHighDungeons") and low-self:GetOption("filters.highLevelGap") > level then Exclude("above configured level range") end
     end
     if self:GetOption("filters.hideGrayDungeons") and #status.quests > 0 then
         local allGray = true
         for _, row in ipairs(status.quests) do if not self:IsQuestGray(row.quest, {level=level}) then allGray=false end end
-        if allGray then return false end
+        if allGray then Exclude("all visible quests gray") end
     end
-    return true
+    return #reasons==0,reasons
 end
 function DQT:GetFilterSummary()
     local labels = {}

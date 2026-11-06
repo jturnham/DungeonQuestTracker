@@ -7,11 +7,11 @@ function UI:ShowTravelOptions()
     self:ClearRows()
     self.currentView="travel"
     self:UpdateNav()
-    self.frame.subtitle:SetText("Travel")
+    self.frame.subtitle:SetText(DQT.L["Travel"])
     self:FitContent()
     self.frame.content:Hide()
     self.frame.turnInScroll:Show()
-    self.frame.filterSummary.text:SetText("Character flight knowledge | Provisional network")
+    self.frame.filterSummary.text:SetText(DQT.L["Character flight knowledge | Provisional network"])
     self.frame.travelRows=self.frame.travelRows or {}
     local player=DQT:GetPlayerContext()
     local faction=player.faction

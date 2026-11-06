@@ -1,0 +1,22 @@
+name: Bug or quest data report
+description: Submit a reviewed local diagnostic preview without account or character data.
+title: "[Report] "
+body:
+  - type: markdown
+    attributes:
+      value: "Use /dqt report <questID> (quest ID optional), fill Expected/Actual and select Update preview, then Copy text. Inspect the text before posting. Nothing is submitted automatically."
+  - type: textarea
+    id: report
+    attributes:
+      label: Diagnostic preview
+      description: Paste only the generated report. Do not paste chat, account information or full SavedVariables.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction or independent data evidence
+      description: Include concise steps, or a quest/build-specific source for a data correction. Submitted claims require independent review.
+    validations:
+      required: true

@@ -15,6 +15,10 @@ for id, quest in pairs(DQT.quests) do
         assert(xp == quest.foreverXp and source == "Forever (published beta)", "Published reward label: " .. id)
         assert(not quest.xpEstimate and not quest.xpOutdated and quest.confidence ~= "verifiedInGame", "Published rewards do not claim local verification")
         assert(quest.xpSource:find("https://wowforever.wclbox.com/en/fuben/", 1, true) or quest.xpSource:find("https://wowforevertalents.com/quests/", 1, true), "Published source preserved")
+    elseif quest.xpGuide then
+        local xp,source=DQT:GetQuestRewardXP(quest)
+        assert(xp>0 and source=="Forever (published guide; provisional)","Guide reward explicitly provisional")
+        assert(not quest.xpPublished and not quest.xpOutdated,"Guide does not claim a client observation")
     elseif quest.xpReported then
         local xp, source = DQT:GetQuestRewardXP(quest)
         assert(xp == quest.foreverXp and source == "Forever (player reported)", "Reported reward label")
@@ -25,7 +29,9 @@ for id, quest in pairs(DQT.quests) do
         assert(source == "Forever (outdated; unverified)", "Stale reward label: " .. id)
     end
 end
-assert(count == 7 and published == 37, "Only explicitly published post-update rewards supersede estimates: " .. count .. " estimates, " .. published .. " published")
+assert(count == 6 and published == 39, "Only explicitly published post-update rewards supersede estimates: " .. count .. " estimates, " .. published .. " published")
+assert(DQT.quests[1490].foreverXp==120 and DQT.quests[1490].xpPublished and DQT.quests[1490].xpPreviousEstimate==115,"Nara Wildmane published reward replaces the estimate")
+assert(DQT.quests[2842].foreverXp==280 and DQT.quests[2842].xpPublished and DQT.quests[2842].classicXp==275,"Scooty published reward retains the separate Classic fallback")
 assert(DQT.quests[92457].foreverXp == 9400 and DQT.quests[98815].foreverXp == 1150, "October 16 published quest rewards")
 assert(DQT.quests[5723].foreverXp == 2150 and DQT.quests[5723].xpReported, "RFC player report")
 assert(DQT.quests[387].classicXp == 2650 and DQT.quests[387].foreverXp == 5550, "Stockade baseline retained separately from published XP")
@@ -39,10 +45,36 @@ assert(DQT.quests[95216].foreverXp == 5450 and DQT.quests[95216].xpPublished and
 assert(DQT.quests[95216].xpBaselineAssumed and not DQT.quests[95216].classicXp, "Assumed baseline is not a Classic reward for a new quest")
 assert(DQT.quests[92401].foreverXp == 4600, "Ruins player report")
 assert(DQT.quests[97288].foreverXp == 3450, "Ruins published reward")
-assert(DQT.quests[92422].foreverXp == 0 and not DQT.quests[92422].xpEstimate, "No fabricated XP for an unknown zero placeholder")
+assert(DQT.quests[92422].foreverXp == 4600 and DQT.quests[92422].xpGuide, "Published guide replaces Rath'mael's zero placeholder")
 assert(DQT.quests[96403].xpBaselineAssumed, "Hall uses comparable baseline")
 for id,xp in pairs({[96395]=2300,[96403]=2950,[96394]=2300,[96393]=3200,[6921]=6550,[6561]=7850}) do
     assert(DQT.quests[id].foreverXp==xp and DQT.quests[id].xpPublished and not DQT.quests[id].xpEstimate,"October 7 exact-ID correction: " .. id)
 end
 assert(DQT:GetQuestRewardXP({partySupplied=true,foreverXp=99999,xpEstimate=true}) == 0, "Party XP never trusted")
+do
+    for id,xp in pairs({[96984]=9400,[92458]=9400,[96986]=9400,[96988]=9400,[96987]=9400,[92489]=9400,[92456]=9400,
+        [97289]=1650,[97290]=1650,[97291]=1650,[97292]=1650,[92753]=4050,[92819]=680,[95042]=2000,[95111]=1000}) do
+        local quest=DQT.quests[id]
+        assert(quest.foreverXp==xp and quest.xpGuide and quest.xpSource:match("^https://"),"Exact-ID sourced provisional reward: "..id)
+    end
+    for _,quest in pairs(DQT.quests) do
+        local item=DQT:BuildTurnInItem({questID=0,quest=quest},"test",{},{level=quest.questLevel or 30},100000)
+        if not DQT:IsQuestRewardXPKnown(quest) then
+            assert(not item.xpKnown and not item.dings and DQT:FormatTurnInXP(item)=="XP unknown","Every missing/untrusted reward stays unknown: "..quest.name)
+        end
+    end
+    for id,xp in pairs({[95795]=6150,[95809]=6150,[98824]=6950,[92422]=4600}) do
+        local item=DQT:BuildTurnInItem({questID=id,quest=DQT.quests[id]},"test",{}, {level=18},100)
+        assert(item.rawXp==xp and item.xpKnown and item.dings,"Reported missing reward is available: "..id)
+    end
+    local function Item(quest,level)
+        return DQT:BuildTurnInItem({questID=1,quest=quest},"test",{}, {level=level or 28},100)
+    end
+    assert(DQT:FormatTurnInXP(Item({questLevel=28}))=="XP unknown","Missing XP never displayed as zero")
+    assert(DQT:FormatTurnInXP(Item({questLevel=28,classicXp=0}))=="0 XP","Explicit zero retained")
+    assert(DQT:FormatTurnInXP(Item({questLevel=28,foreverXp=0,xpOutdated=true}))=="XP unknown","Stale zero placeholder unknown")
+    local gray=Item({questLevel=1,foreverXp=5000})
+    assert(not gray.xpKnown and not gray.dings and DQT:FormatTurnInXP(gray)=="XP unknown","Gray scaling cannot claim zero or a level-up")
+    assert(DQT:FormatTurnInXP(Item({questLevel=28,partySupplied=true,foreverXp=99999}))=="XP unknown","Untrusted shared XP stays unknown")
+end
 print("Passed XP: " .. count .. " remaining estimates, " .. published .. " published beta rewards, separately labelled player reports, New Plague 5450 XP and party XP excluded.")

@@ -16,10 +16,22 @@ try {
     }
     & node (Join-Path $PSScriptRoot 'validate-data.cjs') $dependencies
     if ($LASTEXITCODE -ne 0) { throw 'Static validation failed.' }
+    & node (Join-Path $PSScriptRoot 'test-xp-review.cjs') $dependencies
+    if ($LASTEXITCODE -ne 0) { throw 'XP review tests failed.' }
+    & node (Join-Path $PSScriptRoot 'test-launch-sources.cjs') $dependencies
+    if ($LASTEXITCODE -ne 0) { throw 'Launch source parsing tests failed.' }
+    & node (Join-Path $PSScriptRoot 'test-data-proposal.cjs') $dependencies
+    if ($LASTEXITCODE -ne 0) { throw 'Data proposal tests failed.' }
+    & node (Join-Path $PSScriptRoot 'test-level35.cjs') $dependencies 'Tools/test-optional.lua'
+    if ($LASTEXITCODE -ne 0) { throw 'Optional feature tests failed.' }
+    & node (Join-Path $PSScriptRoot 'test-level35.cjs') $dependencies 'Tools/test-xp-recorder.lua'
+    if ($LASTEXITCODE -ne 0) { throw 'XP recorder tests failed.' }
     & node (Join-Path $PSScriptRoot 'test-level35.cjs') $dependencies 'Tools/test-dungeon-review.lua'
     if ($LASTEXITCODE -ne 0) { throw 'Dungeon review tests failed.' }
     & node (Join-Path $PSScriptRoot 'test-level35.cjs') $dependencies 'Tools/test-prerequisites.lua'
     if ($LASTEXITCODE -ne 0) { throw 'Prerequisite tests failed.' }
+    & node (Join-Path $PSScriptRoot 'test-level35.cjs') $dependencies 'Tools/test-launch-review.lua'
+    if ($LASTEXITCODE -ne 0) { throw 'Launch review tests failed.' }
     & node (Join-Path $PSScriptRoot 'test-level35.cjs') $dependencies 'Tools/test-list-performance.lua'
     if ($LASTEXITCODE -ne 0) { throw 'Dungeon list performance tests failed.' }
     & node (Join-Path $PSScriptRoot 'test-level35.cjs') $dependencies 'Tools/test-data.lua' 'Tools/test-ui.lua' 'Tools/test-sync.lua' 'Tools/test-options.lua' 'Tools/test-compact.lua' 'Tools/test-level-range.lua' 'Tools/test-stability.lua' 'Tools/test-xp.lua' 'Tools/test-followups.lua' 'Tools/test-loot-reminders.lua' 'Tools/test-stockade-loot.lua' 'Tools/test-arugal-loot.lua' 'Tools/test-single-loot.lua' 'Tools/test-beta30.lua' 'Tools/test-performance.lua'
@@ -32,4 +44,5 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Travel routing tests failed.' }
     & node (Join-Path $PSScriptRoot 'test-level35.cjs') $dependencies 'Tools/test-turnin-grouping.lua'
     if ($LASTEXITCODE -ne 0) { throw 'Turn-in grouping tests failed.' }
+    & (Join-Path $PSScriptRoot 'test-package.ps1')
 } finally { Pop-Location }

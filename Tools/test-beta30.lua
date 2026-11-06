@@ -8,7 +8,7 @@ do
     end
     for _, id in ipairs({95663,95682,95737,95809,98824,98823,95795}) do
         assert(Contains("excavation-site-wetlands",id), "Wetlands chain not included")
-        assert(not DQT.quests[id].foreverXp and not DQT.quests[id].classicXp, "No fabricated new-dungeon XP")
+        assert(not DQT.quests[id].classicXp and (not DQT.quests[id].foreverXp or DQT.quests[id].xpGuide), "Only explicitly sourced provisional new-dungeon XP")
     end
     for _, pair in ipairs({{95809,95647},{98824,95810},{98823,95664},{95682,95663},{3525,3523},{2240,2398},{2439,2279},{2440,2280}}) do
         assert(DQT.quests[pair[1]].followUpOf == pair[2], "Wrong continuation")

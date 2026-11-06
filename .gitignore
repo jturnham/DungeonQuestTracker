@@ -8,3 +8,9 @@ Thumbs.db
 release/
 # Local research, testing records and implementation notes; never package or publish.
 Docs/
+# Personal beta-to-live repair helpers, never addon distribution files.
+**/BetaSettingsRepair.lua
+**/prepare-live-beta-repair.cjs
+**/test-beta-repair.lua
+**/LocalMigration.lua
+node_modules/

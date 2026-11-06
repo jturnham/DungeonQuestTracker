@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict');
+const {parseSource}=require('./audit-launch-data.cjs');
+assert.equal(parseSource('<main>Experience: 1,350When you return</main>','https://example.com').xp,1350);
+assert.equal(parseSource('<main>XP2,400 35s</main>','https://example.com').xp,2400);
+assert.equal(parseSource('<main>XP120</main>','https://example.com').xp,120);
+assert.equal(parseSource('<main>Open in Experience Calculator</main>','https://example.com').xp,null);
+assert.equal(parseSource('<main>No reward provided</main><script>Experience: 99999</script>','https://example.com').xp,null);
+assert.equal(parseSource('<main>Experience: 0</main>','https://wowforever.wclbox.com/en/renwu/1').rewardScope,'classic-or-mixed');
+const series=parseSource('<main><h2>The chain</h2><ul><li>Comes after <a href="/quests/rear-guard-patrol-356/">Rear Guard Patrol</a></li><li>Leads to <a href="/quests/test-92422/">Next</a></li></ul></main>','https://example.com');
+assert.deepEqual(series.seriesPredecessorCandidates,[356]);
+assert.deepEqual(series.requiredLinkCandidates,[],'A series link is not automatically a required gate');
+console.log('Launch source parsing passed: grouped numeric XP, XP badges, missing/zero separation, mixed sources and non-authoritative series links');

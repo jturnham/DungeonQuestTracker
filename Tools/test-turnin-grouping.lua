@@ -28,5 +28,9 @@ do
     items[2].xpSource="unknown"
     DQT:GroupTurnInsByLocation(items,context)
     assert(items[2].questID==2,"Unknown awards cannot establish safe reordering")
+    items[2].xpSource="Forever (outdated; unverified)"
+    items[2].xpKnown=false
+    DQT:GroupTurnInsByLocation(items,context)
+    assert(items[2].questID==2,"Unverified zero or gray scaling cannot establish safe reordering")
 end
 print("Turn-in grouping passed: same stops, cumulative XP protection, green/gray risk, unknown/capped XP and destination isolation")

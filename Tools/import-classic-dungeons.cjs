@@ -10,9 +10,10 @@ fs.mkdirSync(path.dirname(cachePath), {recursive:true});
 const cache = fs.existsSync(cachePath) ? JSON.parse(fs.readFileSync(cachePath, 'utf8')) : {};
 async function page(url) {
   if (!cache[url]) {
-    const response = await fetch(url);
+    const response = await fetch(url,{signal:AbortSignal.timeout(20000)});
     if (!response.ok) throw new Error(`${response.status}: ${url}`);
     cache[url] = await response.text();
+    if (Buffer.byteLength(cache[url])>8000000) throw new Error('Source page exceeds size limit');
     fs.writeFileSync(cachePath, JSON.stringify(cache));
   }
   return parseHTML(cache[url]).document;
@@ -209,7 +210,8 @@ for _, id in ipairs(ids) do
     dungeon.notes = "Classic-source quests are included through level 60. Forever availability, prerequisites and XP still need beta verification. Unknown locations do not produce map pins."
 end
 `;
-fs.writeFileSync(path.join(root,'DungeonQuestTrackerForever','Data','QuestDataClassic.lua'),output);
+require('./data-proposal.cjs').writeProposal({root,relativePath:'Data/QuestDataClassic.lua',content:output,
+    sources:[guideURL,...Object.keys(cache)],build:'unknown',dependencies:process.argv[2]});
 console.log(`Imported ${records.size} Classic quest records.`);
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });

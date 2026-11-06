@@ -42,7 +42,12 @@ do
     C_QuestLog, IsQuestFlaggedCompleted, UnitLevel = oldLog, oldHistory, oldLevel
 end
 for _, id in ipairs(DQT.dungeons["ruins-of-lordaeron"].quests) do
-    assert(DQT.quests[id].minLevel == 15,"Ruins pickup minimum from November 2 notes: "..id)
-    assert(DQT.quests[id].verification.prerequisites:find("post-November-2",1,true),"Changed Ruins chains remain explicitly pending")
+    local quest=DQT.quests[id]
+    if not quest.preparationOnly then
+        assert(quest.minLevel == 15,"Ruins pickup minimum from November 2 notes: "..id)
+        if id==92422 or id==95216 then
+            assert(quest.verification.prerequisites:find("2026-11-05",1,true),"Reviewed launch gates replace the generic warning")
+        else assert(quest.verification.prerequisites:find("post-November-2",1,true),"Unreviewed Ruins chains remain pending") end
+    end
 end
 print("Prerequisites passed: required chains, optional referrals, active-log gates, OR/AND branches and bounded party sync.")

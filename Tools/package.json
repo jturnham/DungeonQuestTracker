@@ -1,0 +1,13 @@
+{
+  "name": "dungeonquesttrackerforever-tools",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Development-only validation and data review dependencies; never packaged with the addon",
+  "packageManager": "pnpm@11.25.0",
+  "dependencies": {
+    "cheerio": "1.2.0",
+    "fengari": "0.1.5",
+    "linkedom": "0.18.13",
+    "luaparse": "0.3.1"
+  }
+}
