@@ -9,7 +9,12 @@ for key, dungeon in pairs(DQT.dungeons) do
     end
     assert(type(dungeon.provisionalData)=="boolean" and dungeon.betaAvailability,"Dungeon beta provenance missing: "..key)
 end
-assert(placeholders == 5, "Only announced Forever dungeons without quest evidence should remain empty")
+assert(placeholders == 3, "Only announced Forever dungeons without quest evidence should remain empty")
+assert(#DQT.dungeons["the-drowned-city"].quests == 13)
+assert(DQT.quests[95775].foreverXp == 8450 and DQT.quests[95775].followUpOf == 95770)
+assert(DQT.quests[95776].foreverXp == 9500 and DQT.quests[95776].followUpOf == 95773)
+assert(DQT.quests[95787].followUpOf == 95786 and not DQT.quests[95787].foreverXp)
+assert(DQT.quests[96771].dungeon == "kroldok-stronghold" and not DQT.quests[96771].foreverXp)
 local first, second = DQT:GetOrderedDungeonKeys(), DQT:GetOrderedDungeonKeys()
 for index, key in ipairs(first) do assert(key == second[index], "Dungeon order must be stable") end
 for _, id in ipairs({92753,92819,95036,95042,95111}) do
@@ -68,4 +73,4 @@ found = false
 for _, row in ipairs(DQT:GetGlobalTurnInPriority().quests) do if row.questID == 2768 then found = true end end
 assert(found, "High-level ready quest must appear in global turn-ins")
 UnitLevel, UnitFactionGroup, UnitClass, C_QuestLog = oldLevel, oldFaction, oldClass, oldLog
-print("Dungeon review tests passed: Classic coverage, five unknown Forever catalogues, stable order and uncapped turn-ins.")
+print("Dungeon review tests passed: Classic coverage, new Forever quests, stable order and uncapped turn-ins.")

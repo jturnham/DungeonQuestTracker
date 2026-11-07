@@ -184,15 +184,27 @@ local function CreateTurnInRow(parent, index)
     return row
 end
 
+local pickupTrackerIcon = "Interface\\Icons\\INV_Misc_Spyglass_03"
+
+local function TogglePickupTracker(key)
+    if not key or not DQT.pickupRouteDungeons[key] then return end
+    DQT.PickupMap:ToggleTrackedDungeon(key)
+end
+
 local function CreateDungeonCard(parent, index)
     local card = CreateFrame("Button", nil, parent)
     card:SetSize(contentWidth, 124)
     card:RegisterForClicks("LeftButtonUp")
-    card.favorite=CreateFrame("Button",nil,card,"UIPanelButtonTemplate")
-    card.favorite:SetSize(36,24)
-    card.favorite:SetPoint("TOPRIGHT",card,"TOPRIGHT",-4,-4)
-    card.favorite:SetScript("OnClick",function() if card.dungeonKey then DQT:ToggleFavorite(card.dungeonKey) end end)
-    AddTooltip(card.favorite,"Favorite dungeon","Favorites can sort first; they do not bypass quest or level filters.")
+    card.pickupTrack=CreateFrame("CheckButton",nil,card)
+    card.pickupTrack:SetSize(24,24)
+    card.pickupTrack:SetPoint("TOPRIGHT",card,"TOPRIGHT",-4,-4)
+    card.pickupTrack:SetNormalTexture(pickupTrackerIcon)
+    card.pickupTrack:SetCheckedTexture("Interface\\Buttons\\UI-CheckBox-Check")
+    card.pickupTrack:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square","ADD")
+    card.pickupTrack:SetScript("OnClick",function() TogglePickupTracker(card.dungeonKey) end)
+    AddTooltip(card.pickupTrack,"Pickup tracker",function()
+        return DQT.PickupMap:IsTracking(card.dungeonKey) and "Remove this dungeon from the pickup route." or "Add this dungeon to the pickup route."
+    end)
     card:SetScript("OnClick", function() if card.dungeonKey then DQT:OpenDungeon(card.dungeonKey) end end)
     ApplyCardBackdrop(card)
 
@@ -240,6 +252,11 @@ function UI:Create()
     if self.frame then return end
 
     local frame = CreateFrame("Frame", "DungeonQuestTrackerForeverFrame", UIParent, "BasicFrameTemplateWithInset")
+    frame:SetFrameStrata("MEDIUM")
+    local windowBackground = frame:CreateTexture(nil, "BACKGROUND", nil, -8)
+    windowBackground:SetPoint("TOPLEFT", 4, -4)
+    windowBackground:SetPoint("BOTTOMRIGHT", -4, 4)
+    windowBackground:SetColorTexture(0.06, 0.06, 0.06, 1)
     if type(UISpecialFrames)=="table" then table.insert(UISpecialFrames,"DungeonQuestTrackerForeverFrame") end
     frame:SetSize(780, 620)
     frame:SetPoint("CENTER")
@@ -345,6 +362,9 @@ function UI:Create()
         DQT:ResetPickupOptions()
     end)
     RouteTool("pickupFlights","Interface\\Icons\\Ability_Mount_Wyvern_01","Flight paths",function() UI:ShowTravelOptions() end)
+    RouteTool("pickupTrack",pickupTrackerIcon,"Add or remove this dungeon from the pickup route",function()
+        TogglePickupTracker(UI.currentDungeonKey)
+    end)
 
     frame.searchLabel = frame.nav:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     frame.searchLabel:SetPoint("LEFT", frame.nav, "LEFT", 370, 0)
@@ -486,7 +506,7 @@ function UI:UpdateNav()
     self.frame.pickupStart:SetShown(self.currentView == "pickups")
     self.frame.pickupStart:SetWidth(self:IsCompact() and 90 or 190)
     local previous=self.frame.pickupStart
-    for _,button in ipairs({self.frame.pickupNext,self.frame.pickupRefresh,self.frame.pickupReset,self.frame.pickupFlights}) do
+    for _,button in ipairs({self.frame.pickupNext,self.frame.pickupRefresh,self.frame.pickupReset,self.frame.pickupFlights,self.frame.pickupTrack}) do
         button:ClearAllPoints()
         button:SetPoint("LEFT",previous,"RIGHT",4,0)
         button:SetShown(self.currentView=="pickups")
@@ -975,6 +995,13 @@ function UI:RefreshCurrentDungeon()
     if status then self:RenderChecklist(status) end
 end
 
+function UI:UpdatePickupSelections()
+    if not self.frame then return end
+    for _, card in ipairs(self.frame.dungeonCards) do
+        if card:IsShown() then card.pickupTrack:SetChecked(DQT.PickupMap:IsTracking(card.dungeonKey)) end
+    end
+end
+
 function UI:ShowDungeonList(preserveScroll)
     self:Create()
     local scroll = preserveScroll and self.frame.dungeonScroll:GetVerticalScroll() or 0
@@ -1010,7 +1037,8 @@ function UI:ShowDungeonList(preserveScroll)
             local art = dungeon.art or "Interface\\DialogFrame\\UI-DialogBox-Background-Dark"
             if card.artPath ~= art then card.art:SetTexture(art); card.artPath = art end
             card.dungeonKey = key
-            card.favorite:SetText(DQT:IsFavorite(key) and L["Fav"] or "+")
+            card.pickupTrack:SetShown(DQT.pickupRouteDungeons[key] == true)
+            card.pickupTrack:SetChecked(DQT.PickupMap:IsTracking(key))
             card.name:SetText(dungeon.name .. (dungeon.provisionalData and " [Provisional]" or ""))
             card.dungeonName = dungeon.name
             card.notes = dungeon.notes

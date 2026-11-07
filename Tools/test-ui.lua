@@ -78,5 +78,26 @@ ui:RefreshCurrentDungeon()
 assert(ui.frame.turnInScroll:GetVerticalScroll() == 100, "Turn-in refresh preserves scroll")
 DQT.GetGlobalTurnInPriority = originalPlanner
 ui:ShowDungeonList()
+local oldDisplay = DQT.db.display
+DQT.db.display = {}
+for _, compact in ipairs({false, true}) do
+    DQT.db.display.compact = compact
+    ui:ShowDungeonList()
+    local card = ui.frame.dungeonCards[1]
+    assert(card.pickupTrack:IsShown(), "Dungeon card exposes the tracker in both layouts")
+    card.pickupTrack.scripts.OnClick()
+    assert(DQT.PickupMap.trackedKey == card.dungeonKey and ui.currentView == "list",
+        "Card action tracks the selected dungeon while keeping the list open")
+    local second = ui.frame.dungeonCards[2]
+    second.pickupTrack.scripts.OnClick()
+    assert(card.pickupTrack:GetChecked() and second.pickupTrack:GetChecked()
+        and DQT.PickupMap.tracker.title:GetText():find("2 dungeons",1,true), "Both selections remain active")
+    card.pickupTrack.scripts.OnClick()
+    assert(not card.pickupTrack:GetChecked() and DQT.PickupMap.trackedKey == second.dungeonKey,
+        "Removing a dungeon keeps the other selection active")
+    second.pickupTrack.scripts.OnClick()
+    assert(not DQT.PickupMap.trackedKey, "Removing the last selection stops tracking")
+end
+DQT.db.display = oldDisplay
 print("Passed UI: search, pooled cards, empty states, long text and refresh scroll preservation.")
 DQT.db = oldDB

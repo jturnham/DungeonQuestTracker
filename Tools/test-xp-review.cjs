@@ -6,7 +6,7 @@ const {spawnSync}=require('node:child_process');
 const {parseExport,review,columns}=require('./review-xp.cjs');
 const {loadBaseline}=require('./xp-baseline.cjs');
 const baseline=loadBaseline(process.argv[2]);
-assert.equal(baseline.rows.size,460);
+assert.equal(baseline.rows.size,474);
 assert.match(baseline.digest,/^[a-f0-9]{64}$/);
 assert.equal(baseline.rows.get(95216).xp,5450,'Known published point must include metadata corrections');
 assert.equal(baseline.rows.get(95216).kind,'published');

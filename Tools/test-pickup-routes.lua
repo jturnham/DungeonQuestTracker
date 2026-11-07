@@ -63,6 +63,15 @@ do
     DQT.quests[800006]={name="Unknown",pickup={name="Unknown contact",zone="Unknown"}}
     route=DQT:GetDungeonPickupRoute("gnomeregan")
     assert(#route.stops==4 and #route.unknown==1,"Shared stops merged and unknown locations separate")
+    local other=DQT.dungeons["the-stockade"]
+    DQT.dungeons["the-stockade"]={name="The Stockade",quests={800001,800013}}
+    DQT.quests[800013]={name="Other dungeon pickup",pickup=DQT.quests[800001].pickup}
+    local combined=DQT:GetDungeonPickupRoute({"gnomeregan","the-stockade"})
+    assert(#combined.stops==4 and Has(combined.stops,800013),"Combined routing groups pickups across dungeons")
+    for _,stop in ipairs(combined.stops) do
+        if Has({stop},800013) then assert(#stop.quests==3,"Shared quest ID only appears once at the combined stop") end
+    end
+    DQT.dungeons["the-stockade"],DQT.quests[800013]=other,nil
     local cost=0
     for i=2,#route.stops do
         local a,b=route.stops[i-1],route.stops[i]

@@ -53,6 +53,13 @@ do
     assert(refreshes == 0, "Short coalescing window")
     DQT.events.scripts.OnUpdate(nil, 0.04)
     assert(refreshes == 1 and not DQT.events.scripts.OnUpdate, "One refresh per burst and no idle update callback")
+    ui.currentView = "list"
+    for i=1,20 do DQT.events.scripts.OnEvent(nil, "PLAYER_XP_UPDATE") end
+    assert(refreshes == 1 and not DQT.events.scripts.OnUpdate, "XP-only updates do not rebuild the dungeon list")
+    ui.currentView = "turnins"
+    DQT.events.scripts.OnEvent(nil, "PLAYER_XP_UPDATE")
+    DQT.events.scripts.OnUpdate(nil, 0.06)
+    assert(refreshes == 2, "Turn-in priorities still refresh when XP changes")
     ui.frame:Hide()
     DQT:RequestUIRefresh()
     assert(not DQT.events.scripts.OnUpdate, "Hidden UI schedules no scan")

@@ -130,9 +130,11 @@ end
 
 function DQT:GetDungeonPickupRoute(key, startZone, context)
     context = context or self:PrepareQuestScan(self:GetPlayerContext())
-    local dungeon = self:GetDungeon(key)
-    local result = {key=key, dungeon=dungeon, stops={}, zones={}, blocked={}, inside={}, unknown={}, progress={}, excluded=0, context=context}
-    if not dungeon or not self.pickupRouteDungeons[key] then return result end
+    local keys = type(key)=="table" and key or {key}
+    local dungeon = keys[1] and self:GetDungeon(keys[1])
+    local combined = #keys>1
+    local result = {key=not combined and keys[1] or nil, dungeon=dungeon, stops={}, zones={}, blocked={}, inside={}, unknown={}, progress={}, excluded=0, context=context}
+    if not dungeon then return result end
     local visited, states, groups, byZone, progressSeen, filtered = {}, {}, {}, {}, {}, {}
     local currentZone
     if type(GetRealZoneText) == "function" then
@@ -156,7 +158,7 @@ function DQT:GetDungeonPickupRoute(key, startZone, context)
         end
         return states[id]
     end
-    local function Add(id, preparation, depth)
+    local function Add(id, preparation, depth, sourceDungeon)
         if depth > 64 then return end
         local quest = self:GetQuest(id)
         if not quest then return end
@@ -189,7 +191,7 @@ function DQT:GetDungeonPickupRoute(key, startZone, context)
         for _, prerequisite in ipairs(quest.prerequisites or {}) do
             if not self:IsPrerequisiteSatisfied(prerequisite, context) and prerequisite.questID then
                 local parent = self:GetQuest(prerequisite.questID)
-                if parent and not prerequisite.anyOf and prerequisite.relationship=="required" then Add(prerequisite.questID, true, depth+1) end
+                if parent and not prerequisite.anyOf and prerequisite.relationship=="required" then Add(prerequisite.questID, true, depth+1, sourceDungeon) end
                 notes[#notes+1] = prerequisite.note or ("Complete " .. (parent and parent.name or ("quest " .. prerequisite.questID)))
             elseif prerequisite.note then
                 notes[#notes+1] = prerequisite.note
@@ -209,14 +211,20 @@ function DQT:GetDungeonPickupRoute(key, startZone, context)
         local stop = groups[stopKey]
         if not stop then
             local x,y = Coordinates(location)
-            stop = {key=stopKey, location=location, quests={}, x=x, y=y,provisional=dungeon.provisionalData}
+            stop = {key=stopKey, location=location, quests={}, x=x, y=y,provisional=sourceDungeon.provisionalData}
             groups[stopKey] = stop
             byZone[location.zone] = byZone[location.zone] or {}
             byZone[location.zone][#byZone[location.zone]+1] = stop
         end
+        stop.provisional = stop.provisional or sourceDungeon.provisionalData
         stop.quests[#stop.quests+1] = entry
     end
-    for _, id in ipairs(dungeon.quests or {}) do Add(id, false, 0) end
+    for index, dungeonKey in ipairs(keys) do
+        local selected = self.pickupRouteDungeons[dungeonKey] and (index==1 and dungeon or self:GetDungeon(dungeonKey))
+        if selected then
+            for _, id in ipairs(selected.quests or {}) do Add(id, false, 0, selected) end
+        end
+    end
     for zone in pairs(byZone) do result.zones[#result.zones+1] = zone end
     table.sort(result.zones)
     local manual = startZone and byZone[startZone] ~= nil
@@ -252,10 +260,10 @@ function DQT:GetDungeonPickupRoute(key, startZone, context)
         result.zones=self.Travel:OrderZones(result.zones,startZone,manual and startZone or pickupOrigin,orderingContext)
         if #result.zones>0 then startZone=result.zones[1]; result.startZone=startZone end
     end
-    if self:GetOption("pickups.finishAtEntrance") then
+    if not combined and self:GetOption("pickups.finishAtEntrance") then
         local location=dungeon.entrance or {name=dungeon.name.." entrance (location unverified)",zone=dungeon.location or "Unknown entrance"}
         local x,y=Coordinates(location)
-        result.destination={kind="entrance",key="entrance:"..key,location=location,quests={},x=x,y=y,provisional=not location.verifiedForever}
+        result.destination={kind="entrance",key="entrance:"..keys[1],location=location,quests={},x=x,y=y,provisional=not location.verifiedForever}
         -- Only an entrance in the last zone can influence that zone's pickup ordering.
         -- A return to an earlier zone remains an explicit destination, not a guessed transport leg.
     end

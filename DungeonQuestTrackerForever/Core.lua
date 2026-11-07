@@ -1144,6 +1144,10 @@ DQT.events:SetScript("OnEvent", function(_, event, ...)
         if DQT.ResetQuestDataTransfers then DQT:ResetQuestDataTransfers() end
     end
 
+    if event == "PLAYER_XP_UPDATE" then
+        local ui = DQT.UI
+        if not ui or (ui.currentView ~= "turnins" and not (ui.utility and ui.utility:IsShown())) then return end
+    end
     DQT:RequestUIRefresh()
 end)
 

@@ -122,16 +122,19 @@ end
 
 function DQT:GetSyncedDungeon(key, dungeon)
     if not self.db or not self.db.partyDataSync then return dungeon end
+    local extra = {}
+    for id, quest in pairs(self.db.partyQuestCache or {}) do
+        if quest.dungeon == key and not self.quests[id] then extra[#extra+1] = id end
+    end
+    if #extra == 0 then return dungeon end
     local copy, seen = {}, {}
     for field, value in pairs(dungeon) do copy[field] = value end
     copy.quests = {}
     for _, id in ipairs(dungeon.quests or {}) do copy.quests[#copy.quests+1] = id; seen[id] = true end
-    local extra = {}
-    for id, quest in pairs(self.db.partyQuestCache or {}) do
-        if not self.quests[id] and not seen[id] and quest.dungeon == key then extra[#extra+1] = id end
-    end
     table.sort(extra)
-    for _, id in ipairs(extra) do copy.quests[#copy.quests+1] = id end
+    for _, id in ipairs(extra) do
+        if not seen[id] then copy.quests[#copy.quests+1] = id end
+    end
     return copy
 end
 
@@ -183,6 +186,7 @@ function DQT:SetQuestDataSync(option)
     elseif option == "clear" then self.db.partyQuestCache = {}; self:ResetQuestDataTransfers()
     elseif option ~= "" then self:Print("Usage: /dqt sync on|off|clear"); return end
     self:Print("Party quest-data sync: " .. (self.db.partyDataSync and "on" or "off"))
+    if option~="" and self.PickupMap then self.PickupMap:InvalidateRoute() end
     if self.UI then self.UI:RefreshCurrentDungeon() end
 end
 function DQT:OfferQuestData(key)
@@ -245,6 +249,7 @@ function DQT:HandleQuestDataMessage(command, rest, sender)
             quest.partySupplied, quest.confidence, quest.source = true, "needsReview", sender
             self.db.partyQuestCache[id] = quest
             state.received = state.received + 1
+            if self.PickupMap then self.PickupMap:InvalidateRoute() end
             self:RequestUIRefresh()
         end
     end

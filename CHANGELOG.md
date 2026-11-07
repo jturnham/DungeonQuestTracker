@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.6.3 - 2026-11-07
+
+### Pickup routing
+
+- Select multiple dungeons with the spyglass on their dungeon cards. The combined route groups pickups at shared stops and lists each quest once.
+- Follow the next steps in a movable overlay that stays visible while the main addon window is closed. The background fades away when you move the cursor off it.
+- Automatically update TomTom or supported Blizzard waypoints as you pick up quests. The overlay and its map button also work on their own.
+
+### Quest data and fixes
+
+- Added The Drowned City's eight dungeon quests and five lead-ins. Individual quest pages supply the published XP where available.
+- Added initial Krol'dok Stronghold coverage with Vengeance of the Highborne. Additional quests still need exact IDs, and unverified XP remains unknown.
+- Fixed a blocked world-map action, a crash when Forever returns waypoint coordinates as a plain table, and display overlap between the main window and pickup tracker.
+- Reduced unnecessary list refreshes on XP gains and let the world map and pickup overlay share a route rebuild when they show the same route.
+
 ## 0.6.2 - 2026-11-06
 
 ### Quest updates and fixes

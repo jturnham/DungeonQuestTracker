@@ -47,7 +47,7 @@ DQT.optionDefinitions = {
     {key="travel.allowUnknownFlights",label="Allow unverified flight knowledge",tip="Unknown flight points may be used with an explicit warning. Points marked not learned are still excluded."},
     {key="travel.useTransports",label="Use recorded boats, zeppelins and tram routes",tip="Classic connections are provisional in Forever. Departure approaches and waiting times are not estimated."},
     {key="travel.showSegments",label="Show same-map pickup guide lines",tip="Straight guide segments only, not walkable terrain paths or cross-zone travel lines."},
-    {key="travel.useTomTom",label="Send focused stops to TomTom when available",tip="Optional integration; only DQT-created waypoints are replaced or removed."},
+    {key="travel.useTomTom",label="Use TomTom for pickup waypoints",tip="Send focused stops and the active pickup tracker's next stop to TomTom when available."},
     {key="travel.recordFlightTimes",label="Record flight times on this character",tip="Measures uninterrupted flights you take in this client build. No uploads. Interrupted flights and unknown destinations are discarded; measured times are estimates for future journeys."},
     {key="travel.preferMeasuredTime",label="Prefer the fastest measured transport route",tip="Compares transport legs with complete timing evidence only. Falls back to fewest legs when timing is missing. Walking and waiting are excluded; this is not a fastest door-to-door route."},
     {key="travel.includeFutureSteps",label="Preview later prerequisite objectives and returns",tip="Shows conditional future steps separately. Does not mark quests complete, unlock pickups, change XP turn-in priority or put future steps in next-stop navigation."},
@@ -118,9 +118,6 @@ function DQT:ApplyOptions()
     if self.PickupMap and not self:GetOption("travel.useTomTom") then self.PickupMap:ClearWaypoint() end
     if self.PickupMap then self.PickupMap:InvalidateRoute() end
     if self.UI then self.UI:RefreshCurrentDungeon() end
-    if self.PickupMap and self.PickupMap.provider and WorldMapFrame and WorldMapFrame:IsShown() then
-        self.PickupMap.provider:RefreshAllData()
-    end
 end
 function DQT:ResetPickupOptions()
     if not self.db then return end

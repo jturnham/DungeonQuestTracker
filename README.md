@@ -18,10 +18,10 @@ Available on [CurseForge](https://www.curseforge.com/wow/addons/dungeonquesttrac
 - Current-position pickup starts where the client supports them, plus optional recorded entrance approaches.
 - Flight-aware pickup itineraries with character-specific learned routes, manual flight knowledge, base fares and named boat/zeppelin/tram legs.
 - Optional ready Hearthstone shortcuts, with character-specific bind destinations and a single-use reservation across each pickup itinerary.
-- Optional same-map guide lines and TomTom next-stop focus, without requiring TomTom.
+- Movable on-screen pickup tracker, optional same-map guide lines and TomTom waypoint integration.
 - Numbered world-map pickup pins with combined tooltips for shared locations.
 - Compact and full display modes with saved preferences.
-- Per-character dungeon favorites, optional favorites-first sorting and reusable settings profiles.
+- Reusable settings profiles.
 - Adjustable addon window scale, larger quest text and separate window/minimap/loot-alert position resets.
 - Filters for quest completion, availability, level range and pickup type.
 - Movable minimap button.
@@ -140,7 +140,7 @@ Use the title-bar gear button or `/dqt options` to adjust:
 
 Settings persist across reloads. By default, active and ready quests keep their dungeon visible outside its level range. The global turn-in planner is independent of checklist and dungeon display filters.
 
-Toggle **+ / Fav** on dungeon cards to save favorites for your character. Favorites retain normal search and level-filter behavior. The filter summary opens a detailed explanation, with explicit reset and selected-dungeon search actions.
+Click the spyglass on each dungeon card you want to include. Selected cards show a check mark, and their pickups are grouped into one route. Click a selected card's spyglass to remove it, or close the tracker to clear the selection. Combined routes focus on pickups and prerequisite turn-ins. The optional entrance destination applies to single-dungeon routes. The filter summary opens a detailed explanation, with explicit reset and selected-dungeon search actions.
 
 Use **Tools** in Options or `/dqt tools` for profiles and position resets. Creating a profile copies current presentation, filters, alert and route preferences; selecting it applies them to this character. Profiles do not copy flights, hearth destinations, XP records, favorites or party sharing/data-sync consent. Profile names accept 1-32 letters, numbers, spaces, underscores or hyphens. The active profile and Default cannot be deleted.
 
@@ -157,6 +157,8 @@ The UI includes partial French, German and Spanish translations selected from yo
 Quest records distinguish published rewards, player reports, estimates, Classic fallbacks and unknown values. Rewards, locations and prerequisites may still be provisional as Forever data changes. Turn-in priorities and predicted level-ups depend on that data and are estimates.
 
 Pickup routes suggest an order from recorded locations, using your current map position when available. By default, transport-aware zone ordering prefers fewer legs and uses base fares as a tie-breaker. Flight knowledge is stored per character; unknown flights are excluded unless enabled in Options. Open Travel from a pickup route to review learned nodes, confirm your bind location or clear measured flight times. Missing links remain explicit rather than dropping pickups.
+
+Click the spyglass in a dungeon's pickup route to track the next few steps in a translucent window. Drag it to move it, click **Map** to focus the next stop, or close it to stop tracking. It stays visible when you close the main addon window and updates as you accept quests or change zones. Enable **Use TomTom for pickup waypoints** in Options to send the next mapped stop to TomTom. The tracker can also set a Blizzard waypoint when the client and map support it and the waypoint slot is free. The overlay and DQT map pins work independently of both waypoint systems.
 
 Travel Options also offer flight-time recording and a fastest-measured-transport preference. Recording is local to your character and client build, measures only uninterrupted direct flights with known endpoints, and never uploads data. Fully timed transport paths can be compared by duration; routes without enough timing fall back to fewer legs. Walking, waiting and loading times are not included, so this is not a fastest door-to-door guarantee. Measurements are estimates for future trips and never justify assuming a second Hearthstone is ready. A second use requires separately sourced, guaranteed minimum journey time covering the hour cooldown; no such minimum times are currently bundled.
 

@@ -152,3 +152,91 @@ DQT.quests[356].routeObjectives={{name="Balnir Farmstead patrol area",zone="Tiri
     source="https://wowforever.wclbox.com/en/renwu/356",sourceReviewed=true,note="Approximate published objective area; follow the quest log for targets."}}
 DQT.quests[450].routeObjectives={{name="Berard's Journal, Pyrewood Village",zone="Silverpine Forest",coordinates="43, 73",
     source="https://wowforever.wclbox.com/en/renwu/450",sourceReviewed=true,note="Approximate published objective area; the journal is in Pyrewood Village."}}
+
+-- November 7: use exact-ID quest rewards. Category-table XP can omit the dungeon bonus.
+local drowned="the-drowned-city"
+local kroldok="kroldok-stronghold"
+local blizzardDungeons="https://worldofwarcraft.blizzard.com/en-us/news/24301455/explore-the-new-dungeons-of-world-of-warcraft-forever"
+local kin=Location("Kin'weelay","Stranglethorn Vale","32.3, 27.7")
+local dibbs=Location("Loremaster Dibbs","Hillsbrad Foothills","50.6, 57.1")
+local mazu=Location("Mazu'kon","Mulgore","32.5, 20.6")
+local zoneSources={
+    [drowned]="https://www.wowhead.com/forever/zone=16550/the-drowned-city",
+    [kroldok]="https://www.wowhead.com/forever/zone=16842/kroldok-stronghold",
+}
+local function AddDungeonQuest(key,id,quest)
+    local dungeonData=DQT.dungeons[key]
+    quest.dungeon=key
+    quest.pickup=quest.pickup or Location("Unknown quest giver","Unknown")
+    quest.turnIn=quest.turnIn or quest.pickup
+    quest.pickupType="npc"
+    quest.confidence=quest.pickup.zone=="Unknown" and "needsReview" or "verifiedSource"
+    quest.shareability={assumption="clientDetermined",note="The client determines whether this quest can be shared."}
+    quest.source=quest.source or "https://www.wowhead.com/forever/quest="..id
+    quest.sourceURLs={quest.source,zoneSources[key]}
+    quest.verification={sourceReview="2026-11-07: exact quest ID matched to Forever sources."}
+    if quest.foreverXp then
+        quest.xpPublished=true
+        quest.xpSource=quest.xpSource or quest.source
+        quest.verification.xpReview="2026-11-07: individual Forever quest reward. Actual payout can vary by character level and modifiers."
+    else
+        quest.verification.xpReview="Individual Forever reward unavailable. XP remains unknown."
+    end
+    quest.prerequisites={}
+    if quest.followUpOf then
+        quest.prerequisites[1]={questID=quest.followUpOf,relationship="required",note="Complete "..DQT.quests[quest.followUpOf].name.." first."}
+    end
+    DQT.quests[id]=quest
+    table.insert(dungeonData.quests,id)
+end
+
+local function Eternadex(id)
+    return "https://eternadex.com/en/quests/"..id.."/"
+end
+
+AddDungeonQuest(drowned,629,{name="The Vile Reef",faction="Horde",minLevel=30,questLevel=37,pickup=kin,
+    preparationOnly=true,foreverXp=2850,source=Eternadex(629),
+    objectives="Recover a fragment of the tablet at the Vile Reef and return to Kin'weelay."})
+AddDungeonQuest(drowned,95748,{name="The Gurubashi Legends of Old",faction="Horde",minLevel=30,questLevel=40,pickup=kin,
+    preparationOnly=true,followUpOf=629,foreverXp=3150,source=Eternadex(95748),
+    objectives="Take a rubbing of the Gurubashi tablet on the coast north of the Vile Reef."})
+AddDungeonQuest(drowned,95770,{name="Locating the Lost City",faction="Horde",minLevel=30,questLevel=40,pickup=kin,
+    preparationOnly=true,followUpOf=95748,foreverXp=3150,source=Eternadex(95770),
+    objectives="Find the cavern entrance west of the Vile Reef and report to Kin'weelay."})
+AddDungeonQuest(drowned,95775,{name="The Drowned City",faction="Horde",minLevel=30,questLevel=40,pickup=kin,
+    followUpOf=95770,foreverXp=8450,source="https://www.wowhead.com/forever/quest=95775/the-drowned-city",
+    objectives="Make rubbings of the four Tablets of I'lalai inside the Drowned City."})
+AddDungeonQuest(drowned,95773,{name="Enemies in the Water",faction="Horde",minLevel=30,questLevel=37,
+    preparationOnly=true,foreverXp=2850,source=Eternadex(95773),
+    objectives="Gather ten Brinescale Tridents from Brinescale Skirmishers in Stranglethorn Vale."})
+AddDungeonQuest(drowned,95776,{name="The Only Good Brinescale...",faction="Horde",minLevel=30,questLevel=38,
+    followUpOf=95773,foreverXp=9500,source=Eternadex(95776),
+    objectives="Defeat Var'Taka in the Drowned City."})
+AddDungeonQuest(drowned,96774,{name="Ancient Gurubashi Idol",faction="Horde",minLevel=30,questLevel=40,pickup=mazu,
+    foreverXp=8800,source=Eternadex(96774),objectives="Bring the Ancient Gurubashi Idol to Mazu'kon in Mulgore."})
+AddDungeonQuest(drowned,95786,{name="An Acquaintance in Southshore",faction="Alliance",minLevel=30,questLevel=40,
+    preparationOnly=true,turnIn=dibbs,objectives="Take the Savage Coast Report Bundle to Loremaster Dibbs in Southshore."})
+AddDungeonQuest(drowned,95787,{name="Take Two With Water",faction="Alliance",minLevel=30,questLevel=40,pickup=dibbs,
+    followUpOf=95786,objectives="Make rubbings of the four Tablets of I'lalai and return to Loremaster Dibbs."})
+AddDungeonQuest(drowned,95788,{name="Magics of the Drowned City",faction="Alliance",minLevel=30,questLevel=40,
+    objectives="Collect five I'lalai Fetishes from trolls in the Drowned City."})
+AddDungeonQuest(drowned,97130,{name="Ancient Gurubashi Secrets",faction="Alliance",minLevel=34,questLevel=40,
+    objectives="Recover the Ancient Gurubashi Idol in the Drowned City."})
+AddDungeonQuest(drowned,95789,{name="Shady Saltseers",minLevel=34,questLevel=40,
+    objectives="Collect ten Voodoo-Infused Artifacts from Saltseer pirates in the Drowned City."})
+AddDungeonQuest(drowned,95791,{name="The Saltseer Captain",minLevel=34,questLevel=40,
+    objectives="Defeat Captain Dreadrise and three Saltseer Coroners in the Drowned City."})
+AddDungeonQuest(kroldok,96771,{name="Vengeance of the Highborne",faction="Alliance",minLevel=37,questLevel=45,
+    objectives="Defeat Zalfan Moonshadow in Krol'dok Stronghold."})
+
+for key,area in pairs({[drowned]="Off the coast of Stranglethorn Vale, west of Grom'gol",
+    [kroldok]="Riverglades, above Sunnyglade"}) do
+    local dungeonData=DQT.dungeons[key]
+    dungeonData.placeholder=nil
+    dungeonData.location=area
+    dungeonData.source=blizzardDungeons
+    dungeonData.notes="Forever quest data. Pickup locations and XP are listed where sourced."
+end
+DQT.dungeons[kroldok].entrance=Location("Cave west of the fortress gates","Riverglades","37.5, 37.5")
+DQT.dungeons[kroldok].entrance.source="https://wowforever.be/guides/dungeons/kroldok-stronghold/quests/"
+DQT.dungeons[kroldok].notes="Partial Forever quest coverage. Eye of Mugg, Twilight Mementos, A Token of Vengeance and both Tome of Twilight entries await exact quest IDs."

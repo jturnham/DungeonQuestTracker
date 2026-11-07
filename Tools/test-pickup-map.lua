@@ -59,7 +59,12 @@ do
     MapCanvasPinMixin={}
     CreateFromMixins=function(base) local out={}; for k,v in pairs(base) do out[k]=v end; return out end
     WorldMapFrame={AddDataProvider=function(self,p) p.map=self end,GetMapID=function() return 87 end,IsShown=function() return true end,
-        RemoveAllPinsByTemplate=function() acquired={} end,AcquirePin=function(_,_,pin) acquired[#acquired+1]=pin end}
+        RemoveAllPinsByTemplate=function() acquired={} end,AcquirePin=function(_,_,pin)
+            local frame=setmetatable({SetPassThroughButtons=function() error("Protected map click API") end},
+                {__index=DQTFPickupPinMixin})
+            frame:CheckMouseButtonPassthrough("RightButton")
+            acquired[#acquired+1]=pin
+        end}
     OpenWorldMap=function(id) opened=id end
     InCombatLockdown=function() return false end
     local oldRoute=DQT.GetDungeonPickupRoute
@@ -93,6 +98,60 @@ do
     plan.stops={}
     maps.provider:RefreshAllData()
     assert(#acquired==0,"Collected pickups remove old pins")
+    local oldTimer,oldPoint,oldTomTom,oldOption=C_Timer,UiMapPoint,TomTom,DQT.GetOption
+    local pending,nativeWaypoint,waypointSets=nil,nil,0
+    local function Point(id,x,y)
+        return {uiMapID=id,position={GetXY=function() return x,y end}}
+    end
+    UiMapPoint={CreateFromCoordinates=Point}
+    C_Map.GetUserWaypoint=function() return nativeWaypoint end
+    C_Map.SetUserWaypoint=function(point) nativeWaypoint=point; waypointSets=waypointSets+1 end
+    C_Map.ClearUserWaypoint=function() nativeWaypoint=nil end
+    C_Map.CanSetUserWaypointOnMap=function(id) return id==87 end
+    C_Timer={After=function(_,callback) assert(not pending,"Tracker refresh is coalesced"); pending=callback end}
+    DQT.GetOption=function(_,key) return key=="travel.useTomTom" end
+    TomTom=nil
+    local first,second={key="first",x=50,y=25,location={name="First giver",zone="Ironforge"},quests={{quest={name="First quest"}}}},
+        {key="second",x=60,y=25,location={name="Second giver",zone="Ironforge"},quests={}}
+    plan.key,plan.dungeon="test",{name="Test dungeon"}
+    plan.stops={first,second}
+    plan.itinerary={{kind="travel",toZone="Ironforge"},{kind="pickup",stop=first},{kind="pickup",stop=second}}
+    maps:SetRoute(plan)
+    maps:TrackRoute(plan.key,plan)
+    assert(maps.tracker:IsShown() and nativeWaypoint and waypointSets==1,"Tracker opens with native fallback when TomTom is absent")
+    assert(maps.tracker.steps:GetText():find("First quest",1,true),"Tracker includes quest names at its next stop")
+    maps:RefreshTracker(plan)
+    assert(waypointSets==1,"Unchanged native waypoint is reused")
+    nativeWaypoint.position={x=0.5,y=0.25}
+    maps:RefreshTracker(plan)
+    assert(waypointSets==1,"Forever's plain coordinate table matches the existing waypoint")
+    plan.stops={second}
+    plan.itinerary={{kind="pickup",stop=second}}
+    local callsBeforeRefresh=routeCalls
+    maps:InvalidateRoute()
+    maps:InvalidateRoute()
+    local run=pending
+    pending=nil
+    run()
+    assert(routeCalls==callsBeforeRefresh+1,"Visible map and tracker share one rebuilt route per burst")
+    assert(nativeWaypoint.position:GetXY()==0.6 and waypointSets==2,"Route invalidation advances the tracker without reopening the menu")
+    local userWaypoint={uiMapID=87,position={x=0.1,y=0.2}}
+    nativeWaypoint=userWaypoint
+    maps:TrackRoute(nil)
+    assert(nativeWaypoint==userWaypoint and not maps.tracker:IsShown(),"Closing tracker preserves the player's replacement pin")
+    local uid={}
+    TomTom={AddWaypoint=function(_,id,x,y) assert(id==87 and x==0.6 and y==0.25); return uid end,
+        RemoveWaypoint=function(_,removed) assert(removed==uid); uid=nil end}
+    maps:TrackRoute(plan.key,plan)
+    assert(maps.trackerWaypoint.uid==uid and nativeWaypoint==userWaypoint,"TomTom is preferred when enabled")
+    maps:TrackRoute(nil)
+    assert(not uid and nativeWaypoint==userWaypoint,"Closing tracker removes its TomTom waypoint only")
+    TomTom,UiMapPoint=nil,nil
+    maps:TrackRoute(plan.key,plan)
+    assert(maps.tracker:IsShown() and maps.trackerStop==second and not maps.trackerWaypoint,
+        "Text and map focus still work when neither waypoint API is available")
+    maps:TrackRoute(nil)
+    C_Timer,UiMapPoint,TomTom,DQT.GetOption=oldTimer,oldPoint,oldTomTom,oldOption
     DQT.GetDungeonPickupRoute=oldRoute
     C_Map,WorldMapFrame,MapCanvasDataProviderMixin,MapCanvasPinMixin,CreateFromMixins,OpenWorldMap,InCombatLockdown=oldMap,oldWorld,oldBase,oldPin,oldMixins,oldOpen,oldCombat
     maps.provider,maps.cache=oldProvider,oldCache

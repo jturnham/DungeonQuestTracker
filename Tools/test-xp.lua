@@ -14,7 +14,11 @@ for id, quest in pairs(DQT.quests) do
         local xp, source = DQT:GetQuestRewardXP(quest)
         assert(xp == quest.foreverXp and source == "Forever (published)", "Published reward label: " .. id)
         assert(not quest.xpEstimate and not quest.xpOutdated and quest.confidence ~= "verifiedInGame", "Published rewards do not claim local verification")
-        assert(quest.xpSource:find("https://wowforever.wclbox.com/en/fuben/", 1, true) or quest.xpSource:find("https://wowforevertalents.com/quests/", 1, true) or quest.xpSource=="https://wowforevertalents.com/reputations/kirin-tor/", "Published source preserved")
+        assert(quest.xpSource:find("https://wowforever.wclbox.com/en/fuben/", 1, true)
+            or quest.xpSource:find("https://wowforevertalents.com/quests/", 1, true)
+            or quest.xpSource=="https://wowforevertalents.com/reputations/kirin-tor/"
+            or quest.xpSource=="https://eternadex.com/en/quests/"..id.."/"
+            or quest.xpSource:match("^https://www%.wowhead%.com/forever/quest="..id.."/"), "Published source preserved")
     elseif quest.xpGuide then
         local xp,source=DQT:GetQuestRewardXP(quest)
         assert(xp>0 and source=="Forever (published guide; provisional)","Guide reward explicitly provisional")
@@ -29,7 +33,7 @@ for id, quest in pairs(DQT.quests) do
         assert(source == "Forever (outdated; unverified)", "Stale reward label: " .. id)
     end
 end
-assert(count == 4 and published == 49, "Only explicitly published rewards supersede estimates: " .. count .. " estimates, " .. published .. " published")
+assert(count == 4 and published == 56, "Only explicitly published rewards supersede estimates: " .. count .. " estimates, " .. published .. " published")
 assert(DQT.quests[1490].foreverXp==120 and DQT.quests[1490].xpPublished and DQT.quests[1490].xpPreviousEstimate==115,"Nara Wildmane published reward replaces the estimate")
 assert(DQT.quests[2842].foreverXp==280 and DQT.quests[2842].xpPublished and DQT.quests[2842].classicXp==275,"Scooty published reward retains the separate Classic fallback")
 assert(DQT.quests[92457].foreverXp == 9400 and DQT.quests[98815].foreverXp == 1150, "October 16 published quest rewards")
@@ -77,4 +81,4 @@ do
     assert(not gray.xpKnown and not gray.dings and DQT:FormatTurnInXP(gray)=="XP unknown","Gray scaling cannot claim zero or a level-up")
     assert(DQT:FormatTurnInXP(Item({questLevel=28,partySupplied=true,foreverXp=99999}))=="XP unknown","Untrusted shared XP stays unknown")
 end
-print("Passed XP: " .. count .. " remaining estimates, " .. published .. " published beta rewards, separately labelled player reports, New Plague 5450 XP and party XP excluded.")
+print("Passed XP: " .. count .. " remaining estimates, " .. published .. " published rewards, separately labelled player reports, New Plague 5450 XP and party XP excluded.")

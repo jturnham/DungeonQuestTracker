@@ -165,6 +165,7 @@ function Maps:ClearWaypoint()
     self.waypoint,self.waypointOwner,self.waypointKey=nil,nil,nil
 end
 function Maps:FocusWaypoint(stop,mapID)
+    if self.trackedKey then return end
     if not DQT:GetOption("travel.useTomTom") then return end
     if self.waypointKey==stop.key then return end
     self:ClearWaypoint()
@@ -172,6 +173,235 @@ function Maps:FocusWaypoint(stop,mapID)
     local ok,uid=pcall(TomTom.AddWaypoint,TomTom,mapID,stop.x/100,stop.y/100,
         {title="DQT: "..stop.location.name,from="DungeonQuestTrackerForever",persistent=false,crazy=true})
     if ok and uid then self.waypoint,self.waypointOwner,self.waypointKey=uid,TomTom,stop.key end
+end
+
+local function MatchesWaypoint(point, target)
+    if not point or not target or point.uiMapID~=target.mapID or not point.position then return false end
+    local position=point.position
+    local x,y
+    if type(position.GetXY)=="function" then x,y=position:GetXY()
+    else x,y=position.x,position.y end
+    return type(x)=="number" and type(y)=="number"
+        and math.abs(x-target.x)<0.00001 and math.abs(y-target.y)<0.00001
+end
+
+function Maps:UpdateTrackerWaypoint(stop)
+    if InCombatLockdown and InCombatLockdown() then return end
+    local mapID=stop and stop.x and stop.y and self:ResolveLocation(stop.location)
+    local x,y
+    if mapID then x,y=stop.x/100,stop.y/100 end
+    local tomtom=mapID and DQT:GetOption("travel.useTomTom") and type(TomTom)=="table"
+        and type(TomTom.AddWaypoint)=="function" and type(TomTom.RemoveWaypoint)=="function" and TomTom
+    local previous=self.trackerWaypoint
+    if previous and previous.tomtom then
+        if previous.tomtom==tomtom and previous.mapID==mapID and previous.x==x and previous.y==y and previous.key==stop.key then return end
+        pcall(previous.tomtom.RemoveWaypoint,previous.tomtom,previous.uid)
+        self.trackerWaypoint=nil
+        previous=nil
+    end
+    local native=C_Map and C_Map.GetUserWaypoint and C_Map.SetUserWaypoint and C_Map.ClearUserWaypoint
+        and C_Map.CanSetUserWaypointOnMap and UiMapPoint and UiMapPoint.CreateFromCoordinates
+    local current=native and C_Map.GetUserWaypoint()
+    if previous then
+        if MatchesWaypoint(current,previous) then
+            if not tomtom and previous.mapID==mapID and previous.x==x and previous.y==y then return end
+            C_Map.ClearUserWaypoint()
+            current=nil
+        end
+        self.trackerWaypoint=nil
+    end
+    if not mapID then return end
+    local target={mapID=mapID,x=x,y=y,key=stop.key}
+    if tomtom then
+        local ok,uid=pcall(tomtom.AddWaypoint,tomtom,mapID,x,y,
+            {title="DQT: "..stop.location.name,from="DungeonQuestTrackerForever",persistent=false,crazy=true})
+        if ok and uid then
+            target.uid,target.tomtom=uid,tomtom
+            self.trackerWaypoint=target
+            return
+        end
+    end
+    if native and not current and C_Map.CanSetUserWaypointOnMap(mapID) then
+        C_Map.SetUserWaypoint(UiMapPoint.CreateFromCoordinates(mapID,x,y))
+        if MatchesWaypoint(C_Map.GetUserWaypoint(),target) then self.trackerWaypoint=target end
+    end
+end
+
+function Maps:CreateTracker()
+    local frame=CreateFrame("Frame",nil,UIParent)
+    frame:SetFrameStrata("LOW")
+    frame:SetSize(350,90)
+    frame:SetMovable(true)
+    frame:SetClampedToScreen(true)
+    frame:EnableMouse(true)
+    frame:RegisterForDrag("LeftButton")
+    frame:SetScript("OnDragStart",frame.StartMoving)
+    frame:SetScript("OnDragStop",function(window)
+        window:StopMovingOrSizing()
+        local x,y=window:GetCenter()
+        local rootX,rootY=UIParent:GetCenter()
+        if x and y and rootX and rootY and DQT.db then
+            DQT.db.pickupTrackerPosition={x=x-rootX,y=y-rootY}
+            window:ClearAllPoints()
+            window:SetPoint("CENTER",UIParent,"CENTER",x-rootX,y-rootY)
+        end
+    end)
+    local position=DQT.db and DQT.db.pickupTrackerPosition
+    if type(position)=="table" and type(position.x)=="number" and type(position.y)=="number" then
+        frame:SetPoint("CENTER",UIParent,"CENTER",position.x,position.y)
+    else
+        frame:SetPoint("RIGHT",UIParent,"RIGHT",-45,75)
+    end
+    local background=frame:CreateTexture(nil,"BACKGROUND")
+    background:SetAllPoints()
+    background:SetColorTexture(0,0,0,0.55)
+    background:SetAlpha(0)
+    local close=CreateFrame("Button",nil,frame,"UIPanelCloseButton")
+    close:SetPoint("TOPRIGHT",frame,"TOPRIGHT",3,4)
+    close:SetScript("OnClick",function() Maps:TrackRoute(nil) end)
+    frame.map=CreateFrame("Button",nil,frame,"UIPanelButtonTemplate")
+    frame.map:SetSize(46,20)
+    frame.map:SetPoint("RIGHT",close,"LEFT",0,0)
+    frame.map:SetText("Map")
+    frame.map:SetScript("OnClick",function()
+        if not Maps.trackerStop then return end
+        Maps.key,Maps.startZone,Maps.plan=nil,nil,Maps.trackerPlan
+        local ok,message=Maps:OpenStop(Maps.trackerStop)
+        if not ok then DQT:Print(message) end
+    end)
+    local function FadeBackground(window,elapsed)
+        local main=DQT.UI and DQT.UI.frame
+        local covered=main and main:IsShown() and main:IsMouseOver()
+        local target=window:IsMouseOver() and not covered and 1 or 0
+        local alpha=background:GetAlpha()
+        local step=elapsed/0.18
+        alpha=target==1 and math.min(target,alpha+step) or math.max(target,alpha-step)
+        background:SetAlpha(alpha)
+        if alpha==target then window:SetScript("OnUpdate",nil) end
+    end
+    local function StartFade()
+        frame:SetScript("OnUpdate",FadeBackground)
+    end
+    for _,region in ipairs({frame,close,frame.map}) do
+        region:SetScript("OnEnter",StartFade)
+        region:SetScript("OnLeave",StartFade)
+    end
+    frame:SetScript("OnShow",StartFade)
+    frame:SetScript("OnHide",function(window)
+        window:SetScript("OnUpdate",nil)
+        background:SetAlpha(0)
+    end)
+    frame.title=frame:CreateFontString(nil,"OVERLAY","GameFontNormal")
+    frame.title:SetPoint("TOPLEFT",14,-10)
+    frame.title:SetWidth(250)
+    frame.title:SetJustifyH("LEFT")
+    frame.steps=frame:CreateFontString(nil,"OVERLAY","GameFontHighlight")
+    frame.steps:SetWidth(322)
+    frame.steps:SetJustifyH("LEFT")
+    frame.steps:SetSpacing(4)
+    self.tracker=frame
+end
+
+function Maps:RefreshTracker(plan)
+    if not self.trackedKey then return end
+    local combined=#self.trackedKeys>1
+    local sharesMapRoute=not self.key or (not combined and self.key==self.trackedKey and not self.startZone)
+    plan=plan or (sharesMapRoute and self.plan) or DQT:GetDungeonPickupRoute(self.trackedKeys)
+    if sharesMapRoute then self.plan=plan end
+    local lines,nextStop,nextLine={},nil,nil
+    local function Add(stop,action)
+        if not nextStop then nextStop,nextLine=stop,#lines+1 end
+        local location=stop.location
+        local coords=stop.x and stop.y and string.format(" (%.1f, %.1f)",stop.x,stop.y) or ""
+        lines[#lines+1]=action..": "..location.name.." · "..location.zone..coords
+    end
+    for _,step in ipairs(plan.itinerary or {}) do
+        if step.stop then
+            Add(step.stop,step.kind=="turnIn" and "Turn in" or step.kind=="entrance" and "Entrance" or "Pick up")
+        elseif step.toZone then
+            local edge=step.route and step.route.edges[1]
+            local destination=edge and (edge.toLabel or (DQT.Travel.nodes[edge.to] or {}).name)
+            lines[#lines+1]=destination and (edge.mode..": "..destination) or ("Travel to "..step.toZone)
+        end
+        if nextStop and #lines>=3 then break end
+    end
+    if not plan.itinerary then
+        for _,stop in ipairs(plan.stops) do
+            Add(stop,"Pick up")
+            if #lines==3 then break end
+        end
+        if #lines<3 and plan.destination then Add(plan.destination,"Entrance") end
+    end
+    if #lines==0 then lines[1]="No actionable stops." end
+    if nextStop then
+        local names={}
+        for _,entry in ipairs(nextStop.quests or {}) do names[#names+1]=entry.quest.name end
+        if #names>0 then table.insert(lines,nextLine+1,table.concat(names,", ")) end
+    end
+    self.tracker.title:SetText(combined and ("Pickups · "..#self.trackedKeys.." dungeons") or (plan.dungeon.name.." pickups"))
+    self.tracker.steps:SetText(table.concat(lines,"\n"))
+    local headerHeight=math.max(36,20+self.tracker.title:GetStringHeight())
+    self.tracker.steps:ClearAllPoints()
+    self.tracker.steps:SetPoint("TOPLEFT",14,-headerHeight)
+    self.tracker:SetHeight(headerHeight+self.tracker.steps:GetStringHeight()+14)
+    self.trackerPlan,self.trackerStop=plan,nextStop
+    self.tracker.map:SetEnabled(nextStop~=nil and self:ResolveLocation(nextStop.location)~=nil)
+    self:UpdateTrackerWaypoint(nextStop)
+end
+
+function Maps:TrackRoute(key,plan)
+    self.trackedKeys=type(key)=="table" and key or {key}
+    self.trackedKey=self.trackedKeys[1]
+    if DQT.UI and DQT.UI.UpdatePickupSelections then DQT.UI:UpdatePickupSelections() end
+    if not self.key then
+        self.plan=plan
+        if self.provider and WorldMapFrame:IsShown() then self.provider:RefreshAllData() end
+    end
+    if not self.trackedKey then
+        self.trackerPlan,self.trackerStop=nil,nil
+        if self.tracker then self.tracker:Hide() end
+        self:UpdateTrackerWaypoint()
+        return
+    end
+    self:ClearWaypoint()
+    if not self.tracker then self:CreateTracker() end
+    self.tracker:Show()
+    self:RefreshTracker(plan)
+end
+
+function Maps:IsTracking(key)
+    for _,selected in ipairs(self.trackedKeys or {}) do
+        if selected==key then return true end
+    end
+    return false
+end
+
+function Maps:ToggleTrackedDungeon(key)
+    local selected={}
+    for _,existing in ipairs(self.trackedKeys or {}) do
+        if existing~=key then selected[#selected+1]=existing end
+    end
+    if not self:IsTracking(key) then selected[#selected+1]=key end
+    self.key,self.startZone,self.focusKey=nil,nil,nil
+    self:TrackRoute(selected)
+end
+
+function Maps:QueueRouteRefresh()
+    local function MapVisible()
+        return self.provider and WorldMapFrame:IsShown()
+    end
+    if self.pending or (not self.trackedKey and not (self.key and MapVisible())) then return end
+    local function Refresh()
+        self.pending=nil
+        self:RefreshTracker()
+        if MapVisible() then self.provider:RefreshAllData() end
+    end
+    if C_Timer and C_Timer.After then
+        self.pending=true
+        C_Timer.After(0.2,Refresh)
+    else
+        Refresh()
+    end
 end
 function Maps:CheckWaypoint(plan)
     if not self.waypointKey then return end
@@ -182,9 +412,14 @@ function Maps:CheckWaypoint(plan)
 end
 
 DQTFPickupPinMixin = {}
+function DQTFPickupPinMixin:CheckMouseButtonPassthrough()
+    -- MapCanvas calls this for each acquisition. These hover-only pins do not
+    -- need the default implementation's protected SetPassThroughButtons call.
+end
 function DQTFPickupPinMixin:OnLoad()
     self:SetSize(26,26)
     self:SetScalingLimits(1,1,1)
+    if self.SetMouseClickEnabled then self:SetMouseClickEnabled(false) end
     self.icon=self:CreateTexture(nil,"BACKGROUND")
     self.icon:SetAllPoints()
     self.icon:SetTexture("Interface\\Minimap\\UI-Minimap-Background")
@@ -231,7 +466,8 @@ function Maps:Attach()
     function provider:RemoveAllData() self:GetMap():RemoveAllPinsByTemplate(template); Maps:HideSegments() end
     function provider:RefreshAllData()
         self:RemoveAllData()
-        if Maps.key and not Maps.plan then Maps.plan=DQT:GetDungeonPickupRoute(Maps.key,Maps.startZone) end
+        local key=Maps.key or (Maps.trackedKey and Maps.trackedKeys)
+        if key and not Maps.plan then Maps.plan=DQT:GetDungeonPickupRoute(key,Maps.startZone) end
         local plan=Maps.plan
         Maps:CheckWaypoint(plan)
         local pinFrames={}
@@ -260,6 +496,7 @@ end
 
 function Maps:InvalidateRoute()
     self.plan=nil
+    self:QueueRouteRefresh()
 end
 
 function Maps:ClearRoute()
@@ -290,23 +527,23 @@ if CreateFrame then
     events:RegisterEvent("ADDON_LOADED")
     events:RegisterEvent("QUEST_LOG_UPDATE")
     events:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+    events:RegisterEvent("ZONE_CHANGED")
+    events:RegisterEvent("PLAYER_REGEN_ENABLED")
+    events:RegisterEvent("PLAYER_LOGOUT")
     events:RegisterEvent("PLAYER_LEVEL_UP")
-    events:RegisterEvent("PLAYER_XP_UPDATE")
-    events:RegisterEvent("CHAT_MSG_ADDON")
-    events:SetScript("OnEvent",function(_,event,prefix)
+    events:SetScript("OnEvent",function(_,event)
         if event == "ADDON_LOADED" then Maps:Attach(); return end
-        if event == "CHAT_MSG_ADDON" and prefix ~= "DQT1" then return end
+        if event == "PLAYER_LOGOUT" then
+            if Maps.trackerWaypoint then Maps:UpdateTrackerWaypoint() end
+            return
+        end
+        if event == "PLAYER_REGEN_ENABLED" then
+            if Maps.trackedKey or Maps.trackerWaypoint then Maps:UpdateTrackerWaypoint(Maps.trackerStop) end
+            return
+        end
         Maps:InvalidateRoute()
         if event == "ZONE_CHANGED_NEW_AREA" and DQT.UI and DQT.UI.currentView == "pickups" then
             DQT.UI:RefreshCurrentDungeon()
         end
-        if not Maps.key or not Maps.provider or not WorldMapFrame:IsShown() or Maps.pending then return end
-        if C_Timer and C_Timer.After then
-            Maps.pending=true
-            C_Timer.After(0.2,function()
-                Maps.pending=nil
-                if WorldMapFrame:IsShown() then Maps.provider:RefreshAllData() end
-            end)
-        else Maps.provider:RefreshAllData() end
     end)
 end
