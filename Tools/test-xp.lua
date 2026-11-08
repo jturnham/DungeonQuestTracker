@@ -33,7 +33,7 @@ for id, quest in pairs(DQT.quests) do
         assert(source == "Forever (outdated; unverified)", "Stale reward label: " .. id)
     end
 end
-assert(count == 4 and published == 56, "Only explicitly published rewards supersede estimates: " .. count .. " estimates, " .. published .. " published")
+assert(count == 2 and published == 56, "Only explicitly sourced rewards supersede estimates: " .. count .. " estimates, " .. published .. " published")
 assert(DQT.quests[1490].foreverXp==120 and DQT.quests[1490].xpPublished and DQT.quests[1490].xpPreviousEstimate==115,"Nara Wildmane published reward replaces the estimate")
 assert(DQT.quests[2842].foreverXp==280 and DQT.quests[2842].xpPublished and DQT.quests[2842].classicXp==275,"Scooty published reward retains the separate Classic fallback")
 assert(DQT.quests[92457].foreverXp == 9400 and DQT.quests[98815].foreverXp == 1150, "October 16 published quest rewards")

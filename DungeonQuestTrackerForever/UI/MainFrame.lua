@@ -919,8 +919,11 @@ function UI:ShowPickups(preserveScroll)
             if step.kind=="travel" then
                 local detail=step.route and DQT.Travel:Describe(step.route)
                     or "No permitted recorded transport connection. Flight knowledge, walking links or transport coverage may be incomplete; arrange this leg separately."
+                if step.boarding then
+                    detail=step.boarding.."\n"..(step.route and detail or "Travel to the boarding point and arrange onward travel after arrival. Departure proximity uses approximate map positions.")
+                end
                 ordered[#ordered+1]={rank="->",title="Travel: "..step.fromZone.." -> "..step.toZone,
-                    compactDetail=step.route and (step.route.hops.." transport leg(s) | "..step.route.fare.." copper base") or "Unresolved connection",detail=detail}
+                    compactDetail=step.boarding or (step.route and (step.route.hops.." transport leg(s) | "..step.route.fare.." copper base") or "Unresolved connection"),detail=detail}
                 for _,stop in ipairs(step.transportStops or {}) do
                     ordered[#ordered+1]={stop=stop,rank="F",title="Transport approach: "..FormatLocation(stop.location),
                         compactDetail="Observed approach, not a surveyed path",detail=(stop.location.source or "Recorded location").."\nWalk to the flight master; this marker does not establish a walkable ground path."}

@@ -3,8 +3,8 @@ local Travel = {quotes={}}
 DQT.Travel = Travel
 local function Safe(fn, ...)
     if type(fn)~="function" then return end
-    local ok,a,b,c=pcall(fn,...)
-    if ok then return a,b,c end
+    local ok,a,b,c,d=pcall(fn,...)
+    if ok then return a,b,c,d end
 end
 local function Now()
     local value=Safe(GetTime)
@@ -42,18 +42,22 @@ function Travel:SetKnown(id,value)
 end
 function Travel:Initialize()
     self.nodes,self.ids,self.adjacency={},{},{}
-    for _,node in ipairs(DQT.travelData.nodes) do
+    local function AddNode(node)
         self.nodes[node.id]=node
         self.ids[#self.ids+1]=node.id
         self.adjacency[node.id]={}
     end
+    for _,node in ipairs(DQT.travelData.nodes) do AddNode(node) end
+    local forever="https://worldofwarcraft.blizzard.com/en-gb/news/24304071/world-of-warcraft-forever-found-photos-panel-recap"
+    AddNode({id="Steamwheedle Port|Both",name="Steamwheedle Port",zone="Tanaris",faction="Both",portOnly=true,source=forever})
+    AddNode({id="Powderfuse Port|Both",name="Powderfuse Port",zone="Riverglades",faction="Both",portOnly=true,source=forever})
     table.sort(self.ids)
     for _,edge in ipairs(DQT.travelData.edges) do
         self.adjacency[edge.from][#self.adjacency[edge.from]+1]=edge
     end
     -- Public Classic transport connections; no schedules, coordinates or durations inferred.
     local source="https://news.blizzard.com/en-us/article/23156366/wow-classic-getting-around-azeroth"
-    local function Connect(a,b,mode,faction)
+    local function Connect(a,b,mode,faction,crossing,routeSource,oneWay)
         local left,right
         for _,id in ipairs(self.ids) do
             local node=self.nodes[id]
@@ -63,18 +67,68 @@ function Travel:Initialize()
             end
         end
         if left and right then
-            self.adjacency[left][#self.adjacency[left]+1]={from=left,to=right,fare=0,mode=mode,faction=faction,source=source}
-            self.adjacency[right][#self.adjacency[right]+1]={from=right,to=left,fare=0,mode=mode,faction=faction,source=source}
+            self.adjacency[left][#self.adjacency[left]+1]={from=left,to=right,fare=0,mode=mode,faction=faction,source=routeSource or source,crossing=crossing}
+            if not oneWay then
+                self.adjacency[right][#self.adjacency[right]+1]={from=right,to=left,fare=0,mode=mode,faction=faction,source=routeSource or source,crossing=crossing}
+            end
         end
     end
-    for _,faction in ipairs({"Alliance","Horde"}) do Connect("Booty Bay","Ratchet","boat",faction) end
+    for _,faction in ipairs({"Alliance","Horde"}) do
+        Connect("Booty Bay","Ratchet","boat",faction,true)
+        Connect("Steamwheedle Port","Powderfuse Port","boat",faction,true,forever)
+    end
     Connect("Ironforge","Stormwind City","tram","Alliance")
-    Connect("Auberdine","Menethil Harbor","boat","Alliance")
+    Connect("Auberdine","Menethil Harbor","boat","Alliance",true)
     Connect("Auberdine","Rut'theran Village","boat","Alliance")
-    Connect("Menethil Harbor","Theramore Isle","boat","Alliance")
-    Connect("Orgrimmar","Undercity","zeppelin","Horde")
-    Connect("Orgrimmar","Grom'gol Base Camp","zeppelin","Horde")
+    Connect("Menethil Harbor","Theramore Isle","boat","Alliance",true)
+    Connect("Orgrimmar","Undercity","zeppelin","Horde",true)
+    Connect("Orgrimmar","Grom'gol Base Camp","zeppelin","Horde",true)
     Connect("Undercity","Grom'gol Base Camp","zeppelin","Horde")
+    Connect("Stormwind City","Auberdine","boat","Alliance",true,forever)
+    Connect("Southshore","Auberdine","boat","Alliance",true,forever,true)
+end
+
+local function ContinentPosition(zone)
+    if not (DQT.PickupMap and C_Map and C_Map.GetMapInfo) then return end
+    local mapID=DQT.PickupMap:ResolveLocation({zone=zone})
+    local continent=mapID
+    for _=1,12 do
+        local info=continent and Safe(C_Map.GetMapInfo,continent)
+        if not info then return end
+        if info.mapType==2 then
+            local left,right,top,bottom=Safe(C_Map.GetMapRectOnMap,mapID,continent)
+            if type(left)=="number" and type(right)=="number" and type(top)=="number" and type(bottom)=="number" then
+                return continent,(left+right)/2,(top+bottom)/2
+            end
+            return continent
+        end
+        continent=info.parentMapID
+    end
+end
+
+function Travel:FindCrossing(fromZone,toZone,context)
+    if not context.transports then return end
+    local origin,x,y=ContinentPosition(fromZone)
+    local destination,dx,dy=ContinentPosition(toZone)
+    if not origin or not destination or origin==destination then return end
+    local best,bestDistance,bestArrival
+    for _,id in ipairs(self.ids) do
+        for _,edge in ipairs(self.adjacency[id]) do
+            if edge.crossing and edge.faction==context.faction then
+                local from,to=self.nodes[id],self.nodes[edge.to]
+                local continent,px,py=ContinentPosition(from.zone)
+                local arrival,ax,ay=ContinentPosition(to.zone)
+                if continent==origin and arrival==destination then
+                    local distance=self:InZone(from,fromZone) and 0 or (x and px and (x-px)^2+(y-py)^2 or math.huge)
+                    local onward=self:InZone(to,toZone) and 0 or (dx and ax and (dx-ax)^2+(dy-ay)^2 or math.huge)
+                    if not best or distance<bestDistance or (distance==bestDistance and onward<bestArrival) then
+                        best,bestDistance,bestArrival=edge,distance,onward
+                    end
+                end
+            end
+        end
+    end
+    return best
 end
 function Travel:HearthRecord()
     local _,key=self:Character()
@@ -299,7 +353,19 @@ function Travel:BuildItinerary(plan,currentZone,context)
         if from and zone and from~=zone then
             local route=self:Route(from,zone,context)
             self:Consume(route,context)
-            steps[#steps+1]={kind="travel",route=route,fromZone=from,toZone=zone,transportStops=self:TransportStops(route)}
+            local crossing
+            for _,edge in ipairs(route and route.edges or {}) do
+                if edge.crossing then crossing=edge; break end
+            end
+            if not route then crossing=self:FindCrossing(from,zone,context) end
+            local boarding
+            if crossing then
+                local departure,arrival=self.nodes[crossing.from].name,self.nodes[crossing.to].name
+                if departure=="Stormwind City" then departure="Stormwind Harbor" end
+                if arrival=="Stormwind City" then arrival="Stormwind Harbor" end
+                boarding="Board the "..crossing.mode.." at "..departure.." for "..arrival
+            end
+            steps[#steps+1]={kind="travel",route=route,boarding=boarding,fromZone=from,toZone=zone,transportStops=self:TransportStops(route)}
         end
         steps[#steps+1]={kind=kind,stop=stop}
         from=zone or from

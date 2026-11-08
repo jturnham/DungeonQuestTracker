@@ -47,7 +47,7 @@ function UI:ShowTravelOptions()
     local y,index=74,0
     for _,id in ipairs(DQT.Travel.ids) do
         local node=DQT.Travel.nodes[id]
-        if (node.faction=="Both" or node.faction==faction) and (not node.class or node.class==player.class) then
+        if not node.portOnly and (node.faction=="Both" or node.faction==faction) and (not node.class or node.class==player.class) then
             index=index+1
             local row=self.frame.travelRows[index]
             if not row then

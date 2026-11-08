@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.4 - 2026-11-08
+
+- Pickup routes now show where to board cross-continent boats and zeppelins, including Forever's Riverglades ferry. When the full trip cannot be planned, the tracker suggests a faction-appropriate crossing using approximate map distances.
+- Added both factions' Krol'dok Stronghold quests and initial Alcaz Prison coverage with The Dragon's Journal. Guide-sourced rewards remain provisional.
+- Updated quest XP and pickup levels across the catalog, including live quest-log readings for Razorfen Kraul.
+- Added Wetlands pickup and turn-in map coordinates, clarified that Dragonmaw Rumors starts its chain, and corrected the Alliance prerequisites for Highland Hides and Horrors in the Highland.
+- The startup message now points to the dungeon list with `/dqt`.
+
 ## 0.6.3 - 2026-11-07
 
 ### Pickup routing

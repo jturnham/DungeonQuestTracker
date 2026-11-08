@@ -9,12 +9,14 @@ for key, dungeon in pairs(DQT.dungeons) do
     end
     assert(type(dungeon.provisionalData)=="boolean" and dungeon.betaAvailability,"Dungeon beta provenance missing: "..key)
 end
-assert(placeholders == 3, "Only announced Forever dungeons without quest evidence should remain empty")
+assert(placeholders == 2, "Blackmaw Hold and Shaper's Terrace remain placeholders")
 assert(#DQT.dungeons["the-drowned-city"].quests == 13)
 assert(DQT.quests[95775].foreverXp == 8450 and DQT.quests[95775].followUpOf == 95770)
 assert(DQT.quests[95776].foreverXp == 9500 and DQT.quests[95776].followUpOf == 95773)
 assert(DQT.quests[95787].followUpOf == 95786 and not DQT.quests[95787].foreverXp)
-assert(DQT.quests[96771].dungeon == "kroldok-stronghold" and not DQT.quests[96771].foreverXp)
+assert(#DQT.dungeons["kroldok-stronghold"].quests == 7 and DQT.quests[96771].foreverXp == 11500)
+assert(DQT.quests[94968].faction == "Horde" and DQT.quests[94982].faction == "Alliance")
+assert(DQT.quests[96772].dungeon == "alcaz-prison" and DQT.quests[96772].xpGuide)
 local first, second = DQT:GetOrderedDungeonKeys(), DQT:GetOrderedDungeonKeys()
 for index, key in ipairs(first) do assert(key == second[index], "Dungeon order must be stable") end
 for _, id in ipairs({92753,92819,95036,95042,95111}) do

@@ -1125,7 +1125,7 @@ DQT.events:SetScript("OnEvent", function(_, event, ...)
         SLASH_DUNGEONQUESTTRACKER1 = "/dqt"
         SLASH_DUNGEONQUESTTRACKER2 = "/dungeonquesttracker"
         SlashCmdList.DUNGEONQUESTTRACKER = HandleSlashCommand
-        DQT:Print("Loaded. Type /dqt rfc to check Ragefire Chasm.")
+        DQT:Print("Loaded. Type /dqt to open the dungeon list.")
         return
     end
 

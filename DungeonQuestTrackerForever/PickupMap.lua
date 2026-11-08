@@ -321,7 +321,7 @@ function Maps:RefreshTracker(plan)
         elseif step.toZone then
             local edge=step.route and step.route.edges[1]
             local destination=edge and (edge.toLabel or (DQT.Travel.nodes[edge.to] or {}).name)
-            lines[#lines+1]=destination and (edge.mode..": "..destination) or ("Travel to "..step.toZone)
+            lines[#lines+1]=step.boarding or (destination and (edge.mode..": "..destination) or ("Travel to "..step.toZone))
         end
         if nextStop and #lines>=3 then break end
     end

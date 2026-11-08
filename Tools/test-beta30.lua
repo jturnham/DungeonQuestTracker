@@ -20,10 +20,19 @@ do
     assert(DQT.quests[6563].foreverXp == 1750 and DQT.quests[6563].xpPublished, "Published outside BFD reward has no fabricated bonus")
     local reports = 0
     for _, quest in pairs(DQT.quests) do if quest.xpReported then reports=reports+1 end end
-    assert(reports == 14, "Quest-specific reports only; two replaced by matching published rewards")
+    assert(reports == 17, "Quest-specific reports include three new live Razorfen Kraul readings")
     local oldLog, oldFaction = C_QuestLog, UnitFactionGroup
     C_QuestLog = {IsOnQuest=function(id) return id == 98823 or id == 6521 or id == 95795 end, ReadyForTurnIn=function(id) return id == 98823 or id == 6521 or id == 95795 end, IsQuestFlaggedCompleted=function() return false end}
     UnitFactionGroup = function() return "Horde" end
+    local route=DQT:GetDungeonPickupRoute("excavation-site-wetlands")
+    local directPickup
+    for _,stop in ipairs(route.stops) do
+        for _,entry in ipairs(stop.quests) do
+            if entry.questID==95663 then directPickup=not entry.preparation and stop.x==74.4 and stop.y==35.6 end
+        end
+    end
+    assert(directPickup and #DQT.quests[95663].prerequisites==0,"Dragonmaw Rumors is a direct, mapped pickup from Zaruk")
+    assert(DQT.quests[95682].prerequisites[1].questID==95663,"Dragonmaw Rumors gates only the next step")
     local found = {}
     for _, entry in ipairs(DQT:GetGlobalTurnInPriority().quests) do found[entry.questID]=true end
     assert(found[98823] and found[6521], "Ready follow-ups reach global planner")

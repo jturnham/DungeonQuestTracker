@@ -36,6 +36,26 @@ do
     assert(route.assumed,"Assumed routes are visibly marked")
     local boat=assert(travel:Route("Undercity","Orgrimmar",travel:Context("Horde","WARRIOR")))
     assert(boat.edges[1].mode=="zeppelin" and boat.fare==0,"Sourced zeppelin edges do not require learned flights")
+    local oldMap,oldResolve=C_Map,DQT.PickupMap.ResolveLocation
+    local ids={Durotar=1,["The Barrens"]=2,["Tirisfal Glades"]=3,["Stranglethorn Vale"]=4,
+        ["Origin Zone"]=5,["Destination Zone"]=6,Tanaris=7,Riverglades=8}
+    DQT.PickupMap.ResolveLocation=function(_,location) return ids[location.zone] end
+    local parents={[1]=100,[2]=100,[3]=200,[4]=200,[5]=100,[6]=200,[7]=100,[8]=200}
+    local x={[1]=0.3,[2]=0.7,[3]=0.2,[4]=0.8,[5]=0.69,[6]=0.75,[7]=0.95,[8]=0.1}
+    C_Map={
+        GetMapInfo=function(id) return parents[id] and {mapType=3,parentMapID=parents[id]} or {mapType=2} end,
+        GetMapRectOnMap=function(id) return x[id],x[id],0.5,0.5 end,
+    }
+    local horde=travel:Context("Horde","WARRIOR")
+    local steps=travel:BuildItinerary({readyReturns={},stops={{location={zone="Destination Zone"}}}},"Origin Zone",horde)
+    assert(not steps[1].route and steps[1].boarding=="Board the boat at Ratchet for Booty Bay",
+        "The nearest faction-appropriate crossing is shown without a connected flight route")
+    steps=travel:BuildItinerary({readyReturns={},stops={{location={zone="Orgrimmar"}}}},"Undercity",horde)
+    assert(steps[1].boarding=="Board the zeppelin at Undercity for Orgrimmar","Connected routes also expose the boarding step")
+    assert(not travel:FindCrossing("Origin Zone","The Barrens",horde),"Same-continent travel does not suggest an ocean crossing")
+    assert(not travel:FindCrossing("Origin Zone","Destination Zone",{faction="Horde",transports=false}),"Disabled transport is respected")
+    assert(travel:Route("Tanaris","Riverglades",horde).edges[1].from=="Steamwheedle Port|Both","Forever Riverglades boat is included")
+    C_Map,DQT.PickupMap.ResolveLocation=oldMap,oldResolve
     assert(not travel:Route("Undercity","Stormwind City",travel:Context("Horde","WARRIOR")),"No faction crossover")
     local tram=assert(travel:Route("Ironforge","Stormwind City",travel:Context("Alliance","WARRIOR")))
     assert(tram.edges[1].mode=="tram" and tram.fare==0,"Alliance transport route is usable without assuming flights")

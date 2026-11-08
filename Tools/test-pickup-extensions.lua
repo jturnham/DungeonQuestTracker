@@ -106,7 +106,7 @@ do
     DQT.UI.frame.pickupReset.scripts.OnClick()
     assert(DQT:GetOption("pickups.includeGray") and not DQT:GetOption("pickups.finishAtEntrance"),"Route reset restores only route defaults")
     assert(DQT.db.filters.ignoreGrayChecklist,"Route reset retains checklist settings")
-    DQT.UI.currentDungeonKey="alcaz-prison"
+    DQT.UI.currentDungeonKey="blackmaw-hold"
     DQT.UI:ShowPickups()
     assert(DQT.UI.frame.turnInRows[1].title:GetText()=="No quests recorded yet.","Empty catalogues distinguish unknown coverage from no missing quests")
     DQT.db,DQT.quests,DQT.dungeons["zul-farrak"]=oldDB,oldQuests,oldDungeon
