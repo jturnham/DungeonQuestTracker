@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.5 - 2026-11-11
+
+- Updated dungeon quest XP using Forever quest pages and live quest-window observations, including Gnomeregan, Scarlet Monastery, Razorfen Kraul, and the newer Forever dungeons.
+- Added Southshore prerequisites and follow-ups for The Drowned City, plus pickup locations in Booty Bay and Dalaran.
+- Corrected Krol'dok Stronghold pickup locations and linked two Horde quests to The Wayward Warrior.
+- Added The Secret Prison to Alcaz Prison and filled in the pickup location for The Dragon's Journal.
+
 ## 0.6.4 - 2026-11-08
 
 - Pickup routes now show where to board cross-continent boats and zeppelins, including Forever's Riverglades ferry. When the full trip cannot be planned, the tracker suggests a faction-appropriate crossing using approximate map distances.

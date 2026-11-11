@@ -72,7 +72,7 @@ do
     end
     for _, id in ipairs({97289,97290,97291,97292}) do
         local xp, source = DQT:GetQuestRewardXP(DQT.quests[id])
-        assert(xp == 1650 and source == "Forever (published guide; provisional)", "Separate source-linked follow-up rewards: " .. id)
+        assert(xp == 1650 and source == "Forever (published)", "Separate source-linked follow-up rewards: " .. id)
     end
     DQT.db = oldOptions
     -- Legacy logs with IDs are safe; ambiguous title-only entries cannot identify a chain step.

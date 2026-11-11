@@ -18,6 +18,8 @@ for id, quest in pairs(DQT.quests) do
             or quest.xpSource:find("https://wowforevertalents.com/quests/", 1, true)
             or quest.xpSource=="https://wowforevertalents.com/reputations/kirin-tor/"
             or quest.xpSource=="https://eternadex.com/en/quests/"..id.."/"
+            or quest.xpSource:match("^https://ahledger%.com/wow%-forever/quests/"..id.."%-")
+            or quest.xpSource=="https://www.forevercraft.app/quests/"..id
             or quest.xpSource:match("^https://www%.wowhead%.com/forever/quest="..id.."/"), "Published source preserved")
     elseif quest.xpGuide then
         local xp,source=DQT:GetQuestRewardXP(quest)
@@ -33,7 +35,15 @@ for id, quest in pairs(DQT.quests) do
         assert(source == "Forever (outdated; unverified)", "Stale reward label: " .. id)
     end
 end
-assert(count == 2 and published == 56, "Only explicitly sourced rewards supersede estimates: " .. count .. " estimates, " .. published .. " published")
+assert(count == 1 and published == 102, "Only explicitly sourced rewards supersede estimates: " .. count .. " estimates, " .. published .. " published")
+assert(DQT.quests[2930].xpPublished and DQT:GetQuestRewardXP(DQT.quests[2930]) == 6550, "Data Rescue Forever XP")
+assert(DQT.quests[95789].xpPublished and DQT:GetQuestRewardXP(DQT.quests[95789]) == 10450, "Shady Saltseers Forever XP")
+assert(DQT.quests[5214].xpPublished and DQT:GetQuestRewardXP(DQT.quests[5214]) == 8300, "The Great Fras Siabi Forever XP")
+assert(DQT.quests[7507].xpPublished and DQT:GetQuestRewardXP(DQT.quests[7507]) == 9950, "Foror's Compendium Forever XP")
+assert(DQT.quests[1160].xpPublished and DQT:GetQuestRewardXP(DQT.quests[1160]) == 5000, "Test of Lore Forever XP")
+assert(DQT.quests[96800].xpPublished and DQT:GetQuestRewardXP(DQT.quests[96800]) == 6750, "Past Due Forever XP")
+assert(DQT.quests[2841].xpReported and DQT:GetQuestRewardXP(DQT.quests[2841]) == 8200, "Rig Wars live XP")
+assert(DQT.quests[2949].xpReported and DQT:GetQuestRewardXP(DQT.quests[2949]) == 6400, "Horde Return of the Ring live XP")
 assert(DQT.quests[1490].foreverXp==120 and DQT.quests[1490].xpPublished and DQT.quests[1490].xpPreviousEstimate==115,"Nara Wildmane published reward replaces the estimate")
 assert(DQT.quests[2842].foreverXp==280 and DQT.quests[2842].xpPublished and DQT.quests[2842].classicXp==275,"Scooty published reward retains the separate Classic fallback")
 assert(DQT.quests[92457].foreverXp == 9400 and DQT.quests[98815].foreverXp == 1150, "October 16 published quest rewards")
@@ -49,7 +59,7 @@ assert(DQT.quests[95216].foreverXp == 5450 and DQT.quests[95216].xpPublished and
 assert(DQT.quests[95216].xpBaselineAssumed and not DQT.quests[95216].classicXp, "Assumed baseline is not a Classic reward for a new quest")
 assert(DQT.quests[92401].foreverXp == 4600, "Ruins player report")
 assert(DQT.quests[97288].foreverXp == 3450, "Ruins published reward")
-assert(DQT.quests[92422].foreverXp == 4600 and DQT.quests[92422].xpGuide, "Published guide replaces Rath'mael's zero placeholder")
+assert(DQT.quests[92422].foreverXp == 4600 and DQT.quests[92422].xpPublished, "Forever observation corroborates Rath'mael XP")
 assert(DQT.quests[96403].xpBaselineAssumed, "Hall uses comparable baseline")
 for id,xp in pairs({[96395]=2300,[96403]=2950,[96394]=2300,[96393]=3200,[6921]=6550,[6561]=7850}) do
     assert(DQT.quests[id].foreverXp==xp and DQT.quests[id].xpPublished and not DQT.quests[id].xpEstimate,"October 7 exact-ID correction: " .. id)
@@ -59,7 +69,7 @@ do
     for id,xp in pairs({[96984]=9400,[92458]=9400,[96986]=9400,[96988]=9400,[96987]=9400,[92489]=9400,[92456]=9400,
         [97289]=1650,[97290]=1650,[97291]=1650,[97292]=1650,[92753]=4050,[92819]=680,[95042]=2000,[95111]=1000}) do
         local quest=DQT.quests[id]
-        assert(quest.foreverXp==xp and quest.xpGuide and quest.xpSource:match("^https://"),"Exact-ID sourced provisional reward: "..id)
+        assert(quest.foreverXp==xp and (quest.xpGuide or quest.xpPublished) and quest.xpSource:match("^https://"),"Exact-ID sourced reward: "..id)
     end
     for _,quest in pairs(DQT.quests) do
         local item=DQT:BuildTurnInItem({questID=0,quest=quest},"test",{},{level=quest.questLevel or 30},100000)

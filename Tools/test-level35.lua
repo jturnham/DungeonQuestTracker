@@ -133,8 +133,8 @@ for _, item in ipairs(plan.quests) do
     seen[item.questID] = true
 end
 assert(DQT:GetQuestRewardXP(DQT:GetQuest(1221)) == 5000, "Post-update player report")
-local _, source = DQT:GetQuestRewardXP(DQT:GetQuest(2841))
-assert(source == "Classic", "Unconfirmed reward must be labelled as an estimate")
+local _, source = DQT:GetQuestRewardXP(DQT:GetQuest(2948))
+assert(source == "Classic", "Classic fallback remains labeled")
 player.class = "WARRIOR"
 for _, row in ipairs(DQT:GetDungeonQuestStatus("shadowfang-keep").quests) do
     assert(row.questID ~= 1740 and row.questID ~= 1654, "Unrelated class quests hidden")

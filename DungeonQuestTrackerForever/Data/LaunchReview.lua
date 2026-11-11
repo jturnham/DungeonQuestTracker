@@ -45,6 +45,12 @@ local gates={
     [95216]={parent=451,note="Required: complete A Recipe For Death (#447 -> #450 -> #451) before picking up The New Plague. This is not the similarly named A New Plague chain in Brill. Launch player reports; local confirmation pending."},
 }
 local publishedRewards={
+    [5214]={xp=8300,url="https://www.wowhead.com/forever/quest=5214/the-great-fras-siabi",
+        review="Wowhead Forever lists 8,300 XP for this exact quest ID. Actual payout can vary by character level and modifiers."},
+    [7507]={xp=9950,url="https://www.wowhead.com/forever/quest=7507/forors-compendium",
+        review="Wowhead Forever lists 9,950 XP for this exact quest ID. Actual payout can vary by character level and modifiers."},
+    [1160]={xp=5000,url="https://ahledger.com/wow-forever/quests/1160-test-of-lore",
+        review="2026-11-09: public Forever client observations for the book quest (#1160). Actual payout can vary by character level and modifiers."},
     [1490]={xp=120,url="https://wowforevertalents.com/quests/nara-wildmane-1490/"},
     [2842]={xp=280,url="https://wowforevertalents.com/quests/chief-engineer-scooty-2842/"},
 }
@@ -54,8 +60,18 @@ for id,reward in pairs(publishedRewards) do
     quest.foreverXp,quest.xpPublished,quest.xpSource=reward.xp,true,reward.url
     quest.xpEstimate,quest.xpOutdated,quest.xpReported=nil,nil,nil
     quest.sourceURLs[#quest.sourceURLs+1]=reward.url
-    quest.verification.xpReview="2026-11-05: individual published beta reward from dated client-cache/log references. Reviewed by exact ID; not a launch-client or unmodified-reward observation."
+    quest.verification.xpReview=reward.review or "2026-11-05: individual published beta reward from dated client-cache/log references. Reviewed by exact ID; not a launch-client or unmodified-reward observation."
 end
+local fras=DQT.quests[5214]
+fras.name="The Great Fras Siabi"
+fras.pickup.coordinates="80, 58"
+fras.pickup.subzone="Light's Hope Chapel"
+fras.turnIn=fras.pickup
+fras.objectives="Recover the premium tobacco from Fras Siabi's smoke shop in Stratholme and return it to Smokey LaRue."
+local foror=DQT.quests[7507]
+foror.name="Foror's Compendium"
+foror.pickup={name="Nostro's Compendium of Dragon Slaying",zone="Dire Maul"}
+foror.pickupType="drop"
 for id,gate in pairs(gates) do
     local quest=DQT.quests[id]
     quest.prerequisites={{questID=gate.parent,relationship="required",note=gate.note}}
@@ -206,6 +222,7 @@ local kin=Location("Kin'weelay","Stranglethorn Vale","32.3, 27.7")
 local dibbs=Location("Loremaster Dibbs","Hillsbrad Foothills","50.6, 57.1")
 local mazu=Location("Mazu'kon","Mulgore","32.5, 20.6")
 local zoneSources={
+    ["scarlet-monastery-library"]="https://www.wowhead.com/forever/guide/scarlet-monastery-library-dungeon-overview-location-rewards",
     [drowned]="https://www.wowhead.com/forever/zone=16550/the-drowned-city",
     [kroldok]="https://www.wowhead.com/forever/zone=16842/kroldok-stronghold",
     [alcaz]="https://www.wowhead.com/forever/zone=16620/alcaz-prison",
@@ -223,11 +240,11 @@ local function AddDungeonQuest(key,id,quest)
     if quest.xpSource and quest.xpSource~=quest.source then
         quest.sourceURLs[#quest.sourceURLs+1]=quest.xpSource
     end
-    quest.verification={sourceReview="2026-11-07: exact quest ID matched to Forever sources."}
+    quest.verification={sourceReview="Exact quest ID matched to Forever sources."}
     if quest.foreverXp then
         if not quest.xpGuide then quest.xpPublished=true end
         quest.xpSource=quest.xpSource or quest.source
-        quest.verification.xpReview="2026-11-07: individual Forever quest reward. Actual payout can vary by character level and modifiers."
+        quest.verification.xpReview="Individual Forever quest reward. Actual payout can vary by character level and modifiers."
     else
         quest.verification.xpReview="Individual Forever reward unavailable. XP remains unknown."
     end
@@ -242,6 +259,11 @@ end
 local function Eternadex(id)
     return "https://eternadex.com/en/quests/"..id.."/"
 end
+
+AddDungeonQuest("scarlet-monastery-library",96800,{name="Past Due",faction="Alliance",minLevel=30,questLevel=38,
+    pickup=Location("Magus Olvek","Alterac Mountains","10.0, 63.8"),foreverXp=6750,
+    xpSource="https://www.forevercraft.app/quests/96800",
+    objectives="Recover The Lost Magic of the Runemasters in Arcanist Doan's room and return to Magus Olvek."})
 
 AddDungeonQuest(drowned,629,{name="The Vile Reef",faction="Horde",minLevel=30,questLevel=37,pickup=kin,
     preparationOnly=true,foreverXp=2850,source=Eternadex(629),
@@ -306,8 +328,58 @@ AddKroldokQuest(96771,{name="Vengeance of the Highborne",faction="Alliance",minL
     foreverXp=11500,objectives="Defeat Zalfan Moonshadow in Krol'dok Stronghold and return to Ranath Nightstride."})
 
 AddDungeonQuest(alcaz,96772,{name="The Dragon's Journal",faction="Alliance",minLevel=46,questLevel=53,
-    foreverXp=14400,xpGuide=true,xpSource="https://conquestcapped.com/guides/wow-forever/wow-forever-alcaz-prison-guide/",
-    objectives="Recover Zarla's Journal from Blazeroar. The quest giver in Dalaran still needs confirmation."})
+    pickup=Location("Archmage Lan'dalock","Alterac Mountains","15.9, 73.1"),foreverXp=14400,
+    source="https://www.wowhead.com/forever/quest=96772/the-dragons-journal",
+    objectives="Recover Zarla's Journal from Blazeroar and return to Archmage Lan'dalock in Dalaran."})
+AddDungeonQuest(alcaz,95262,{name="The Secret Prison",faction="Alliance",minLevel=48,questLevel=53,
+    foreverXp=14400,source="https://www.wowhead.com/forever/quest=95262/the-secret-prison",
+    objectives="Explore Alcaz Prison and learn what became of Varian Wrynn.",
+    prerequisites={{questID=95198,relationship="required",external=true,
+        note="Complete The Return of the King? in the chain that starts with Our Man in Theramore."}}})
+
+local drownedGuide="https://www.wowhead.com/forever/guide/the-drowned-city-dungeon-overview-location-rewards"
+AddDungeonQuest(drowned,95798,{name="The Web of Magic",faction="Alliance",minLevel=30,questLevel=40,
+    pickup=dibbs,turnIn=Location("Abra Cadabra","Alterac Mountains"),followUpOf=95788,
+    source="https://www.wowhead.com/forever/quest=95798/the-web-of-magic",
+    objectives="Deliver the I'lalai Fetish to Abra Cadabra in outdoor Dalaran."})
+AddDungeonQuest(drowned,95799,{name="Findings for the Explorer's League",faction="Alliance",minLevel=30,questLevel=40,
+    pickup=dibbs,turnIn=Location("Historian Karnik","Ironforge"),followUpOf=95787,
+    source="https://www.wowhead.com/forever/quest=95799/findings-for-the-explorers-league",
+    objectives="Deliver Loremaster Dibbs's translations to Historian Karnik in Ironforge."})
+local krazek=Location("Krazek","Stranglethorn Vale","27.0, 77.2")
+krazek.subzone="Booty Bay"
+for id,location in pairs({[95788]=dibbs,[95789]=krazek,[95791]=krazek,
+    [97130]=Location("Archmage Timear","Alterac Mountains","15.6, 73.6")}) do
+    local quest=DQT.quests[id]
+    quest.pickup,quest.turnIn=location,location
+    quest.confidence="verifiedSource"
+    quest.sourceURLs[#quest.sourceURLs+1]=drownedGuide
+end
+for _,id in ipairs({95787,95788}) do
+    local quest=DQT.quests[id]
+    quest.prerequisites[#quest.prerequisites+1]={questID=205,relationship="required",external=true,
+        note="Complete Troll Witchery in Stranglethorn Vale to unlock the Southshore dungeon quests."}
+    quest.sourceURLs[#quest.sourceURLs+1]=drownedGuide
+end
+local mementos=DQT.quests[94983]
+mementos.pickup=Location("Sergeant Riftan","Riverglades","30.6, 49.0")
+mementos.turnIn=mementos.pickup
+mementos.objectives="Collect eight Twilight Bangles and return to Sergeant Riftan."
+mementos.confidence="verifiedSource"
+local aggro=Location("Commander Aggro'gosh","Riverglades","33.4, 38.0")
+for _,id in ipairs({94972,94975}) do
+    local quest=DQT.quests[id]
+    quest.pickup,quest.turnIn=aggro,aggro
+    quest.confidence="verifiedSource"
+    quest.prerequisites={{questID=94744,relationship="required",external=true,
+        note="Complete Krom'rosh's Riverglades chain through The Wayward Warrior."}}
+end
+DQT.quests[94972].objectives="Recover the Tome of Twilight from Nar'gurk and return to Commander Aggro'gosh."
+DQT.quests[94975].objectives="Collect 15 Cultist Ears and return to Commander Aggro'gosh."
+for _,id in ipairs({94972,94975,94983}) do
+    local quest=DQT.quests[id]
+    quest.sourceURLs[#quest.sourceURLs+1]="https://www.wowhead.com/forever/guide/kroldok-stronghold-dungeon-overview-location-rewards"
+end
 
 for key,area in pairs({[drowned]="Off the coast of Stranglethorn Vale, west of Grom'gol",
     [kroldok]="Riverglades, above Sunnyglade",[alcaz]="Alcaz Island, Dustwallow Marsh"}) do
@@ -324,14 +396,17 @@ DQT.dungeons[alcaz].notes="Initial coverage includes The Dragon's Journal. The r
 
 -- Live level-31 quest-log reward readings supplied on November 8.
 DQT.quests[1221].verification.xpReview="2026-11-08: live level-31 quest log corroborates the published 5,000 XP reward."
-for id,xp in pairs({[1102]=8500,[1109]=6950,[6522]=5900}) do
+local function RecordReportedXP(id,xp,level,date)
     local quest=DQT.quests[id]
     quest.foreverXp,quest.xpReported=xp,true
     quest.xpEstimate,quest.xpOutdated,quest.xpGuide,quest.xpPublished=nil,nil,nil,nil
-    quest.xpSource="Live Forever quest log, level 31, 2026-11-08 (player report)"
-    quest.verification.xpReview="Exact quest ID and displayed reward reported from the live quest log at character level 31."
+    quest.xpSource="Live Forever quest log, level "..level..", "..date.." (player report)"
+    quest.verification.xpReview="Exact quest ID and displayed reward reported from the live quest log at character level "..level.."."
     quest.verification.xp=quest.verification.xpReview
 end
+for id,xp in pairs({[1102]=8500,[1109]=6950,[6522]=5900}) do RecordReportedXP(id,xp,31,"2026-11-08") end
+RecordReportedXP(2841,8200,35,"2026-11-09")
+RecordReportedXP(2949,6400,35,"2026-11-09")
 DQT.quests[1102].sourceURLs[#DQT.quests[1102].sourceURLs+1]="https://hearthproof.com/dungeons/razorfen-kraul/"
 DQT.quests[6522].verification.xpReview=DQT.quests[6522].verification.xpReview.." A published guide lists 2,800 XP; the newer exact-ID reading takes precedence provisionally."
 
@@ -350,4 +425,68 @@ for id,review in pairs(reviewedLevels) do
     quest.minLevel,quest.questLevel=review.min or quest.minLevel,review.level or quest.questLevel
     quest.sourceURLs[#quest.sourceURLs+1]=review.source
     quest.verification.level="2026-11-08: level fields reviewed against exact-ID Forever quest records."
+end
+
+-- Exact-ID Forever quest-window observations. Preserve local player reports
+-- and omit conflicting values that appear to include character modifiers.
+local observedRewards={
+    [95697]={6950,"changing-tastes"},
+    [95664]={1400,"elder-knowledge"},
+    [95772]={6150,"songblade-search"},
+    [95647]={4900,"lost-in-the-thicket-things"},
+    [95810]={1250,"lost-relic-carry"},
+    [6922]={7250,"baron-aquanis"},
+    [1101]={7950,"the-crone-of-the-kraul"},
+    [1701]={2300,"fire-hardened-mail"},
+    [95795]={6150,"fallen-in-the-fen"},
+    [98823]={6950,"earthen-echo"},
+    [95036]={1750,"a-moon-kissed-blade"},
+    [95042]={2000,"seeking-the-kor-gem"},
+    [96984]={9400,"heart-of-disruption"},
+    [96986]={9400,"the-grave-knight"},
+    [96988]={9400,"source-of-power"},
+    [96987]={9400,"opportunistic-education"},
+    [92456]={9400,"a-green-sample"},
+    [97289]={1650,"unending-torment"},
+    [97290]={1650,"unending-torment"},
+    [97291]={1650,"unending-torment"},
+    [97292]={1650,"unending-torment"},
+    [389]={440,"bazil-thredd"},
+    [393]={600,"shadow-of-the-past"},
+    [1049]={8450,"compendium-of-the-fallen"},
+    [1050]={8900,"mythology-of-the-titans"},
+    [1113]={7850,"hearts-of-zeal"},
+    [1806]={3850,"the-test-of-righteousness"},
+    [2924]={5500,"essential-artificials"},
+    [2929]={4950,"the-grand-betrayal"},
+    [2930]={6550,"data-rescue"},
+    [5730]={1450,"hidden-enemies"},
+    [6521]={7350,"an-unholy-alliance"},
+    [92422]={4600,"the-wrath-of-rathmael"},
+    [95789]={10450,"shady-saltseers"},
+    [95791]={10450,"the-saltseer-captain"},
+    [98423]={2550,"the-treaty-of-understanding"},
+}
+for id,reward in pairs(observedRewards) do
+    local quest=DQT.quests[id]
+    local url="https://ahledger.com/wow-forever/quests/"..id.."-"..reward[2]
+    quest.foreverXp,quest.xpPublished,quest.xpSource=reward[1],true,url
+    quest.xpGuide,quest.xpEstimate,quest.xpOutdated=nil,nil,nil
+    quest.sourceURLs[#quest.sourceURLs+1]=url
+    quest.verification.xpReview="AHledger Forever quest-window observation for this exact quest ID. Actual payout can vary by character level and modifiers."
+    quest.verification.xp=quest.verification.xpReview
+end
+
+for id,reward in pairs({
+    [95788]={8450,"magics-of-the-drowned-city"},
+    [97130]={10450,"ancient-gurubashi-secrets"},
+    [94975]={8200,"a-token-of-vengeance"},
+    [94983]={10200,"twilight-mementos"},
+}) do
+    local quest=DQT.quests[id]
+    local url="https://www.wowhead.com/forever/quest="..id.."/"..reward[2]
+    quest.foreverXp,quest.xpPublished,quest.xpSource=reward[1],true,url
+    quest.xpGuide=nil
+    quest.sourceURLs[#quest.sourceURLs+1]=url
+    quest.verification.xpReview="Explicit XP in the Gains section of the individual Wowhead Forever quest page."
 end
