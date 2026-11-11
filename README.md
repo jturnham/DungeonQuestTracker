@@ -18,7 +18,7 @@ Available on [CurseForge](https://www.curseforge.com/wow/addons/dungeonquesttrac
 - Current-position pickup starts where the client supports them, plus optional recorded entrance approaches.
 - Flight-aware pickup itineraries with character-specific learned routes, manual flight knowledge, base fares and named boat/zeppelin/tram legs.
 - Optional ready Hearthstone shortcuts, with character-specific bind destinations and a single-use reservation across each pickup itinerary.
-- Movable on-screen pickup tracker, optional same-map guide lines and TomTom waypoint integration.
+- Combine pickups for multiple dungeons in a movable on-screen tracker that updates as you accept quests or change zones. Optional TomTom and supported Blizzard waypoints guide you to the next stop.
 - Numbered world-map pickup pins with combined tooltips for shared locations.
 - Compact and full display modes with saved preferences.
 - Reusable settings profiles.
@@ -48,6 +48,12 @@ Available on [CurseForge](https://www.curseforge.com/wow/addons/dungeonquesttrac
 
 ![Global turn-in list with XP rewards, locations and level-up warnings](https://raw.githubusercontent.com/jturnham/DungeonQuestTracker/main/images/turn-in-priority.png)
 
+### Pickup Route Tracker
+
+![Movable pickup route tracker showing the next steps in a dungeon quest route](https://raw.githubusercontent.com/jturnham/DungeonQuestTracker/main/images/pickup-overlay.png)
+
+Click the spyglass on each dungeon card to add its pickups to the tracker. It stays visible when the main window closes, and its background fades to transparent when the cursor moves away. Drag it to reposition it or click **Map** to focus the next stop.
+
 ### Quest Loot Alert
 
 ![Quest Loot banner showing a quest item reminder and the Options preview](https://raw.githubusercontent.com/jturnham/DungeonQuestTracker/main/images/loot-alert.png)
@@ -75,6 +81,7 @@ Loot alerts cover known single-copy quest items from named mobs. Multi-item coll
 - Blackrock Depths, Lower Blackrock Spire and Upper Blackrock Spire
 - Dire Maul: East, North and West
 - Scholomance and Stratholme: Main Gate and Service Gate
+- The Drowned City, Krol'dok Stronghold and Alcaz Prison
 
 Higher-level Classic quests are included through level 60 using Classic-source data. Entries whose Forever quest details still need review are marked **Provisional** in the list and checklist, including compact mode. There is no level-35 tracking cap; the normal level filters can be changed in Options. Raids are outside the addon's current scope.
 
@@ -82,7 +89,7 @@ Higher-level Classic quests are included through level 60 using Classic-source d
 
 Empty placeholders are included for these announced dungeons. Quest tracking is not implemented for them yet; their presence does not confirm current availability.
 
-- The Drowned City, Krol'dok Stronghold, Alcaz Prison, Blackmaw Hold and Shaper's Terrace
+- Blackmaw Hold and Shaper's Terrace
 
 ## Install
 
@@ -140,7 +147,7 @@ Use the title-bar gear button or `/dqt options` to adjust:
 
 Settings persist across reloads. By default, active and ready quests keep their dungeon visible outside its level range. The global turn-in planner is independent of checklist and dungeon display filters.
 
-Click the spyglass on each dungeon card you want to include. Selected cards show a check mark, and their pickups are grouped into one route. Click a selected card's spyglass to remove it, or close the tracker to clear the selection. Combined routes focus on pickups and prerequisite turn-ins. The optional entrance destination applies to single-dungeon routes. The filter summary opens a detailed explanation, with explicit reset and selected-dungeon search actions.
+Selected dungeon cards show a check mark. Click a selected card's spyglass to remove it, or close the tracker to clear the selection. Combined routes group pickups and prerequisite turn-ins. The optional entrance destination applies to single-dungeon routes. The filter summary opens a detailed explanation, with reset and selected-dungeon search actions.
 
 Use **Tools** in Options or `/dqt tools` for profiles and position resets. Creating a profile copies current presentation, filters, alert and route preferences; selecting it applies them to this character. Profiles do not copy flights, hearth destinations, XP records, favorites or party sharing/data-sync consent. Profile names accept 1-32 letters, numbers, spaces, underscores or hyphens. The active profile and Default cannot be deleted.
 
