@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.6 - 2026-11-13
+
+- Filled in Drowned City pickups, prerequisites, and XP, including the Horde Enemies in the Water chain.
+- Added both Krol'dok key chains and expanded Alcaz Prison quest coverage.
+- Added artwork to higher-level dungeon cards and removed the Provisional badge from The Drowned City and Krol'dok Stronghold.
+
 ## 0.6.5 - 2026-11-11
 
 - Updated dungeon quest XP using Forever quest pages and live quest-window observations, including Gnomeregan, Scarlet Monastery, Razorfen Kraul, and the newer Forever dungeons.

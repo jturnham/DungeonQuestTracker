@@ -277,18 +277,25 @@ AddDungeonQuest(drowned,95770,{name="Locating the Lost City",faction="Horde",min
 AddDungeonQuest(drowned,95775,{name="The Drowned City",faction="Horde",minLevel=30,questLevel=40,pickup=kin,
     followUpOf=95770,foreverXp=8450,source="https://www.wowhead.com/forever/quest=95775/the-drowned-city",
     objectives="Make rubbings of the four Tablets of I'lalai inside the Drowned City."})
+local gromgolCommander=Location("Commander Aggro'gosh","Stranglethorn Vale","32.2, 28.8")
+gromgolCommander.subzone="Grom'gol Base Camp"
 AddDungeonQuest(drowned,95773,{name="Enemies in the Water",faction="Horde",minLevel=30,questLevel=37,
-    preparationOnly=true,foreverXp=2850,source=Eternadex(95773),
+    pickup=gromgolCommander,preparationOnly=true,followUpOf=95748,foreverXp=2850,
+    source="https://www.wowhead.com/forever/quest=95773/enemies-in-the-water",
     objectives="Gather ten Brinescale Tridents from Brinescale Skirmishers in Stranglethorn Vale."})
 AddDungeonQuest(drowned,95776,{name="The Only Good Brinescale...",faction="Horde",minLevel=30,questLevel=38,
-    followUpOf=95773,foreverXp=9500,source=Eternadex(95776),
+    pickup=gromgolCommander,followUpOf=95773,foreverXp=9500,source=Eternadex(95776),
     objectives="Defeat Var'Taka in the Drowned City."})
 AddDungeonQuest(drowned,96774,{name="Ancient Gurubashi Idol",faction="Horde",minLevel=30,questLevel=40,pickup=mazu,
     foreverXp=8800,source=Eternadex(96774),objectives="Bring the Ancient Gurubashi Idol to Mazu'kon in Mulgore."})
 AddDungeonQuest(drowned,95786,{name="An Acquaintance in Southshore",faction="Alliance",minLevel=30,questLevel=40,
-    preparationOnly=true,turnIn=dibbs,objectives="Take the Savage Coast Report Bundle to Loremaster Dibbs in Southshore."})
+    preparationOnly=true,pickup=Location("Brother Nimetz","Stranglethorn Vale","37.8, 3.6"),turnIn=dibbs,
+    foreverXp=3150,source="https://www.wowhead.com/forever/quest=95786/an-acquaintance-in-southshore",
+    prerequisites={{questID=205,external=true,relationship="required",note="Complete Troll Witchery at Rebel Camp."}},
+    objectives="Take the Savage Coast Report Bundle to Loremaster Dibbs in Southshore."})
 AddDungeonQuest(drowned,95787,{name="Take Two With Water",faction="Alliance",minLevel=30,questLevel=40,pickup=dibbs,
-    followUpOf=95786,objectives="Make rubbings of the four Tablets of I'lalai and return to Loremaster Dibbs."})
+    followUpOf=95786,foreverXp=8450,source="https://www.wowhead.com/forever/quest=95787/take-two-with-water",
+    objectives="Make rubbings of the four Tablets of I'lalai and return to Loremaster Dibbs."})
 AddDungeonQuest(drowned,95788,{name="Magics of the Drowned City",faction="Alliance",minLevel=30,questLevel=40,
     objectives="Collect five I'lalai Fetishes from trolls in the Drowned City."})
 AddDungeonQuest(drowned,97130,{name="Ancient Gurubashi Secrets",faction="Alliance",minLevel=34,questLevel=40,
@@ -336,6 +343,42 @@ AddDungeonQuest(alcaz,95262,{name="The Secret Prison",faction="Alliance",minLeve
     objectives="Explore Alcaz Prison and learn what became of Varian Wrynn.",
     prerequisites={{questID=95198,relationship="required",external=true,
         note="Complete The Return of the King? in the chain that starts with Our Man in Theramore."}}})
+AddDungeonQuest(alcaz,95309,{name="No Orc Left Behind",faction="Horde",minLevel=48,questLevel=53,
+    pickup=Location("Sergeant Ulka","Dustwallow Marsh","70.4, 19.0"),
+    turnIn=Location("Commander Folkar","Alcaz Prison"),foreverXp=12100,
+    source="https://www.wowhead.com/forever/quest=95309/no-orc-left-behind",
+    prerequisites={{questID=95285,external=true,relationship="required",
+        note="Complete Right Place, Wrong Time in the Missing Kor'kron chain."}},
+    objectives="Find Commander Folkar inside Alcaz Prison."})
+local folkar=DQT.quests[95309].turnIn
+AddDungeonQuest(alcaz,95454,{name="The Honor of the Kor'kron",faction="Horde",minLevel=48,questLevel=53,
+    pickup=folkar,followUpOf=95309,foreverXp=12100,
+    source="https://www.wowhead.com/forever/quest=95454/the-honor-of-the-korkron",
+    objectives="Look for Varian Wrynn in Alcaz Prison and read the note on the ground."})
+local mason=Location("Mason Connery","Alcaz Prison")
+AddDungeonQuest(alcaz,96335,{name="The Man in the Iron Chains",minLevel=48,questLevel=53,
+    pickup=mason,foreverXp=2850,source="https://www.wowhead.com/forever/quest=96335/the-man-in-the-iron-chains",
+    objectives="Leave the Questioner alive until you find Mason Connery, then recover the shackle key from the Questioner."})
+AddDungeonQuest(alcaz,96337,{name="More Valuable Than Gold",minLevel=48,questLevel=53,
+    pickup=mason,turnIn=Location("Treasure location","Westfall","43.4, 67.8"),followUpOf=96335,foreverXp=11550,
+    source="https://www.wowhead.com/forever/quest=96337/more-valuable-than-gold",
+    objectives="Follow Mason Connery's note to the marked location in Westfall."})
+
+local kroldokMould=Location("Krol'dok Moulding from Tunk","Krol'dok Stronghold")
+for _,branch in ipairs({
+    {faction="Horde",mould=94973,key=94974,smith=Location("Kreza Darkthorn","Riverglades","59.8, 46.0")},
+    {faction="Alliance",mould=94980,key=94981,smith=Location("Alphonse Dumas","Riverglades","64.4, 82.0")},
+}) do
+    AddDungeonQuest(kroldok,branch.mould,{name="Krol'dok Moulding",faction=branch.faction,minLevel=38,questLevel=41,
+        pickup=kroldokMould,turnIn=branch.smith,foreverXp=3300,
+        source="https://www.wowhead.com/forever/quest="..branch.mould.."/kroldok-moulding",
+        objectives="Loot Tunk's key mould and bring it to "..branch.smith.name.."."})
+    DQT.quests[branch.mould].pickupType="drop"
+    AddDungeonQuest(kroldok,branch.key,{name="Key Ingredients",faction=branch.faction,minLevel=38,questLevel=41,
+        pickup=branch.smith,followUpOf=branch.mould,foreverXp=3300,
+        source="https://www.wowhead.com/forever/quest="..branch.key.."/key-ingredients",
+        objectives="Bring four Thick Leather and twelve Iron Bars to "..branch.smith.name.."."})
+end
 
 local drownedGuide="https://www.wowhead.com/forever/guide/the-drowned-city-dungeon-overview-location-rewards"
 AddDungeonQuest(drowned,95798,{name="The Web of Magic",faction="Alliance",minLevel=30,questLevel=40,
@@ -371,8 +414,16 @@ for _,id in ipairs({94972,94975}) do
     local quest=DQT.quests[id]
     quest.pickup,quest.turnIn=aggro,aggro
     quest.confidence="verifiedSource"
-    quest.prerequisites={{questID=94744,relationship="required",external=true,
-        note="Complete Krom'rosh's Riverglades chain through The Wayward Warrior."}}
+end
+for id,gate in pairs({
+    [94968]={95278,"It Is Time, Brother..."},
+    [94972]={95278,"It Is Time, Brother..."},
+    [94975]={94768,"Bring Me His Head"},
+}) do
+    local quest=DQT.quests[id]
+    quest.prerequisites={{questID=gate[1],relationship="required",external=true,
+        note="Follow Krom'rosh's Riverglades chain through "..gate[2].."."}}
+    quest.sourceURLs[#quest.sourceURLs+1]="https://www.wowhead.com/forever/quest=94968/eye-of-mugg"
 end
 DQT.quests[94972].objectives="Recover the Tome of Twilight from Nar'gurk and return to Commander Aggro'gosh."
 DQT.quests[94975].objectives="Collect 15 Cultist Ears and return to Commander Aggro'gosh."
@@ -389,9 +440,11 @@ for key,area in pairs({[drowned]="Off the coast of Stranglethorn Vale, west of G
     dungeonData.source=blizzardDungeons
     dungeonData.notes="Forever quest data. Pickup locations and XP are listed where sourced."
 end
+DQT.dungeons[drowned].provisionalData=false
+DQT.dungeons[kroldok].provisionalData=false
 DQT.dungeons[kroldok].entrance=Location("Cave west of the fortress gates","Riverglades","37.5, 37.5")
 DQT.dungeons[kroldok].entrance.source="https://wowforever.be/guides/dungeons/kroldok-stronghold/quests/"
-DQT.dungeons[kroldok].notes="Includes both factions' dungeon quests. Some givers, key-chain details, and launch rewards still need live verification."
+DQT.dungeons[kroldok].notes="Includes dungeon quests and key chains for both factions. Some rewards and unlocks still need live verification."
 DQT.dungeons[alcaz].notes="Initial coverage includes The Dragon's Journal. The reported Horde prison chain still needs exact quest IDs."
 
 -- Live level-31 quest-log reward readings supplied on November 8.
@@ -430,6 +483,7 @@ end
 -- Exact-ID Forever quest-window observations. Preserve local player reports
 -- and omit conflicting values that appear to include character modifiers.
 local observedRewards={
+    [95799]={2420,"findings-for-the-explorers-league"},
     [95697]={6950,"changing-tastes"},
     [95664]={1400,"elder-knowledge"},
     [95772]={6150,"songblade-search"},
@@ -481,6 +535,7 @@ for id,reward in pairs({
     [95788]={8450,"magics-of-the-drowned-city"},
     [97130]={10450,"ancient-gurubashi-secrets"},
     [94975]={8200,"a-token-of-vengeance"},
+    [94968]={11500,"eye-of-mugg"},
     [94983]={10200,"twilight-mementos"},
 }) do
     local quest=DQT.quests[id]

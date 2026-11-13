@@ -194,10 +194,32 @@ local announced = {
     ["the-drowned-city"]=true, ["kroldok-stronghold"]=true,
     ["alcaz-prison"]=true, ["blackmaw-hold"]=true, ["shapers-terrace"]=true,
 }
+-- Use existing client textures. Forever dungeons without dedicated LFG
+-- artwork use a thematically similar dungeon backdrop.
+local cardBackgrounds = {
+    ["the-drowned-city"]="ThroneoftheTides",
+    ["kroldok-stronghold"]="BlackrockDepths",
+    ["zul-farrak"]="ZulFarak",
+    ["maraudon"]="Maraudon",
+    ["alcaz-prison"]="StormwindStockades",
+    ["sunken-temple"]="SunkenTemple",
+    ["blackrock-depths"]="BlackrockDepths",
+    ["dire-maul-east"]="DireMaul",
+    ["lower-blackrock-spire"]="BlackrockSpire",
+    ["blackmaw-hold"]="WailingCaverns",
+    ["dire-maul-north"]="DireMaul",
+    ["dire-maul-west"]="DireMaul",
+    ["scholomance"]="Scholomance",
+    ["stratholme-main-gate"]="Stratholme",
+    ["stratholme-service-gate"]="Stratholme",
+    ["shapers-terrace"]="Uldaman",
+    ["upper-blackrock-spire"]="BlackrockSpire",
+}
 for _, row in ipairs(placeholders) do
     DQT.dungeons[row[1]] = {
         name=row[2], minLevel=row[3], recommendedLevel=row[3] .. "-" .. row[4],
         factions={"Alliance", "Horde"}, quests={}, placeholder=true,
+        art="Interface\\LFGFrame\\UI-LFG-BACKGROUND-" .. cardBackgrounds[row[1]],
         entryLevelUnverified=true, newInForever=announced[row[1]] or nil,
         location="Entrance location awaiting verification",
         notes="Quest coverage is not implemented yet. No quests or XP rewards are listed. The level range is a planning guide, not a verified entry requirement.",
