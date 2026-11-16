@@ -222,6 +222,12 @@ local kin=Location("Kin'weelay","Stranglethorn Vale","32.3, 27.7")
 local dibbs=Location("Loremaster Dibbs","Hillsbrad Foothills","50.6, 57.1")
 local mazu=Location("Mazu'kon","Mulgore","32.5, 20.6")
 local zoneSources={
+    ["razorfen-downs"]="https://legacyofwarcraft.com/db/forever/quests/razorfen-downs.html",
+    ["maraudon"]="https://legacyofwarcraft.com/db/forever/quests/maraudon.html",
+    ["blackrock-depths"]="https://legacyofwarcraft.com/db/forever/quests/blackrock-depths.html",
+    ["blackmaw-hold"]="https://legacyofwarcraft.com/db/forever/quests/blackmaw-hold.html",
+    ["shapers-terrace"]="https://legacyofwarcraft.com/db/forever/quests/the-shaper-s-terrace.html",
+    ["zul-farrak"]="https://www.wowhead.com/forever/guide/zulfarrak-dungeon-overview-location-rewards",
     ["scarlet-monastery-library"]="https://www.wowhead.com/forever/guide/scarlet-monastery-library-dungeon-overview-location-rewards",
     [drowned]="https://www.wowhead.com/forever/zone=16550/the-drowned-city",
     [kroldok]="https://www.wowhead.com/forever/zone=16842/kroldok-stronghold",
@@ -259,6 +265,48 @@ end
 local function Eternadex(id)
     return "https://eternadex.com/en/quests/"..id.."/"
 end
+
+for _,entry in ipairs({
+    {id=96773,faction="Alliance",pickup=Location("Archmage Lan'dalock","Alterac Mountains","15.3, 73.9")},
+    {id=97196,faction="Horde",pickup=Location("Sutara Plainstalker","Mulgore","34.6, 22.8")},
+}) do
+    AddDungeonQuest("razorfen-downs",entry.id,{name="The Coldbringer's Eye",faction=entry.faction,minLevel=34,questLevel=41,
+        pickup=entry.pickup,foreverXp=8600,source="https://www.wowhead.com/forever/quest="..entry.id.."/the-coldbringers-eye",
+        objectives="Recover the Coldbringer's Eye from the orb behind Amnennar in Razorfen Downs."})
+end
+AddDungeonQuest("maraudon",96776,{name="An'she's Radiance",faction="Horde",minLevel=43,questLevel=51,
+    pickup=Location("Olana Brighthoof","Mulgore","32.6, 24.2"),foreverXp=11900,
+    source="https://www.wowhead.com/forever/quest=96776/anshes-radiance",
+    objectives="Recover An'she's Radiance near Landslide in Maraudon and return to Olana Brighthoof."})
+AddDungeonQuest("blackrock-depths",97197,{name="Fragment of the Firelands",faction="Horde",minLevel=46,questLevel=55,
+    pickup=Location("Alaana Stormwalker","Mulgore","33.4, 22.6"),foreverXp=14800,
+    source="https://www.wowhead.com/forever/quest=97197/fragment-of-the-firelands",
+    objectives="Recover a Fragment of the Firelands in Blackrock Depths and return to Alaana Stormwalker."})
+AddDungeonQuest("blackmaw-hold",92343,{name="Get to the Roots of It",faction="Horde",minLevel=45,questLevel=55,
+    pickup=Location("Nara Wildmane","Thunder Bluff","75.6, 31.6"),foreverXp=11300,
+    source="https://www.wowhead.com/forever/quest=92343/get-to-the-roots-of-it",
+    prerequisites={{questID=92346,external=true,relationship="required",note="Complete Beneath Nordrassil from Jediga in Azshara."}},
+    objectives="Gather ten Nordrassil Root Caps in Blackmaw Hold and return to Nara Wildmane."})
+AddDungeonQuest("shapers-terrace",95924,{name="Panic at the Digsite",faction="Alliance",minLevel=55,questLevel=60,
+    pickup=Location("Curator Thorius","Ironforge","71.5, 15.7"),foreverXp=17650,
+    source="https://www.wowhead.com/forever/quest=95924/panic-at-the-digsite",
+    objectives="Slay six Ravasaur Matriarchs, nine Ironhide Ravasaurs and Venomridge in Shaper's Terrace."})
+for key,location in pairs({["blackmaw-hold"]="Azshara",["shapers-terrace"]="Northern Un'Goro Crater"}) do
+    local data=DQT.dungeons[key]
+    data.placeholder=nil
+    data.location=location
+    data.source=zoneSources[key]
+    data.notes="Initial Forever quest coverage. Additional quests and chain details are still under review."
+end
+
+AddDungeonQuest("zul-farrak",96775,{name="Zum'rah's Head",faction="Horde",minLevel=42,questLevel=46,
+    pickup=Location("Mazu'kon","Mulgore","32.5, 20.7"),foreverXp=10100,
+    source="https://www.wowhead.com/forever/quest=96775/zumrahs-head",
+    objectives="Slay Witch Doctor Zum'rah in Zul'Farrak and bring his head to Mazu'kon at Skywatcher Plateau."})
+AddDungeonQuest("zul-farrak",96770,{name="The Witch Doctor's Head",faction="Alliance",minLevel=39,questLevel=46,
+    pickup=Location("Archmage Lan'dalock","Alterac Mountains","15.3, 73.9"),foreverXp=10100,
+    source="https://www.wowhead.com/forever/quest=96770/the-witch-doctors-head",
+    objectives="Slay Witch Doctor Zum'rah in Zul'Farrak and bring his head to Archmage Lan'dalock in outdoor Dalaran."})
 
 AddDungeonQuest("scarlet-monastery-library",96800,{name="Past Due",faction="Alliance",minLevel=30,questLevel=38,
     pickup=Location("Magus Olvek","Alterac Mountains","10.0, 63.8"),foreverXp=6750,
@@ -338,13 +386,30 @@ AddDungeonQuest(alcaz,96772,{name="The Dragon's Journal",faction="Alliance",minL
     pickup=Location("Archmage Lan'dalock","Alterac Mountains","15.9, 73.1"),foreverXp=14400,
     source="https://www.wowhead.com/forever/quest=96772/the-dragons-journal",
     objectives="Recover Zarla's Journal from Blazeroar and return to Archmage Lan'dalock in Dalaran."})
-AddDungeonQuest(alcaz,95262,{name="The Secret Prison",faction="Alliance",minLevel=48,questLevel=53,
+local sully=Location("Sully McCleary","Dustwallow Marsh","63.4, 42.4")
+sully.subzone="Theramore Graveyard"
+AddDungeonQuest(alcaz,95262,{name="The Secret Prison",faction="Alliance",minLevel=48,questLevel=53,pickup=sully,
     foreverXp=14400,source="https://www.wowhead.com/forever/quest=95262/the-secret-prison",
     objectives="Explore Alcaz Prison and learn what became of Varian Wrynn.",
     prerequisites={{questID=95198,relationship="required",external=true,
         note="Complete The Return of the King? in the chain that starts with Our Man in Theramore."}}})
+AddDungeonQuest(alcaz,96381,{name="A Bit of Wet Work",faction="Alliance",minLevel=48,questLevel=53,pickup=sully,
+    foreverXp=11550,source="https://www.wowhead.com/forever/quest=96381/a-bit-of-wet-work",
+    prerequisites={{questID=95198,relationship="required",external=true,
+        note="Follow the Our Man in Theramore chain through The Return of the King?."}},
+    objectives="Defeat 15 Strashasz Soldiers and eight Enchantresses, then bring Tidemistress Ca'zass's head to Sully."})
+local ulka=Location("Sergeant Ulka","Dustwallow Marsh","70.4, 19.0")
+local ulkaGate={questID=95285,external=true,relationship="required",
+    note="Complete Right Place, Wrong Time in the Missing Kor'kron chain."}
+AddDungeonQuest(alcaz,96332,{name="A Little Payback",faction="Horde",minLevel=48,questLevel=53,pickup=ulka,
+    foreverXp=9700,source="https://www.wowhead.com/forever/quest=96332/a-little-payback",prerequisites={ulkaGate},
+    objectives="Defeat 15 Strashasz Soldiers and eight Enchantresses, then bring Tidemistress Ca'zass's head to Ulka."})
+AddDungeonQuest(alcaz,96334,{name="Blood Red Bandanas",faction="Horde",minLevel=48,questLevel=53,pickup=ulka,
+    turnIn=Location("Eitrigg","Orgrimmar","34.6, 38.6"),
+    foreverXp=9700,source="https://www.wowhead.com/forever/quest=96334/blood-red-bandanas",prerequisites={ulkaGate},
+    objectives="Collect eight Blood Red Bandanas from the human guards in Alcaz Prison and deliver them to Eitrigg."})
 AddDungeonQuest(alcaz,95309,{name="No Orc Left Behind",faction="Horde",minLevel=48,questLevel=53,
-    pickup=Location("Sergeant Ulka","Dustwallow Marsh","70.4, 19.0"),
+    pickup=ulka,
     turnIn=Location("Commander Folkar","Alcaz Prison"),foreverXp=12100,
     source="https://www.wowhead.com/forever/quest=95309/no-orc-left-behind",
     prerequisites={{questID=95285,external=true,relationship="required",
@@ -355,6 +420,19 @@ AddDungeonQuest(alcaz,95454,{name="The Honor of the Kor'kron",faction="Horde",mi
     pickup=folkar,followUpOf=95309,foreverXp=12100,
     source="https://www.wowhead.com/forever/quest=95454/the-honor-of-the-korkron",
     objectives="Look for Varian Wrynn in Alcaz Prison and read the note on the ground."})
+AddDungeonQuest(alcaz,96369,{name="Bad News for Folkar",faction="Horde",minLevel=48,questLevel=53,
+    pickup=Location("Perfumed Note","Alcaz Prison"),turnIn=folkar,followUpOf=95454,
+    foreverXp=2400,source="https://www.wowhead.com/forever/quest=96369/bad-news-for-folkar",
+    objectives="Read the Perfumed Note and report to Commander Folkar."})
+DQT.quests[96369].pickupType="object"
+AddDungeonQuest(alcaz,95483,{name="Thrall Needs to Know",faction="Horde",minLevel=48,questLevel=53,
+    pickup=folkar,turnIn=Location("Thrall","Orgrimmar"),followUpOf=96369,foreverXp=2400,
+    source="https://www.wowhead.com/forever/quest=95483/thrall-needs-to-know",
+    objectives="Deliver Commander Folkar's report to Thrall in Orgrimmar."})
+AddDungeonQuest(kroldok,94969,{name="Krol'dok No More!",faction="Alliance",minLevel=40,questLevel=42,
+    pickup=Location("Marcus Tilwell","Krol'dok Stronghold"),foreverXp=3450,
+    source="https://www.wowhead.com/forever/quest=94969/kroldok-no-more",
+    objectives="Escort Marcus Tilwell to safety."})
 local mason=Location("Mason Connery","Alcaz Prison")
 AddDungeonQuest(alcaz,96335,{name="The Man in the Iron Chains",minLevel=48,questLevel=53,
     pickup=mason,foreverXp=2850,source="https://www.wowhead.com/forever/quest=96335/the-man-in-the-iron-chains",
@@ -440,12 +518,13 @@ for key,area in pairs({[drowned]="Off the coast of Stranglethorn Vale, west of G
     dungeonData.source=blizzardDungeons
     dungeonData.notes="Forever quest data. Pickup locations and XP are listed where sourced."
 end
-DQT.dungeons[drowned].provisionalData=false
-DQT.dungeons[kroldok].provisionalData=false
+for _,key in ipairs({drowned,kroldok,alcaz,"zul-farrak","maraudon","blackrock-depths","blackmaw-hold","shapers-terrace"}) do
+    DQT.dungeons[key].provisionalData=false
+end
 DQT.dungeons[kroldok].entrance=Location("Cave west of the fortress gates","Riverglades","37.5, 37.5")
 DQT.dungeons[kroldok].entrance.source="https://wowforever.be/guides/dungeons/kroldok-stronghold/quests/"
 DQT.dungeons[kroldok].notes="Includes dungeon quests and key chains for both factions. Some rewards and unlocks still need live verification."
-DQT.dungeons[alcaz].notes="Initial coverage includes The Dragon's Journal. The reported Horde prison chain still needs exact quest IDs."
+DQT.dungeons[alcaz].notes="Includes Alliance and Horde quests and the hidden Mason Connery chain. Additional follow-ups are under review."
 
 -- Live level-31 quest-log reward readings supplied on November 8.
 DQT.quests[1221].verification.xpReview="2026-11-08: live level-31 quest log corroborates the published 5,000 XP reward."
@@ -483,6 +562,7 @@ end
 -- Exact-ID Forever quest-window observations. Preserve local player reports
 -- and omit conflicting values that appear to include character modifiers.
 local observedRewards={
+    [95798]={2420,"the-web-of-magic"},
     [95799]={2420,"findings-for-the-explorers-league"},
     [95697]={6950,"changing-tastes"},
     [95664]={1400,"elder-knowledge"},

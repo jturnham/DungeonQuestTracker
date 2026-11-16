@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.7 - 2026-11-16
+
+- Added missing Forever quests in Zul'Farrak, Razorfen Downs, Maraudon, and Blackrock Depths.
+- Added initial quest coverage for Blackmaw Hold and Shaper's Terrace.
+- Expanded Alcaz Prison coverage, added the Alliance Krol'dok Stronghold escort, and filled in XP for The Web of Magic.
+- Removed the dungeon-wide Provisional badge from six dungeons with sourced Forever quest records.
+
 ## 0.6.6 - 2026-11-13
 
 - Filled in Drowned City pickups, prerequisites, and XP, including the Horde Enemies in the Water chain.

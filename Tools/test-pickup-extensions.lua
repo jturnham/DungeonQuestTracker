@@ -106,9 +106,13 @@ do
     DQT.UI.frame.pickupReset.scripts.OnClick()
     assert(DQT:GetOption("pickups.includeGray") and not DQT:GetOption("pickups.finishAtEntrance"),"Route reset restores only route defaults")
     assert(DQT.db.filters.ignoreGrayChecklist,"Route reset retains checklist settings")
+    local blackmaw=DQT.dungeons["blackmaw-hold"]
+    local quests,placeholder=blackmaw.quests,blackmaw.placeholder
+    blackmaw.quests,blackmaw.placeholder={},true
     DQT.UI.currentDungeonKey="blackmaw-hold"
     DQT.UI:ShowPickups()
     assert(DQT.UI.frame.turnInRows[1].title:GetText()=="No quests recorded yet.","Empty catalogues distinguish unknown coverage from no missing quests")
+    blackmaw.quests,blackmaw.placeholder=quests,placeholder
     DQT.db,DQT.quests,DQT.dungeons["zul-farrak"]=oldDB,oldQuests,oldDungeon
     DQT.GetQuestState,DQT.IsQuestComplete,DQT.GetPlayerContext=oldState,oldComplete,oldContext
     C_Map,GetRealZoneText,WorldMapFrame=oldMap,oldZone,oldWorld

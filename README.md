@@ -85,11 +85,7 @@ Loot alerts cover known single-copy quest items from named mobs. Multi-item coll
 
 Higher-level Classic quests are included through level 60 using Classic-source data. Entries whose Forever quest details still need review are marked **Provisional** in the list and checklist, including compact mode. There is no level-35 tracking cap; the normal level filters can be changed in Options. Raids are outside the addon's current scope.
 
-## Planned Dungeon Coverage
-
-Empty placeholders are included for these announced dungeons. Quest tracking is not implemented for them yet; their presence does not confirm current availability.
-
-- Blackmaw Hold and Shaper's Terrace
+- Blackmaw Hold and Shaper's Terrace have initial quest coverage. Additional quests and chain details are under review.
 
 ## Install
 

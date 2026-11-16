@@ -9,12 +9,12 @@ for key, dungeon in pairs(DQT.dungeons) do
     end
     assert(type(dungeon.provisionalData)=="boolean" and dungeon.betaAvailability,"Dungeon beta provenance missing: "..key)
 end
-assert(placeholders == 2, "Blackmaw Hold and Shaper's Terrace remain placeholders")
+assert(placeholders == 0, "Every dungeon has initial quest coverage")
 assert(#DQT.dungeons["the-drowned-city"].quests == 15)
 assert(DQT.quests[95775].foreverXp == 8450 and DQT.quests[95775].followUpOf == 95770)
 assert(DQT.quests[95776].foreverXp == 9500 and DQT.quests[95776].followUpOf == 95773)
 assert(DQT.quests[95787].followUpOf == 95786 and DQT.quests[95787].foreverXp == 8450)
-assert(#DQT.dungeons["kroldok-stronghold"].quests == 11 and DQT.quests[96771].foreverXp == 11500)
+assert(#DQT.dungeons["kroldok-stronghold"].quests == 12 and DQT.quests[96771].foreverXp == 11500)
 assert(DQT.quests[94968].faction == "Horde" and DQT.quests[94982].faction == "Alliance")
 assert(DQT.quests[96772].dungeon == "alcaz-prison" and DQT.quests[96772].xpPublished)
 local first, second = DQT:GetOrderedDungeonKeys(), DQT:GetOrderedDungeonKeys()
@@ -31,8 +31,11 @@ for _, key in ipairs({"deadmines","shadowfang-keep","blackfathom-deeps"}) do
 end
 for _, key in ipairs({"zul-farrak","maraudon","sunken-temple","blackrock-depths","dire-maul-east","dire-maul-west","dire-maul-north","lower-blackrock-spire","upper-blackrock-spire","scholomance","stratholme-main-gate","stratholme-service-gate"}) do
     assert(#DQT.dungeons[key].quests > 0 and not DQT.dungeons[key].placeholder, "Classic quest coverage missing: " .. key)
-    assert(DQT.dungeons[key].provisionalData and DQT.dungeons[key].notes:find("Classic-source quest data",1,true),"Unreviewed Forever changes retain a specific Classic-data warning: "..key)
 end
+for _,key in ipairs({"the-drowned-city","kroldok-stronghold","alcaz-prison","zul-farrak","maraudon","blackrock-depths","blackmaw-hold","shapers-terrace"}) do
+    assert(not DQT.dungeons[key].provisionalData, "Sourced Forever coverage removes the dungeon badge: "..key)
+end
+assert(DQT.dungeons["dire-maul-east"].provisionalData, "Classic-only coverage retains the dungeon badge")
 do
     local ui, search, db = DQT.UI, DQT.UI.searchText, DQT.db
     DQT.db={display={compact=false}}
@@ -40,9 +43,13 @@ do
     for _,compact in ipairs({false,true}) do
         DQT.db.display.compact=compact
         ui:ShowDungeonList()
-        for i=1,3 do assert(ui.frame.dungeonCards[i].name:GetText():find("[Provisional]",1,true),"Both card layouts show provisional label") end
+        for i=1,3 do
+            local title=ui.frame.dungeonCards[i].name:GetText()
+            assert((title:find("[Provisional]",1,true)~=nil)==(not title:find("Blackrock Depths",1,true)),
+                "Both card layouts label the Classic-only Blackrock wings")
+        end
         ui:ShowDungeon(DQT:GetDisplayDungeonStatus("blackrock-depths"))
-        assert(ui.frame.subtitle:GetText():find("[Provisional]",1,true),"Both checklist layouts show provisional label")
+        assert(not ui.frame.subtitle:GetText():find("[Provisional]",1,true),"Both checklist layouts omit the badge for Blackrock Depths")
     end
     ui.searchText,DQT.db=search,db
 end
