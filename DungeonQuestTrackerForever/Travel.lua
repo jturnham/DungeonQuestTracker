@@ -49,6 +49,7 @@ function Travel:Initialize()
     end
     for _,node in ipairs(DQT.travelData.nodes) do AddNode(node) end
     local forever="https://worldofwarcraft.blizzard.com/en-gb/news/24304071/world-of-warcraft-forever-found-photos-panel-recap"
+    local docks="https://www.wowhead.com/forever/guide/flight-points-zeppelins-and-ships"
     AddNode({id="Steamwheedle Port|Both",name="Steamwheedle Port",zone="Tanaris",faction="Both",portOnly=true,source=forever})
     AddNode({id="Powderfuse Port|Both",name="Powderfuse Port",zone="Riverglades",faction="Both",portOnly=true,source=forever})
     table.sort(self.ids)
@@ -73,19 +74,46 @@ function Travel:Initialize()
             end
         end
     end
+    local dockLocations={}
+    local function Dock(name,faction,coordinates)
+        local node=self.nodes[name.."|"..faction]
+        if node then dockLocations[node.id]={name=name.." docks",zone=node.zone,coordinates=coordinates,source=docks} end
+    end
+    Dock("Steamwheedle Port","Both","68.6, 23.0")
+    Dock("Powderfuse Port","Both","80.6, 54.6")
+    Dock("Southshore","Alliance","50.7, 70.4")
+    Dock("Menethil Harbor","Alliance","4.5, 56.7")
+    Dock("Auberdine","Alliance","32.3, 44.1")
+    Dock("Stormwind City","Alliance","21.8, 56.9")
     for _,faction in ipairs({"Alliance","Horde"}) do
         Connect("Booty Bay","Ratchet","boat",faction,true)
-        Connect("Steamwheedle Port","Powderfuse Port","boat",faction,true,forever)
+        Connect("Steamwheedle Port","Powderfuse Port","boat",faction,true,docks)
     end
     Connect("Ironforge","Stormwind City","tram","Alliance")
-    Connect("Auberdine","Menethil Harbor","boat","Alliance",true)
+    Connect("Auberdine","Menethil Harbor","boat","Alliance",true,docks,true)
+    Connect("Menethil Harbor","Southshore","boat","Alliance",false,docks,true)
     Connect("Auberdine","Rut'theran Village","boat","Alliance")
     Connect("Menethil Harbor","Theramore Isle","boat","Alliance",true)
     Connect("Orgrimmar","Undercity","zeppelin","Horde",true)
     Connect("Orgrimmar","Grom'gol Base Camp","zeppelin","Horde",true)
     Connect("Undercity","Grom'gol Base Camp","zeppelin","Horde")
-    Connect("Stormwind City","Auberdine","boat","Alliance",true,forever)
-    Connect("Southshore","Auberdine","boat","Alliance",true,forever,true)
+    Connect("Stormwind City","Auberdine","boat","Alliance",true,docks)
+    Connect("Southshore","Auberdine","boat","Alliance",true,docks,true)
+    for _,edges in pairs(self.adjacency) do
+        for _,edge in ipairs(edges) do
+            if edge.mode=="boat" then
+                edge.fromLocation=dockLocations[edge.from]
+                edge.toLocation=dockLocations[edge.to]
+                if edge.from=="Menethil Harbor|Alliance" and edge.to=="Theramore Isle|Alliance" then
+                    edge.fromLocation={name="Menethil Harbor docks to Theramore",zone="Wetlands",coordinates="4.7, 63.8",source=docks}
+                elseif edge.from=="Auberdine|Alliance" and edge.to=="Stormwind City|Alliance" then
+                    edge.fromLocation={name="Auberdine docks to Stormwind",zone="Darkshore",coordinates="30.5, 40.9",source=docks}
+                elseif edge.from=="Auberdine|Alliance" and edge.to=="Rut'theran Village|Alliance" then
+                    edge.fromLocation={name="Auberdine docks to Rut'theran",zone="Darkshore",coordinates="33.3, 39.8",source=docks}
+                end
+            end
+        end
+    end
 end
 
 local function ContinentPosition(zone)

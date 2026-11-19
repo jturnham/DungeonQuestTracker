@@ -19,7 +19,7 @@ DQT.dungeons = {
         name = "Scarlet Monastery: Cathedral", minLevel = 21, recommendedLevel = "38-46",
         factions = { "Alliance", "Horde" }, location = "Tirisfal Glades, Scarlet Monastery",
         art = "Interface\\LFGFrame\\UI-LFG-BACKGROUND-ScarletMonastery",
-        notes = "Bring the Scarlet Key from the Library. Mograine and Whitemane complete the Cathedral portion of the monastery boss quests; Library and Armory kills are required too. Forever wing availability still needs confirmation.",
+        notes = "Bring the Scarlet Key from the Library. Mograine and Whitemane complete the Cathedral portion of the monastery boss quests; Library and Armory kills are required too.",
         quests = { 1113, 1048, 1053 },
     },
     ["ragefire-chasm"] = {
@@ -68,7 +68,7 @@ DQT.dungeons = {
         factions = { "Alliance" },
         location = "Stormwind City, Canal District",
         art = "Interface\\LFGFrame\\UI-LFG-BACKGROUND-StormwindStockade",
-        notes = "An Alliance dungeon in the heart of Stormwind. The checklist includes the familiar Classic quests, though not all have been confirmed in Forever. The Stockade Riots follows the letter found in Deadmines.",
+        notes = "An Alliance dungeon in the heart of Stormwind. The Stockade Riots follows the letter found in Deadmines.",
         quests = { 391, 387, 388, 377, 386, 378 },
     },    ["wailing-caverns"] = {
         name = "Wailing Caverns",
@@ -105,7 +105,7 @@ DQT.dungeons = {
         factions = { "Alliance", "Horde" },
         location = "Ashenvale, Zoram Strand",
         art = "Interface\\LFGFrame\\UI-LFG-BACKGROUND-BlackfathomDeeps",
-        notes = "Both factions have quests here, along with class quests for Warlocks and Paladins. Some Forever XP rewards are still unconfirmed; those quests use Classic estimates in the turn-in list.",
+        notes = "Both factions have quests here, along with class quests for Warlocks and Paladins.",
         quests = { 971, 1198, 1199, 1200, 1275, 6563, 6564, 6565, 6561, 6921, 6922, 1740, 1654 },
     },
     ["city-of-dalaran"] = {
@@ -239,7 +239,7 @@ local betaDungeons = {
 DQT.dungeons["ragefire-chasm"].entrance = {
     name="Ragefire Chasm entrance",zone="Orgrimmar",subzone="Cleft of Shadow",coordinates="52.8, 49.6",
     source="https://www.warcrafttavern.com/wow-classic/guides/ragefire-chasm/",
-    note="Classic entrance coordinates; confirm in Forever. Orgrimmar is hostile to Alliance.",
+    note="Follow the Cleft of Shadow to the instance entrance. Orgrimmar is hostile to Alliance.",
 }
 DQT.dungeons["the-stockade"].entrance = {
     name="The Stockade approach",zone="Stormwind City",subzone="Warden Thelwater, outside the instance",coordinates="41.2, 58.0",

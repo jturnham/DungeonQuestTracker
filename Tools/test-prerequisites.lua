@@ -51,3 +51,12 @@ for _, id in ipairs(DQT.dungeons["ruins-of-lordaeron"].quests) do
     end
 end
 print("Prerequisites passed: required chains, optional referrals, active-log gates, OR/AND branches and bounded party sync.")
+do
+    assert(DQT:FormatQuestReferences("Complete Rig Wars (#2841).")=="Complete Rig Wars.", "Named prerequisite omits numeric annotation")
+    assert(DQT:FormatQuestReferences("Complete quest 2841.")=="Complete Rig Wars.", "Prerequisite ID resolves to quest name")
+    local previous=C_QuestLog
+    C_QuestLog={GetTitleForQuestID=function(id) if id==999999 then return "External prerequisite" end end}
+    assert(DQT:GetQuestDisplayName(999999)=="External prerequisite", "Client supplies external quest names")
+    assert(not DQT:FormatQuestReferences("Complete #999998."):find("999998",1,true), "Unknown external quest avoids numeric instruction")
+    C_QuestLog=previous
+end

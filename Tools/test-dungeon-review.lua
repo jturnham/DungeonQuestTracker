@@ -35,7 +35,9 @@ end
 for _,key in ipairs({"the-drowned-city","kroldok-stronghold","alcaz-prison","zul-farrak","maraudon","blackrock-depths","blackmaw-hold","shapers-terrace"}) do
     assert(not DQT.dungeons[key].provisionalData, "Sourced Forever coverage removes the dungeon badge: "..key)
 end
-assert(DQT.dungeons["dire-maul-east"].provisionalData, "Classic-only coverage retains the dungeon badge")
+for key,dungeon in pairs(DQT.dungeons) do
+    assert(not dungeon.provisionalData,"Reviewed dungeon omits the badge: "..key)
+end
 do
     local ui, search, db = DQT.UI, DQT.UI.searchText, DQT.db
     DQT.db={display={compact=false}}
@@ -45,8 +47,7 @@ do
         ui:ShowDungeonList()
         for i=1,3 do
             local title=ui.frame.dungeonCards[i].name:GetText()
-            assert((title:find("[Provisional]",1,true)~=nil)==(not title:find("Blackrock Depths",1,true)),
-                "Both card layouts label the Classic-only Blackrock wings")
+            assert(not title:find("[Provisional]",1,true),"Reviewed Blackrock wings omit the badge in both layouts")
         end
         ui:ShowDungeon(DQT:GetDisplayDungeonStatus("blackrock-depths"))
         assert(not ui.frame.subtitle:GetText():find("[Provisional]",1,true),"Both checklist layouts omit the badge for Blackrock Depths")
@@ -57,7 +58,7 @@ local classQuests = {[8422]="WARLOCK",[8425]="WARRIOR",[9053]="DRUID",[8413]="SH
 for id, class in pairs(classQuests) do
     local quest = assert(DQT.quests[id], "Missing Sunken Temple class quest")
     assert(quest.classes and #quest.classes == 1 and quest.classes[1] == class, "Class restriction missing: " .. id)
-    assert(quest.minLevel == 50 and quest.classicSourceOnly and not quest.foreverXp, "Classic provenance/level missing")
+    assert(quest.minLevel == 50 and quest.classicSourceOnly and quest.foreverXp==12400 and quest.xpPublished, "Classic provenance/level missing")
 end
 assert(not DQT.quests[9030], "Unused low-level variant must not be imported")
 assert(DQT.quests[8951].classes and DQT.quests[8951].classes[1] == "DRUID", "Dungeon-set variants must retain their class")

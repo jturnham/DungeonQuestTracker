@@ -1,4 +1,4 @@
-﻿local addonName, DQT = ...
+local addonName, DQT = ...
 
 DQT.events = CreateFrame("Frame")
 DQT.loaded = false
@@ -299,14 +299,27 @@ local function QuestAvailability(self, quest, context)
 
     for _, prereq in ipairs(quest.prerequisites or {}) do
         if not self:IsPrerequisiteSatisfied(prereq, context) then
-            local prereqQuest = self:GetQuest(prereq.questID)
-            local prereqName = prereqQuest and prereqQuest.name or ("quest " .. tostring(prereq.questID))
+            local prereqName = self:GetQuestDisplayName(prereq.questID)
             if prereq.anyOf then prereqName = "one of the listed prerequisite quests" end
             return "locked", "Requires " .. prereqName .. (prereq.state == "active" and " in your quest log" or "")
         end
     end
 
     return "available", "Available"
+end
+
+function DQT:GetQuestDisplayName(questID)
+    local quest=self:GetQuest(questID)
+    if quest and quest.name then return quest.name end
+    local title=CallAPI(C_QuestLog and C_QuestLog.GetTitleForQuestID,questID)
+    return type(title)=="string" and title~="" and title or "the preceding quest in the chain"
+end
+
+function DQT:FormatQuestReferences(value)
+    local text=tostring(value or "")
+    text=text:gsub("%s*%(%#%d+%)","")
+    text=text:gsub("[Qq]uest%s*#?(%d+)",function(id) return self:GetQuestDisplayName(tonumber(id)) end)
+    return (text:gsub("#(%d+)",function(id) return self:GetQuestDisplayName(tonumber(id)) end))
 end
 
 function DQT:GetQuestAvailability(quest, context)

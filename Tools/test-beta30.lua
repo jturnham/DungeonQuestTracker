@@ -20,7 +20,7 @@ do
     assert(DQT.quests[6563].foreverXp == 1750 and DQT.quests[6563].xpPublished, "Published outside BFD reward has no fabricated bonus")
     local reports = 0
     for _, quest in pairs(DQT.quests) do if quest.xpReported then reports=reports+1 end end
-    assert(reports == 19, "Quest-specific reports include live Razorfen Kraul and Gnomeregan readings")
+    assert(reports == 20, "Quest-specific reports include live Razorfen Kraul, Gnomeregan and Spider God readings")
     local oldLog, oldFaction = C_QuestLog, UnitFactionGroup
     C_QuestLog = {IsOnQuest=function(id) return id == 98823 or id == 6521 or id == 95795 end, ReadyForTurnIn=function(id) return id == 98823 or id == 6521 or id == 95795 end, IsQuestFlaggedCompleted=function() return false end}
     UnitFactionGroup = function() return "Horde" end

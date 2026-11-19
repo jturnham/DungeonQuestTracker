@@ -192,12 +192,12 @@ function DQT:GetDungeonPickupRoute(key, startZone, context)
             if not self:IsPrerequisiteSatisfied(prerequisite, context) and prerequisite.questID then
                 local parent = self:GetQuest(prerequisite.questID)
                 if parent and not prerequisite.anyOf and prerequisite.relationship=="required" then Add(prerequisite.questID, true, depth+1, sourceDungeon) end
-                notes[#notes+1] = prerequisite.note or ("Complete " .. (parent and parent.name or ("quest " .. prerequisite.questID)))
+                notes[#notes+1] = prerequisite.note or ("Complete " .. (parent and parent.name or self:GetQuestDisplayName(prerequisite.questID)))
             elseif prerequisite.note then
                 notes[#notes+1] = prerequisite.note
             end
         end
-        entry.notes = table.concat(notes, " ")
+        entry.notes = self:FormatQuestReferences(table.concat(notes, " "))
         if status.state == "locked" then result.blocked[#result.blocked+1]=entry; return end
         local location = Location(quest)
         local pickupType = self:GetQuestPickupType(quest)

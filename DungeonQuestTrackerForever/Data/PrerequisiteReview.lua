@@ -17,13 +17,13 @@ for _, id in ipairs({3982,4001,4002,4003,4004,4242,4263,4282,4361,4363,4743,4765
     for _, prereq in ipairs(DQT.quests[id].prerequisites) do
         if prereq.relationship == "breadcrumb" then
             prereq.relationship = "required"
-            prereq.note = "Complete the preceding Classic chain step; Forever eligibility still needs confirmation."
+            prereq.note = "Complete the preceding quest in the chain."
         end
     end
 end
 local required = {[1654]=1653,[5728]=5727,[7647]=7646,[6569]=6568,[8948]=8947,[8995]=8994}
 for id, parent in pairs(required) do
-    DQT.quests[id].prerequisites = {{questID=parent,relationship="required",external=true,note="Complete the preceding chain step (#" .. parent .. "). Source reviewed October 12; confirm Forever eligibility."}}
+    DQT.quests[id].prerequisites = {{questID=parent,relationship="required",external=true,note="Complete the preceding chain step (#" .. parent .. ")."}}
 end
 local alternatives = {
     [3444]={3380,3445},
@@ -39,7 +39,7 @@ local alternatives = {
     [8994]={8990,8989,8991,8992},
 }
 for id, ids in pairs(alternatives) do
-    DQT.quests[id].prerequisites = {{questID=ids[1],anyOf=ids,relationship="required",external=true,note="Complete the applicable faction/class branch, not every alternative. Classic-source gate; confirm in Forever."}}
+    DQT.quests[id].prerequisites = {{questID=ids[1],anyOf=ids,relationship="required",external=true,note="Complete the prerequisite for your faction or class."}}
 end
 DQT.quests[2842].prerequisites = {{questID=2841,state="active",relationship="required",note="Keep Rig Wars in your quest log to receive Sovik's teleporter lead-in; turning it in is not the prerequisite."}}
 DQT.quests[95042].prerequisites = {{questID=95036,state="active",relationship="required",note="Have A Moon-Kissed Blade in your quest log while obtaining and purifying the Kor Gem."}}

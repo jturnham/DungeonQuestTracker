@@ -19,7 +19,9 @@ for id, quest in pairs(DQT.quests) do
             or quest.xpSource=="https://wowforevertalents.com/reputations/kirin-tor/"
             or quest.xpSource=="https://eternadex.com/en/quests/"..id.."/"
             or quest.xpSource:match("^https://ahledger%.com/wow%-forever/quests/"..id.."%-")
+            or quest.xpSource=="https://db.icy-veins.com/wow-forever/quests/"..id
             or quest.xpSource=="https://www.forevercraft.app/quests/"..id
+            or quest.xpSource:find("https://www.stillsixty.com/quest/"..id.."?revision=",1,true)==1
             or quest.xpSource:match("^https://www%.wowhead%.com/forever/quest="..id.."/"), "Published source preserved")
     elseif quest.xpGuide then
         local xp,source=DQT:GetQuestRewardXP(quest)
@@ -35,7 +37,7 @@ for id, quest in pairs(DQT.quests) do
         assert(source == "Forever (outdated; unverified)", "Stale reward label: " .. id)
     end
 end
-assert(count == 1 and published == 129, "Only explicitly sourced rewards supersede estimates: " .. count .. " estimates, " .. published .. " published")
+assert(count == 1 and published == 313, "Only explicitly sourced rewards supersede estimates: " .. count .. " estimates, " .. published .. " published")
 assert(DQT.quests[2930].xpPublished and DQT:GetQuestRewardXP(DQT.quests[2930]) == 6550, "Data Rescue Forever XP")
 assert(DQT.quests[95789].xpPublished and DQT:GetQuestRewardXP(DQT.quests[95789]) == 10450, "Shady Saltseers Forever XP")
 assert(DQT.quests[5214].xpPublished and DQT:GetQuestRewardXP(DQT.quests[5214]) == 8300, "The Great Fras Siabi Forever XP")
@@ -54,7 +56,8 @@ assert(DQT.quests[1200].xpPublished and DQT.quests[1200].foreverXp == 7850, "Pub
 assert(DQT.quests[6564].foreverXp == 1300 and DQT.quests[6564].xpNormalBaseline == 1300, "Below-normal reward cannot increase")
 assert(DQT.quests[5722].foreverXp == 1800, "RFC reported precursor")
 assert(DQT.quests[1489].foreverXp == 290, "Low breadcrumb reward preserved")
-assert(not DQT.quests[1053].foreverXp, "Classic-only reward cannot fabricate an old dungeon bonus")
+assert(DQT.quests[1053].foreverXp==15300 and DQT.quests[1053].xpPublished, "Forever database reward for In the Name of the Light")
+assert(DQT.quests[2936].foreverXp==9700 and DQT.quests[2936].xpReported, "Spider God live player reading")
 assert(DQT.quests[95216].foreverXp == 5450 and DQT.quests[95216].xpPublished and DQT.quests[95216].xpPreviousEstimate == 5035, "New Plague replaces estimate with published reward")
 assert(DQT.quests[95216].xpBaselineAssumed and not DQT.quests[95216].classicXp, "Assumed baseline is not a Classic reward for a new quest")
 assert(DQT.quests[92401].foreverXp == 4600, "Ruins player report")

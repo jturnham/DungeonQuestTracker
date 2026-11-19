@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.6.8 - 2026-11-18
+
+- Replaced 183 Classic XP fallbacks with published Forever rewards and corrected The Spider God to the reported 9,700 XP.
+- Added Rot and Regret and Agamaggan's Blood with their prerequisite links.
+- Updated pickup locations and prerequisites in higher-level dungeons and removed the remaining dungeon-wide Provisional badges.
+- Pickup instructions now use quest names, including future route steps and prerequisite messages.
+- Added the missing Alliance boat-loop leg and dock markers for the new Forever ferry routes.
+- Shortened the README and refreshed the tracked dungeon list.
+
 ## 0.6.7 - 2026-11-16
 
 - Added missing Forever quests in Zul'Farrak, Razorfen Downs, Maraudon, and Blackrock Depths.

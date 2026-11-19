@@ -164,3 +164,17 @@ do
     DQT.db,C_Map,TomTom=oldDB,oldMap,oldTomTom
 end
 print("Travel passed: sourced graph, fares, characters, discovery, unknown nodes, directed paths, transport ordering, returns, UI, segments and owned waypoints.")
+do
+    local travel=DQT.Travel
+    local function Edge(from,to,faction)
+        for _,edge in ipairs(travel.adjacency[from.."|"..faction] or {}) do
+            if edge.to==to and edge.mode=="boat" then return edge end
+        end
+    end
+    local ferry=assert(Edge("Steamwheedle Port","Powderfuse Port|Both","Both"))
+    assert(ferry.fromLocation.coordinates=="68.6, 23.0" and ferry.toLocation.coordinates=="80.6, 54.6","Riverglades ferry dock coordinates")
+    assert(Edge("Menethil Harbor","Southshore|Alliance","Alliance"),"Alliance loop includes Southshore")
+    assert(not Edge("Menethil Harbor","Auberdine|Alliance","Alliance"),"Loop follows its published direction")
+    local steps=travel:TransportStops({edges={ferry}})
+    assert(#steps==2 and steps[1].x==68.6 and steps[2].x==80.6,"Ferry boarding and arrival appear on pickup maps")
+end

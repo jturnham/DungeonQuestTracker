@@ -738,12 +738,12 @@ function UI:RenderChecklist(status)
         row.detail:SetText("Pickup: " .. FormatLocation(quest.pickup) .. " | Turn in: " .. FormatLocation(quest.turnIn) .. prereqText)
         local chainNotes = {}
         for _, prereq in ipairs(quest.prerequisites or {}) do
-            if prereq.note then table.insert(chainNotes, prereq.note) end
+            if prereq.note then table.insert(chainNotes, DQT:FormatQuestReferences(prereq.note)) end
         end
         local reason = (questStatus.stateReason or "") .. " | " .. (quest.objectives or "")
         if quest.followUpOf then
             local parent = DQT:GetQuest(quest.followUpOf)
-            reason = reason .. "\nDungeon follow-up: " .. (parent and parent.name or "Quest") .. " (#" .. quest.followUpOf .. ")."
+            reason = reason .. "\nDungeon follow-up: " .. DQT:GetQuestDisplayName(quest.followUpOf) .. "."
         end
         if quest.partySupplied then reason = reason .. "\nParty supplied: " .. tostring(quest.source) .. " (v" .. tostring(quest.sourceVersion or "unknown") .. "); needs review, XP excluded."
         elseif quest.awaitingFinalVerification and not quest.detailsSourceReviewed then reason = reason .. "\nQuest requirements or contact details need verification." end
@@ -898,7 +898,7 @@ function UI:ShowPickups(preserveScroll)
     for i, stop in ipairs(plan.stops) do
         local names, shortNames = {}, {}
         for _, entry in ipairs(stop.quests) do
-            names[#names+1] = (entry.preparation and "Preparation: " or "") .. entry.quest.name .. " (#" .. entry.questID .. ")" .. (entry.notes ~= "" and "\n" .. entry.notes or "")
+            names[#names+1] = (entry.preparation and "Preparation: " or "") .. entry.quest.name .. (entry.notes ~= "" and "\n" .. entry.notes or "")
             shortNames[#shortNames+1] = (entry.preparation and "Prep: " or "") .. entry.quest.name
         end
         entries[#entries+1] = {stop=stop, rank=tostring(i), title=FormatLocation(stop.location), compactDetail=table.concat(shortNames,"\n"), detail=table.concat(names,"\n") .. (not stop.x and "\nNo coordinates; stop order provisional." or "")}

@@ -88,7 +88,9 @@ function Travel:TransportStops(route)
     local stops,seen={},{}
     for _,edge in ipairs(route and route.edges or {}) do
         for _,id in ipairs({edge.from,edge.to}) do
-            local location=self:Approach(id)
+            local location=edge.toLocation
+            if id==edge.from then location=edge.fromLocation end
+            location=location or self:Approach(id)
             if location and not seen[id] then
                 local x,y=tostring(location.coordinates):match("^(%d+%.?%d*),%s*(%d+%.?%d*)$")
                 x,y=tonumber(x),tonumber(y)
@@ -182,7 +184,7 @@ function Travel:FutureSteps(plan,context)
         for _,gate in ipairs(quest.prerequisites or {}) do
             if not DQT:IsPrerequisiteSatisfied(gate,context) and gate.relationship=="required" then
                 if gate.questID and not gate.anyOf and gate.state~="active" then Add(gate.questID,depth+1) end
-                conditions[#conditions+1]=gate.note or ("Meet the prerequisite for #"..tostring(gate.questID or "unknown"))
+                conditions[#conditions+1]=DQT:FormatQuestReferences(gate.note or ("Complete "..DQT:GetQuestDisplayName(gate.questID)))
             end
         end
         local condition=state=="locked" and (table.concat(conditions," ").." Recheck eligibility after completing these requirements.") or "After accepting this quest and completing its objectives."
@@ -191,11 +193,11 @@ function Travel:FutureSteps(plan,context)
         for _,location in ipairs(quest.routeObjectives or {}) do
             if location.sourceReviewed and type(location.source)=="string" and location.source:match("^https://") and count<20 then
                 count=count+1
-                result[#result+1]={kind="objective",questID=id,quest=quest,location=location,condition="After accepting #"..id.."; follow the current quest objectives.",hypothetical=true}
+                result[#result+1]={kind="objective",questID=id,quest=quest,location=location,condition="After accepting "..quest.name.."; follow the current quest objectives.",hypothetical=true}
             end
         end
-        if count==0 then result[#result+1]={kind="objective",questID=id,quest=quest,condition="After accepting #"..id..". Objective locations are not recorded; follow the quest log.",hypothetical=true} end
-        result[#result+1]={kind="turnIn",questID=id,quest=quest,location=quest.turnIn,condition="After completing #"..id..". Return here before taking the next chain step.",hypothetical=true}
+        if count==0 then result[#result+1]={kind="objective",questID=id,quest=quest,condition="After accepting "..quest.name..". Objective locations are not recorded; follow the quest log.",hypothetical=true} end
+        result[#result+1]={kind="turnIn",questID=id,quest=quest,location=quest.turnIn,condition="After completing "..quest.name..". Return here before taking the next chain step.",hypothetical=true}
     end
     for _,entry in ipairs(plan.progress or {}) do if entry.state=="active" then Add(entry.questID,0) end end
     for _,entry in ipairs(plan.blocked or {}) do Add(entry.questID,0) end

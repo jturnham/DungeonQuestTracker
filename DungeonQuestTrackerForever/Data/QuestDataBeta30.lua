@@ -90,7 +90,7 @@ for _, row in ipairs(rows) do
     if row[7] == "necklace" then quest.pickupType = "drop"
     elseif row[7] == "discs" or row[7] == "bowl" or row[7] == "paladin" then quest.pickupType = "object" end
     if row[10] then
-        quest.prerequisites = {{questID=row[10],relationship="required",note="Complete the preceding chain step; Forever levels and eligibility need confirmation."}}
+        quest.prerequisites = {{questID=row[10],relationship="required",note="Complete the preceding quest in the chain."}}
     end
     DQT.quests[id], added[id] = quest, row[10]
 end
