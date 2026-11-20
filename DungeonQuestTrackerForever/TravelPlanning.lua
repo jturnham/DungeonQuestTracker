@@ -91,12 +91,13 @@ function Travel:TransportStops(route)
             local location=edge.toLocation
             if id==edge.from then location=edge.fromLocation end
             location=location or self:Approach(id)
-            if location and not seen[id] then
+            local key=location and (id..":"..tostring(location.coordinates))
+            if location and not seen[key] then
                 local x,y=tostring(location.coordinates):match("^(%d+%.?%d*),%s*(%d+%.?%d*)$")
                 x,y=tonumber(x),tonumber(y)
                 if Number(x,0,100) and Number(y,0,100) then
-                    stops[#stops+1]={kind="transport",key="transport:"..id,location=location,x=x,y=y,quests={},provisional=true}
-                    seen[id]=true
+                    stops[#stops+1]={kind="transport",key="transport:"..key,location=location,x=x,y=y,quests={},provisional=true}
+                    seen[key]=true
                 end
             end
         end

@@ -99,18 +99,16 @@ function Travel:Initialize()
     Connect("Undercity","Grom'gol Base Camp","zeppelin","Horde")
     Connect("Stormwind City","Auberdine","boat","Alliance",true,docks)
     Connect("Southshore","Auberdine","boat","Alliance",true,docks,true)
+    local routeDocks={
+        ["Menethil Harbor|Alliance>Theramore Isle|Alliance"]={name="Menethil Harbor docks to Theramore",zone="Wetlands",coordinates="4.7, 63.8",source=docks},
+        ["Auberdine|Alliance>Stormwind City|Alliance"]={name="Auberdine docks to Stormwind",zone="Darkshore",coordinates="30.5, 40.9",source=docks},
+        ["Auberdine|Alliance>Rut'theran Village|Alliance"]={name="Auberdine docks to Rut'theran",zone="Darkshore",coordinates="33.3, 39.8",source=docks},
+    }
     for _,edges in pairs(self.adjacency) do
         for _,edge in ipairs(edges) do
             if edge.mode=="boat" then
-                edge.fromLocation=dockLocations[edge.from]
-                edge.toLocation=dockLocations[edge.to]
-                if edge.from=="Menethil Harbor|Alliance" and edge.to=="Theramore Isle|Alliance" then
-                    edge.fromLocation={name="Menethil Harbor docks to Theramore",zone="Wetlands",coordinates="4.7, 63.8",source=docks}
-                elseif edge.from=="Auberdine|Alliance" and edge.to=="Stormwind City|Alliance" then
-                    edge.fromLocation={name="Auberdine docks to Stormwind",zone="Darkshore",coordinates="30.5, 40.9",source=docks}
-                elseif edge.from=="Auberdine|Alliance" and edge.to=="Rut'theran Village|Alliance" then
-                    edge.fromLocation={name="Auberdine docks to Rut'theran",zone="Darkshore",coordinates="33.3, 39.8",source=docks}
-                end
+                edge.fromLocation=routeDocks[edge.from..">"..edge.to] or dockLocations[edge.from]
+                edge.toLocation=routeDocks[edge.to..">"..edge.from] or dockLocations[edge.to]
             end
         end
     end

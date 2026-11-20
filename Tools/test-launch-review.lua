@@ -55,9 +55,9 @@ do
     route=DQT:GetDungeonPickupRoute("ruins-of-lordaeron",nil,player)
     assert(Has(route.readyReturns,99156),"Ready preparation gets a real return stop")
     assert(DQT.quests[356].minLevel==6 and DQT.quests[447].minLevel==9,"Dungeon minimum must not be imposed on outdoor preparation")
-    for _,id in ipairs({356,99156,447,450,451}) do
+    for id,expected in pairs({[356]=650,[99156]=900,[447]=900,[450]=1350,[451]=2050}) do
         local xp,source=DQT:GetQuestRewardXP(DQT.quests[id])
-        assert(xp==0 and source=="unknown","Do not invent preparation XP")
+        assert(xp==expected and source=="Forever (published)","Preparation rewards require explicit Forever sources")
     end
     assert(DQT.quests[92422].followUpOf==99156 and DQT.quests[95216].followUpOf==451,"Chains remain visually associated")
     player.faction="Alliance"

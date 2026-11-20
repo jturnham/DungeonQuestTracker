@@ -178,3 +178,20 @@ do
     local steps=travel:TransportStops({edges={ferry}})
     assert(#steps==2 and steps[1].x==68.6 and steps[2].x==80.6,"Ferry boarding and arrival appear on pickup maps")
 end
+do
+    local travel=DQT.Travel
+    local function Boat(from,to)
+        for _,edge in ipairs(travel.adjacency[from] or {}) do
+            if edge.mode=="boat" and edge.to==to then return edge end
+        end
+    end
+    local incoming=assert(Boat("Theramore Isle|Alliance","Menethil Harbor|Alliance"))
+    local outgoing=assert(Boat("Menethil Harbor|Alliance","Southshore|Alliance"))
+    assert(incoming.toLocation.coordinates=="4.7, 63.8","Arrival uses the Theramore dock")
+    local stops=travel:TransportStops({edges={incoming,outgoing}})
+    local count=0
+    for _,stop in ipairs(stops) do if stop.location.zone=="Wetlands" then count=count+1 end end
+    assert(count==2,"Changing docks in the same port retains both map markers")
+    local stormwind=assert(Boat("Stormwind City|Alliance","Auberdine|Alliance"))
+    assert(stormwind.toLocation.coordinates=="30.5, 40.9","Arrival at Auberdine uses the Stormwind dock")
+end

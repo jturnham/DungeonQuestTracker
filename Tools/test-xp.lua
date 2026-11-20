@@ -37,11 +37,11 @@ for id, quest in pairs(DQT.quests) do
         assert(source == "Forever (outdated; unverified)", "Stale reward label: " .. id)
     end
 end
-assert(count == 1 and published == 313, "Only explicitly sourced rewards supersede estimates: " .. count .. " estimates, " .. published .. " published")
+assert(count == 0 and published == 401, "Only explicitly sourced rewards supersede estimates: " .. count .. " estimates, " .. published .. " published")
 assert(DQT.quests[2930].xpPublished and DQT:GetQuestRewardXP(DQT.quests[2930]) == 6550, "Data Rescue Forever XP")
 assert(DQT.quests[95789].xpPublished and DQT:GetQuestRewardXP(DQT.quests[95789]) == 10450, "Shady Saltseers Forever XP")
-assert(DQT.quests[5214].xpPublished and DQT:GetQuestRewardXP(DQT.quests[5214]) == 8300, "The Great Fras Siabi Forever XP")
-assert(DQT.quests[7507].xpPublished and DQT:GetQuestRewardXP(DQT.quests[7507]) == 9950, "Foror's Compendium Forever XP")
+assert(DQT.quests[5214].xpPublished and DQT:GetQuestRewardXP(DQT.quests[5214]) == 17450, "The Great Fras Siabi Forever XP")
+assert(DQT.quests[7507].xpPublished and DQT:GetQuestRewardXP(DQT.quests[7507]) == 19900, "Foror's Compendium Forever XP")
 assert(DQT.quests[1160].xpPublished and DQT:GetQuestRewardXP(DQT.quests[1160]) == 5000, "Test of Lore Forever XP")
 assert(DQT.quests[96800].xpPublished and DQT:GetQuestRewardXP(DQT.quests[96800]) == 6750, "Past Due Forever XP")
 assert(DQT.quests[2841].xpReported and DQT:GetQuestRewardXP(DQT.quests[2841]) == 8200, "Rig Wars live XP")
@@ -70,7 +70,7 @@ end
 assert(DQT:GetQuestRewardXP({partySupplied=true,foreverXp=99999,xpEstimate=true}) == 0, "Party XP never trusted")
 do
     for id,xp in pairs({[96984]=9400,[92458]=9400,[96986]=9400,[96988]=9400,[96987]=9400,[92489]=9400,[92456]=9400,
-        [97289]=1650,[97290]=1650,[97291]=1650,[97292]=1650,[92753]=4050,[92819]=680,[95042]=2000,[95111]=1000}) do
+        [97289]=1650,[97290]=1650,[97291]=1650,[97292]=1650,[92753]=2700,[92819]=140,[95042]=2000,[95111]=1000}) do
         local quest=DQT.quests[id]
         assert(quest.foreverXp==xp and (quest.xpGuide or quest.xpPublished) and quest.xpSource:match("^https://"),"Exact-ID sourced reward: "..id)
     end
@@ -80,7 +80,7 @@ do
             assert(not item.xpKnown and not item.dings and DQT:FormatTurnInXP(item)=="XP unknown","Every missing/untrusted reward stays unknown: "..quest.name)
         end
     end
-    for id,xp in pairs({[95795]=6150,[95809]=6150,[98824]=6950,[92422]=4600}) do
+    for id,xp in pairs({[95795]=6150,[95809]=6150,[98824]=6150,[92422]=4600}) do
         local item=DQT:BuildTurnInItem({questID=id,quest=DQT.quests[id]},"test",{}, {level=18},100)
         assert(item.rawXp==xp and item.xpKnown and item.dings,"Reported missing reward is available: "..id)
     end

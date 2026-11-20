@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.9 - 2026-11-20
+
+- Updated 72 quest XP rewards from individual Forever records, including preparation quests and higher-level dungeons.
+- Added 22 quests across Blackmaw Hold, Shaper's Terrace, Krol'dok Stronghold, Alcaz Prison, Gnomeregan, Zul'Farrak and Blackfathom Deeps.
+- Linked additional quest follow-ups and added sourced pickup and turn-in locations.
+- Fixed boat arrival markers pointing to the wrong dock and missing markers when changing docks in the same harbor.
+
 ## 0.6.8 - 2026-11-18
 
 - Replaced 183 Classic XP fallbacks with published Forever rewards and corrected The Spider God to the reported 9,700 XP.

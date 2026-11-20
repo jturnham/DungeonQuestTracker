@@ -266,6 +266,80 @@ local function Eternadex(id)
     return "https://eternadex.com/en/quests/"..id.."/"
 end
 
+local sourceReviewQuests={
+    {key="gnomeregan",id=2931,name="Castpipe's Task",faction="Alliance",min=25,level=28,xp=230,
+        pickup=Location("Gaxim Rustfizzle","Stonetalon Mountains"),turnIn=Location("Master Mechanic Castpipe","Ironforge"),
+        objective="Speak with Master Mechanic Castpipe in Ironforge."},
+    {key="gnomeregan",id=2925,name="Klockmort's Essentials",faction="Alliance",min=24,level=30,xp=250,
+        pickup=Location("Mathiel","Darnassus"),turnIn=Location("Klockmort Spannerspan","Ironforge"),
+        objective="Speak with Klockmort Spannerspan in Ironforge."},
+    {key="gnomeregan",id=2923,name="Tinkmaster Overspark",faction="Alliance",min=20,level=26,xp=210,
+        pickup=Location("Brother Sarno","Stormwind City"),turnIn=Location("Tinkmaster Overspark","Ironforge"),
+        objective="Speak with Tinkmaster Overspark in Ironforge."},
+    {key="gnomeregan",id=2927,name="The Day After",faction="Alliance",min=20,level=27,xp=220,
+        pickup=Location("Gnoarn","Ironforge"),turnIn=Location("Ozzie Togglevolt","Dun Morogh"),
+        objective="Speak with Ozzie Togglevolt in Kharanos."},
+    {key="kroldok-stronghold",id=94997,name="Lingering Essence",faction="Alliance",min=38,level=42,xp=3450,
+        pickup=Location("Sergeant Riftan","Riverglades","30.6, 49.0"),turnIn=Location("Ashe Amberhall","Riverglades","66.7, 81.1"),
+        objective="Bring the Satchel of Cursed Mementos to Ashe Amberhall."},
+    {key="kroldok-stronghold",id=94998,name="Curios of Curiosity",faction="Alliance",min=38,level=42,xp=3450,
+        pickup=Location("Ashe Amberhall","Riverglades","66.7, 81.1"),turnIn=Location("Melanie Sable","Riverglades","66.2, 83.3"),
+        objective="Bring the Satchel of Mementos to Melanie Sable."},
+    {key="alcaz-prison",id=95263,name="Somber News",faction="Alliance",min=48,level=53,xp=2850,
+        pickup=Location("King's fate discovered","Alcaz Prison"),turnIn=Location("Sully McCleary","Dustwallow Marsh","63.5, 42.4"),
+        objective="Return to Sully McCleary with what you learned about the king."},
+    {key="zul-farrak",id=2864,name="Tran'rek",min=40,level=45,xp=390,
+        pickup=Location("Krazek","Stranglethorn Vale","27.0, 77.2"),turnIn=Location("Tran'rek","Tanaris","51.6, 26.8"),
+        objective="Speak with Tran'rek in Gadgetzan."},
+    {key="blackfathom-deeps",id=6562,name="Trouble in the Deeps",faction="Horde",min=17,level=22,xp=440,
+        pickup=Location("Tsunaman","Stonetalon Mountains","47.3, 64.3"),turnIn=Location("Je'neu Sancrea","Ashenvale"),
+        objective="Speak with Je'neu Sancrea at Zoram'gar Outpost."},
+    {key="blackmaw-hold",id=92065,name="Blackmaw Reclamation",min=47,level=60,xp=13200,
+        pickup=Location("Gatekeeper Rageroar","Azshara","42.3, 20.2"),parent=86814,
+        objective="Bring Varrox Bleakhoof's head to Gatekeeper Rageroar. Requires Neutral standing with Timbermaw Hold."},
+    {key="blackmaw-hold",id=92066,name="The Twin Bears",min=47,level=55,xp=11300,
+        pickup=Location("Lorekeeper Nok","Azshara","41.4, 20.0"),
+        objective="Recover the Totems of Ursoc and Ursol inside Blackmaw Hold."},
+    {key="blackmaw-hold",id=92069,name="Claws That Rend, Tusks that Gore",min=45,level=58,xp=12400,
+        pickup=Location("Ogtinc","Azshara","42.4, 42.7"),
+        objective="Recover the Claws of the Great Bear and Tusks of the Unbroken from Blackmaw Hold."},
+    {key="blackmaw-hold",id=92070,name="A Lost Memento",min=47,level=55,xp=11300,
+        pickup=Location("Feathered Charm Necklace","Blackmaw Hold"),turnIn=Location("Unele","Azshara","43.2, 18.2"),kind="drop",
+        objective="Bring the Feathered Charm Necklace found in Blackmaw Hold to Unele."},
+    {key="blackmaw-hold",id=96246,name="Blackmaw Pouches",min=55,level=60,
+        pickup=Location("Ekkal","Azshara","42.0, 38.9"),objective="Bring five Blackmaw Pouches to Ekkal."},
+    {key="blackmaw-hold",id=97173,name="Blackmaw Magic",faction="Alliance",min=52,level=59,xp=12800,
+        pickup=Location("Archmage Timear","Alterac Mountains","15.4, 74.0"),objective="Recover a Blackmaw Ritual Totem from Blackmaw Hold."},
+    {key="blackmaw-hold",id=97198,name="Blackmaw Magic",faction="Horde",min=52,level=59,xp=16100,
+        pickup=Location("Muln Earthfury","Mulgore","33.4, 22.5"),objective="Recover a Blackmaw Ritual Totem from Blackmaw Hold."},
+    {key="blackmaw-hold",id=92344,name="Get to the Roots of It",faction="Alliance",min=45,level=55,xp=11300,parent=92345,
+        pickup=Location("Mathrengyl Bearwalker","Darnassus","35.2, 8.6"),objective="Gather ten Nordrassil Root Caps inside Blackmaw Hold."},
+    {key="shapers-terrace",id=95928,name="Crystalline Elements",faction="Horde",min=55,level=60,xp=17650,
+        pickup=Location("Mayena Earthseeker","Mulgore","34.9, 22.1"),
+        objective="Recover a Moist Crystal, Charged Crystal, Noxious Crystal and Fiery Crystal from Shaper's Terrace."},
+    {key="shapers-terrace",id=95790,name="Digestible Research",faction="Alliance",min=55,level=60,xp=17650,kind="drop",
+        pickup=Location("Journal pages","Shaper's Terrace"),turnIn=Location("Curator Thorius","Ironforge"),
+        objective="Collect 15 Partially Digested Journal Pages inside Shaper's Terrace."},
+    {key="shapers-terrace",id=97049,name="Essence of Seeping Slimes",faction="Horde",min=55,level=60,xp=17650,
+        pickup=Location("Chemist Fuely","Undercity","47.5, 71.9"),objective="Gather eight Seeping Slime Essences inside Shaper's Terrace."},
+    {key="shapers-terrace",id=95925,name="Mapping the Way Forward",faction="Alliance",min=55,level=60,xp=17650,
+        pickup=Location("Curator Thorius","Ironforge"),objective="Find the landmarks in Shaper's Terrace and fill out the explorer's map."},
+    {key="shapers-terrace",id=95926,name="The Dark Crystal",faction="Horde",min=55,level=60,xp=17650,
+        pickup=Location("Master Apothecary Faranell","Undercity","48.7, 69.2"),
+        objective="Recover a Drained Crystal Fragment near the Achromatic Crystal in Shaper's Terrace."},
+}
+for _,record in ipairs(sourceReviewQuests) do
+    local prerequisite=record.parent and {{questID=record.parent,external=true,relationship="required",
+        note=record.parent==86814 and "Complete Blackmaw Counter-Offensive in Rageroar's chain." or "Complete Beneath Nordrassil from Commander Truesong."}} or {}
+    AddDungeonQuest(record.key,record.id,{name=record.name,faction=record.faction,minLevel=record.min,questLevel=record.level,
+        foreverXp=record.xp,pickup=record.pickup,turnIn=record.turnIn,objectives=record.objective,prerequisites=prerequisite,
+        source="https://db.icy-veins.com/wow-forever/quests/"..record.id})
+    DQT.quests[record.id].pickupType=record.kind or "npc"
+end
+DQT.quests[2864].preparationOnly=true
+DQT.quests[6562].preparationOnly=true
+for _,id in ipairs({2931,2925,2923,2927}) do DQT.quests[id].preparationOnly=true end
+
 for _,entry in ipairs({
     {id=96773,faction="Alliance",pickup=Location("Archmage Lan'dalock","Alterac Mountains","15.3, 73.9")},
     {id=97196,faction="Horde",pickup=Location("Sutara Plainstalker","Mulgore","34.6, 22.8")},
@@ -867,4 +941,92 @@ for id,reward in pairs({
     quest.xpGuide=nil
     quest.sourceURLs[#quest.sourceURLs+1]=url
     quest.verification.xpReview="Explicit XP in the Gains section of the individual Wowhead Forever quest page."
+end
+
+-- November 20 review against individual Forever records.
+for id,xp in pairs({
+    [373]=2050,
+    [2929]=6200,
+    [2398]=550,
+    [2318]=6750,
+    [98824]=6150,
+    [92753]=2700,
+    [92819]=140,
+    [544]=3300,
+    [545]=2050,
+    [92434]=270,
+    [97287]=270,
+    [4724]=11850,
+    [4729]=12500,
+    [4768]=22200,
+    [4862]=12500,
+    [4866]=18900,
+    [4867]=18900,
+    [4981]=11850,
+    [4983]=11850,
+    [5214]=17450,
+    [5262]=17450,
+    [5263]=18250,
+    [5282]=17450,
+    [5463]=14500,
+    [7429]=650,
+    [7489]=20200,
+    [7507]=19900,
+    [7643]=9900,
+    [7649]=13200,
+    [7651]=13200,
+    [9016]=19900,
+    [9019]=19900,
+    [9020]=19900,
+    [9022]=19900,
+    [392]=600,
+    [350]=250,
+    [2745]=250,
+    [2746]=625,
+    [434]=1900,
+    [394]=250,
+    [395]=625,
+    [396]=3750,
+    [6628]=250,
+    [1394]=4200,
+    [1952]=3150,
+    [1848]=3050,
+    [1839]=1200,
+    [1842]=1200,
+    [1843]=1850,
+    [1840]=1200,
+    [1844]=1200,
+    [1845]=1850,
+    [1841]=1200,
+    [1846]=1200,
+    [1847]=1850,
+    [1700]=575,
+    [1705]=2300,
+    [1706]=3050,
+    [1704]=575,
+    [1708]=1750,
+    [1709]=3050,
+    [1703]=1150,
+    [1710]=1850,
+    [1711]=3050,
+    [1782]=3400,
+    [356]=650,
+    [99156]=900,
+    [447]=900,
+    [450]=1350,
+    [451]=2050,
+    [95798]=2350,
+    [95799]=2350,
+}) do
+    local quest=DQT.quests[id]
+    local url="https://db.icy-veins.com/wow-forever/quests/"..id
+    quest.foreverXp,quest.xpPublished,quest.xpSource=xp,true,url
+    quest.xpReported,quest.xpGuide,quest.xpEstimate,quest.xpOutdated=nil,nil,nil,nil
+    quest.sourceURLs[#quest.sourceURLs+1]=url
+    quest.verification.xpReview="2026-11-20: explicit reward on the individual Forever record. Character level and bonuses can affect actual payout."
+end
+for id,parent in pairs({[94997]=94983,[94998]=94997,[95263]=95262}) do
+    local quest=DQT.quests[id]
+    quest.followUpOf=parent
+    quest.prerequisites={{questID=parent,relationship="required",note="Complete "..DQT.quests[parent].name.." first."}}
 end
