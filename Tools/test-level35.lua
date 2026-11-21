@@ -136,6 +136,7 @@ assert(DQT:GetQuestRewardXP(DQT:GetQuest(1221)) == 5000, "Post-update player rep
 local _, source = DQT:GetQuestRewardXP(DQT:GetQuest(2948))
 assert(source == "Classic", "Classic fallback remains labeled")
 player.class = "WARRIOR"
+ready[1740]=nil
 for _, row in ipairs(DQT:GetDungeonQuestStatus("shadowfang-keep").quests) do
     assert(row.questID ~= 1740 and row.questID ~= 1654, "Unrelated class quests hidden")
 end

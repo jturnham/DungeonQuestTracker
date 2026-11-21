@@ -155,3 +155,28 @@ UnitLevel, UnitFactionGroup, UnitClass, GetQuestGreenRange = savedLevel, savedFa
 DQT.IsQuestComplete, DQT.IsQuestReadyForTurnIn, DQT.IsQuestActive = savedCompleted, savedReady, savedActive
 DQT.UI:ShowDungeonList()
 print("Passed Options: migration, persistence, quest/list filters, protected ready/blocking quests, independent planner, minimap, navigation, sharing confirmation, party responses and auto-broadcast cooldown.")
+do
+    local oldLog,oldDB=C_QuestLog,DQT.db
+    local player={faction="Horde",class="WARRIOR",race="Orc",level=52,xp=0,xpMax=10000}
+    local ready=false
+    C_QuestLog={IsOnQuest=function(id) return id==96770 end,
+        ReadyForTurnIn=function(id) return id==96770 and ready end,
+        IsQuestFlaggedCompleted=function(id) return id==96770 end}
+    DQT.db={}
+    local function Contains(status)
+        for _,row in ipairs(status.quests) do if row.questID==96770 then return row end end
+    end
+    assert(Contains(DQT:GetDisplayDungeonStatus("zul-farrak",player)),"Owned quest survives conflicting faction metadata")
+    player.faction="Alliance"
+    assert(Contains(DQT:GetDisplayDungeonStatus("zul-farrak",player)).state=="active",
+        "Level-52 Alliance quest in the log overrides completion history")
+    ready=true
+    assert(Contains(DQT:GetDisplayDungeonStatus("zul-farrak",player)).state=="ready","Owned quest ready state retained")
+    local oldContext=DQT.GetPlayerContext
+    DQT.GetPlayerContext=function() return player end
+    local found=false
+    for _,item in ipairs(DQT:GetGlobalTurnInPriority().quests) do if item.questID==96770 then found=true end end
+    assert(found,"Owned faction-conflicting quest reaches global turn-ins")
+    DQT.GetPlayerContext=oldContext
+    C_QuestLog,DQT.db=oldLog,oldDB
+end

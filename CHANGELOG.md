@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.10 - 2026-11-21
+
+- Fixed owned quests being hidden by outdated faction or class restrictions.
+- Fixed active and ready-to-turn-in quests being treated as completed when completion history also contains them.
+- Added eight quests across Dire Maul, Blackrock Spire, Blackmaw Hold, Uldaman, Zul'Farrak and Alcaz Prison.
+- Corrected five published Forever XP rewards.
+
 ## 0.6.9 - 2026-11-20
 
 - Updated 72 quest XP rewards from individual Forever records, including preparation quests and higher-level dungeons.

@@ -71,7 +71,7 @@ do
     assert(DQT.lootReminderFrame:IsShown(), "Full bags leave item available and trigger reminder")
     for _, state in ipairs({"ready", "completed", "missing", "owned", "wrongFaction", "wrongInstance", "disabled"}) do
         Reset()
-        active[391]=state~="missing"
+        active[391]=state~="missing" and state~="completed"
         ready[391]=state=="ready"
         completed[391]=state=="completed"
         owned[2926]=state=="owned" and 1 or 0

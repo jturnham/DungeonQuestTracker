@@ -202,7 +202,8 @@ function DQT:GetDisplayDungeonStatus(key, context)
         local function Exclude(reason) visible=false; reasons[#reasons+1]=reason end
         local protectTracked = (row.state == "active" or row.state == "ready") and not self:GetOption("filters.hideTrackedDungeons")
         local available = self:GetQuestAvailability(quest, context) ~= "unavailable"
-        if not available and not self:GetOption("filters.showUnavailable") then Exclude("faction/class/race unavailable") end
+        if not available and row.state~="active" and row.state~="ready"
+            and not self:GetOption("filters.showUnavailable") then Exclude("faction/class/race unavailable") end
         if row.state == "completed" and not self:GetOption("filters.showCompleted") then Exclude("completed quests hidden") end
         if quest.classes and not self:GetOption("filters.showClassRestricted") then Exclude("class quests hidden") end
         if quest.breadcrumbOnly and not self:GetOption("filters.includeBreadcrumbs") then Exclude("optional breadcrumbs hidden") end
@@ -232,7 +233,7 @@ function DQT:ShouldShowDungeon(status, context)
     if self:GetOption("filters.onlyReady") and counts.ready == 0 then Exclude("no ready visible quests") end
     local relevant, tracked = false, false
     for _, row in ipairs(raw.quests) do
-        if self:GetQuestAvailability(row.quest, context) ~= "unavailable" then
+        if row.state=="active" or row.state=="ready" or self:GetQuestAvailability(row.quest, context) ~= "unavailable" then
             relevant=true
             if row.state == "active" or row.state == "ready" then tracked=true end
         end

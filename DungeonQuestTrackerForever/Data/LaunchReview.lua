@@ -267,6 +267,30 @@ local function Eternadex(id)
 end
 
 local sourceReviewQuests={
+    {key="dire-maul-west",id=98830,name="The Broken Glaive",min=52,level=60,xp=13200,kind="drop",
+        pickup=Location("Tortheldrin's Broken Glaive","Dire Maul"),turnIn=Location("Shen'dralar Ancient","Dire Maul"),
+        objective="Deliver Tortheldrin's Broken Glaive to the Shen'dralar Ancient."},
+    {key="lower-blackrock-spire",id=98325,name="Blood and Thunder",faction="Horde",min=55,level=60,xp=650,
+        pickup=Location("Warlord Goretooth","Badlands","5.8, 47.5"),
+        objective="Speak to Warlord Goretooth to serve the Kargath Expeditionary Force."},
+    {key="blackmaw-hold",id=97327,name="Blackmaw Pouches",min=55,level=60,xp=13200,
+        pickup=Location("Ekkal","Azshara","42.0, 38.9"),
+        objective="Recover five Blackmaw Pouches inside Blackmaw Hold and return to Ekkal."},
+    {key="uldaman",id=721,name="A Sign of Hope",faction="Alliance",min=35,level=35,xp=4800,
+        pickup=Location("Prospector Ryedol","Badlands","53.4, 43.4"),turnIn=Location("Hammertoe Grez","Badlands","37.8, 10.7"),
+        objective="Find Hammertoe Grez in the Uldaman excavation."},
+    {key="zul-farrak",id=2861,name="Tabetha's Task",min=40,level=46,xp=410,
+        pickup=Location("City mage trainers","Unknown"),turnIn=Location("Tabetha","Dustwallow Marsh","46.1, 57.1"),
+        objective="Speak with Tabetha in Dustwallow Marsh. Offered by Anastasia Hartwell, Bink, Jennea Cannon or Deino."},
+    {key="alcaz-prison",id=96376,name="State Secrets",faction="Horde",min=48,level=53,xp=6550,
+        turnIn=Location("Nazgrel","Orgrimmar","32.4, 36.0"),
+        objective="Find Mason Connery's treasure in Westfall and take its documents to Nazgrel."},
+    {key="alcaz-prison",id=96377,name="State Secrets",faction="Alliance",min=48,level=53,xp=6550,
+        turnIn=Location('Renzik "The Shiv"',"Stormwind City","78.4, 71.0"),
+        objective="Find Mason Connery's treasure in Westfall and take its documents to Renzik."},
+    {key="alcaz-prison",id=96379,name="State Secrets",min=48,level=53,xp=6550,
+        turnIn=Location("Rix Xizzix","Stranglethorn Vale","28.5, 75.8"),
+        objective="Find Mason Connery's treasure in Westfall and take its documents to Rix Xizzix."},
     {key="gnomeregan",id=2931,name="Castpipe's Task",faction="Alliance",min=25,level=28,xp=230,
         pickup=Location("Gaxim Rustfizzle","Stonetalon Mountains"),turnIn=Location("Master Mechanic Castpipe","Ironforge"),
         objective="Speak with Master Mechanic Castpipe in Ironforge."},
@@ -1030,3 +1054,13 @@ for id,parent in pairs({[94997]=94983,[94998]=94997,[95263]=95262}) do
     quest.followUpOf=parent
     quest.prerequisites={{questID=parent,relationship="required",note="Complete "..DQT.quests[parent].name.." first."}}
 end
+for id,xp in pairs({[2201]=6300,[1445]=10600,[4282]=11150,[9017]=19900,[9021]=19900}) do
+    local quest=DQT.quests[id]
+    local url="https://db.icy-veins.com/wow-forever/quests/"..id
+    quest.foreverXp,quest.xpPublished,quest.xpSource=xp,true,url
+    quest.xpReported,quest.xpGuide,quest.xpEstimate,quest.xpOutdated=nil,nil,nil,nil
+    quest.sourceURLs[#quest.sourceURLs+1]=url
+    quest.verification.xpReview="2026-11-21: explicit reward in the individual Forever quest record."
+end
+DQT.quests[98325].preparationOnly=true
+DQT.quests[2861].preparationOnly=true

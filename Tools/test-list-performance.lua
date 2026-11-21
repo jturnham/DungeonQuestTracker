@@ -83,6 +83,8 @@ do
     local fresh=Scan()
     assert(DQT:GetQuestState(2841,DQT.quests[2841],fresh)=="ready","Next refresh picks up ready transitions")
     history[2841]=true
+    ready[2841]=nil
+    ids={1098,5728}
     fresh=Scan()
     assert(DQT:GetQuestState(2841,DQT.quests[2841],fresh)=="completed","Next refresh picks up completion")
     ready[2841],history[2841]=nil,nil

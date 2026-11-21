@@ -37,7 +37,7 @@ for id, quest in pairs(DQT.quests) do
         assert(source == "Forever (outdated; unverified)", "Stale reward label: " .. id)
     end
 end
-assert(count == 0 and published == 401, "Only explicitly sourced rewards supersede estimates: " .. count .. " estimates, " .. published .. " published")
+assert(count == 0 and published == 414, "Only explicitly sourced rewards supersede estimates: " .. count .. " estimates, " .. published .. " published")
 assert(DQT.quests[2930].xpPublished and DQT:GetQuestRewardXP(DQT.quests[2930]) == 6550, "Data Rescue Forever XP")
 assert(DQT.quests[95789].xpPublished and DQT:GetQuestRewardXP(DQT.quests[95789]) == 10450, "Shady Saltseers Forever XP")
 assert(DQT.quests[5214].xpPublished and DQT:GetQuestRewardXP(DQT.quests[5214]) == 17450, "The Great Fras Siabi Forever XP")

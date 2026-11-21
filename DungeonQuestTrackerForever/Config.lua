@@ -1,7 +1,7 @@
 local addonName, DQT = ...
 
 DQT.name = addonName
-DQT.version = "0.6.9"
+DQT.version = "0.6.10"
 
 DQT.defaults = {
     partyDataSync = false,

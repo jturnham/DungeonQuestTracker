@@ -390,16 +390,16 @@ function DQT:GetOrderedDungeonKeys()
 end
 
 local function QuestState(self, questID, quest, context)
-    if self:IsQuestComplete(questID, context) then
-        return "completed", "Completed"
-    end
-
     if self:IsQuestReadyForTurnIn(questID, quest and quest.name, context) then
         return "ready", "Ready for turn-in"
     end
 
     if self:IsQuestActive(questID, quest and quest.name, context) then
         return "active", "In progress"
+    end
+
+    if self:IsQuestComplete(questID, context) then
+        return "completed", "Completed"
     end
 
     local availability, reason = self:GetQuestAvailability(quest, context)
@@ -626,8 +626,7 @@ function DQT:GetGlobalTurnInPriority()
                 if not seenQuests[questID] then
                     seenQuests[questID] = true
                     local quest = self:GetQuest(questID)
-                    if quest and self:QuestMatchesPlayerFaction(quest, context) and self:QuestMatchesPlayerClass(quest, context)
-                        and self:GetQuestState(questID, quest, context) == "ready"
+                    if quest and self:GetQuestState(questID, quest, context) == "ready"
                         and not (ignoreGray and self:IsQuestGray(quest, context)) then
                         local row = { questID=questID, quest=quest }
                         table.insert(turnIns, self:BuildTurnInItem(row, dungeonKey, dungeon, context, xpToLevel))
@@ -652,8 +651,10 @@ function DQT:GetDungeonQuestStatus(dungeonKey, includeUnavailable, skipTurnIns, 
 
     for _, questID in ipairs(dungeon.quests or {}) do
         local quest = self:GetQuest(questID)
-        if quest and (includeUnavailable or (self:QuestMatchesPlayerFaction(quest, context) and self:QuestMatchesPlayerClass(quest, context))) then
-            local state, stateReason = self:GetQuestState(questID, quest, context)
+        local state, stateReason
+        if quest then state,stateReason=self:GetQuestState(questID,quest,context) end
+        if quest and (includeUnavailable or state=="active" or state=="ready"
+            or (self:QuestMatchesPlayerFaction(quest, context) and self:QuestMatchesPlayerClass(quest, context))) then
             counts[state] = (counts[state] or 0) + 1
             table.insert(rows, {
                 questID = questID,
