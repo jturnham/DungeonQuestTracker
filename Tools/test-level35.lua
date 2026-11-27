@@ -133,8 +133,9 @@ for _, item in ipairs(plan.quests) do
     seen[item.questID] = true
 end
 assert(DQT:GetQuestRewardXP(DQT:GetQuest(1221)) == 5000, "Post-update player report")
-local _, source = DQT:GetQuestRewardXP(DQT:GetQuest(2948))
+local _, source = DQT:GetQuestRewardXP({classicXp=2750})
 assert(source == "Classic", "Classic fallback remains labeled")
+assert(DQT.quests[2948].xpPublished,"An explicit Forever record supersedes the Gnome Improvement fallback")
 player.class = "WARRIOR"
 ready[1740]=nil
 for _, row in ipairs(DQT:GetDungeonQuestStatus("shadowfang-keep").quests) do

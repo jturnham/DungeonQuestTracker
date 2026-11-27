@@ -4,7 +4,7 @@ do
     for _,id in ipairs({96984,92458,96986,96988,96987,92489,92456,92457}) do
         assert(DQT.quests[id].detailsSourceReviewed and not DQT.quests[id].verifiedForever,"Source-reviewed details do not claim a local client observation")
     end
-    assert(DQT.quests[97287].verification.conflict,"Keep unresolved Horde follow-up access warning")
+    assert(not DQT.quests[97287].verification.conflict and DQT.quests[97287].turnIn.zone=="Silverpine Forest","Resolved Horde follow-up is routed outside the city")
     assert(DQT.quests[95697].pickup.name=="Borstan" and DQT.quests[98823].pickup.name=="Bashana Runetotem","Reviewed contact names have no stale beta warning")
     local oldComplete,oldActive,oldContext=DQT.IsQuestComplete,DQT.IsQuestActive,DQT.GetPlayerContext
     local oldState=DQT.GetQuestState
@@ -62,6 +62,20 @@ do
     assert(DQT.quests[92422].followUpOf==99156 and DQT.quests[95216].followUpOf==451,"Chains remain visually associated")
     player.faction="Alliance"
     assert(DQT:GetQuestAvailability(DQT.quests[99156],player)=="unavailable")
+    assert(DQT.quests[96391].preparationOnly and DQT.quests[96391].pickupType=="drop","Underground Map is a real item-started preparation quest")
+    assert(DQT.quests[96391].foreverXp==1050 and DQT.quests[96393].followUpOf==96391,"Hall of Thanes preparation has its exact reward and follow-up")
+    assert(DQT:GetQuestAvailability(DQT.quests[96393],player)=="locked","Incursion requires the completed map hand-in")
+    active[96391]=true
+    assert(DQT:GetQuestAvailability(DQT.quests[96393],player)=="locked","Holding Underground Map does not unlock Incursion")
+    done[96391]=true
+    assert(DQT:GetQuestAvailability(DQT.quests[96393],player)=="available","Completing the map unlocks Incursion without invented earlier gates")
+    local binding=DQT.quests[98685]
+    assert(binding.foreverXp==3300 and binding.xpPublished and binding.pickup.name=="Lorekeeper Lydros","New Forever libram reward and contact")
+    assert(DQT.quests[94972].pickup.name=="Tran'gul" and DQT.quests[94972].pickup.coordinates=="59.5, 44.0","Horde Tome of Twilight uses its own giver at Rog'mar")
+    assert(DQT.quests[94975].pickup.name=="Da'grosh" and DQT.quests[94975].turnIn.name=="Da'grosh","Token of Vengeance uses Da'grosh, not Commander Aggro'gosh")
+    assert(DQT.quests[94972].objectives:find("Tran'gul",1,true) and DQT.quests[94975].objectives:find("Da'grosh",1,true),"Quest instructions agree with the corrected contacts")
+    assert(DQT.quests[720].preparationOnly and DQT.quests[720].pickupType=="object" and DQT.quests[720].foreverXp==1350,"Uldaman map preparation has its own source and reward")
+    assert(DQT.quests[721].followUpOf==720 and DQT.quests[3528].followUpOf==4787,"Map and Hakkar acquisition chains are linked")
     DQT.IsQuestComplete,DQT.IsQuestActive,DQT.GetPlayerContext,DQT.GetQuestState=oldComplete,oldActive,oldContext,oldState
     print("Launch review passed: both patrol steps, complete Recipe chain, duplicate-name isolation, real preparation routes/returns, faction/level gates and unknown XP")
 end

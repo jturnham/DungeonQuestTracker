@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.11 - 2026-11-27
+
+- Corrected four Scholomance XP rewards and confirmed published Forever rewards for 82 previously fallback or provisional quest records.
+- Added Libram of Binding, Underground Map and the initial A Sign of Hope preparation quest.
+- Updated 25 quest levels and pickup requirements, including Dalaran's level-30 entry preparation.
+- Linked missing prerequisites and follow-ups for Hall of Thanes, Uldaman, Sunken Temple and Dalaran, while keeping optional introductions optional.
+- Corrected Krol'dok quest contacts, Paladin chain contacts and the Shrewd Negotiations turn-in outside Dalaran's sewer entrance.
+
 ## 0.6.10 - 2026-11-21
 
 - Fixed owned quests being hidden by outdated faction or class restrictions.

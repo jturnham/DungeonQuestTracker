@@ -44,8 +44,10 @@ do
     for _,id in ipairs(DQT.dungeons["city-of-dalaran"].quests) do
         local quest=DQT:GetQuest(id)
         assert(quest.awaitingFinalVerification and quest.confidence=="needsReview" and not quest.verifiedForever,"Explicit provisional attunement")
-        assert(DQT:GetQuestRewardXP(quest)==(quest.foreverXp or 0) and quest.questLevelUnverified,"Only sourced XP replaces unknown reward; levels remain provisional")
+        assert(DQT:GetQuestRewardXP(quest)==(quest.foreverXp or 0),"Only sourced XP replaces unknown reward")
+        assert(quest.questLevelUnverified or quest.verification.level:find("2026-11-27",1,true),"Quest levels retain their review provenance")
     end
+    context.level=30
     assert(DQT:GetQuestAvailability(DQT.quests[92434],context)=="locked","Horde preparation enforced")
     complete[544],complete[545],complete[93680]=true,true,true
     assert(DQT:GetQuestAvailability(DQT.quests[92434],context)=="available","Bel'varil companion quests do not gate attunement")
@@ -64,7 +66,14 @@ do
     for _,id in ipairs({96986,96988,96987,97287}) do assert(hordeReady[id],"New Horde ready turn-in tracked") end
     context.faction="Alliance"
     assert(DQT:GetQuestAvailability(DQT.quests[96984],context)=="unavailable","Same-title Horde version excluded for Alliance")
-    assert(DQT:GetQuestAvailability(DQT.quests[92458],context)=="available","Alliance optional referral does not block direct pickup")
+    context.level=29
+    assert(DQT:GetQuestAvailability(DQT.quests[92432],context)=="locked","Alliance attunement begins at level 30")
+    context.level=30
+    assert(DQT:GetQuestAvailability(DQT.quests[92432],context)=="available","Alliance referral available at the current minimum")
+    assert(DQT:GetQuestAvailability(DQT.quests[92458],context)=="locked","Alliance referral is required before Modera offers Heart of Disruption")
+    assert(DQT:GetQuestAvailability(DQT.quests[92456],context)=="locked","Starving Arcane also needs the completed introduction")
+    complete[92432]=true
+    assert(DQT:GetQuestAvailability(DQT.quests[92458],context)=="available","Completing the referral unlocks the Alliance objective")
     assert(DQT:GetQuestAvailability(DQT.quests[92459],context)=="locked","Alliance continuation requires dungeon quest")
     complete[92458]=true
     assert(DQT:GetQuestAvailability(DQT.quests[92459],context)=="available","Alliance continuation unlocked")
@@ -79,7 +88,8 @@ do
         for _,entry in ipairs(stop.quests) do if entry.questID==92457 then moderaStop=stop end end
     end
     assert(moderaStop and moderaStop.location.zone=="Silverpine Forest" and moderaStop.x==68.7 and moderaStop.y==45.2,"Published Modera position produces a positioned pickup stop")
-    assert(DQT.quests[97287].verification.conflict:find("October 15",1,true),"Horde outdoor access change flagged without removing historical follow-up")
+    assert(not DQT.quests[97287].verification.conflict and DQT.quests[97287].turnIn.name=="Image of Archmage Modera"
+        and DQT.quests[97287].turnIn.zone=="Silverpine Forest","Current Horde continuation turns in outside the hostile city")
     complete[92458]=nil
     ready[92458]=true
     for _,id in ipairs({92489,92456,92457,92459}) do ready[id]=true end

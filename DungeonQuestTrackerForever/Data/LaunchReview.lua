@@ -1064,3 +1064,193 @@ for id,xp in pairs({[2201]=6300,[1445]=10600,[4282]=11150,[9017]=19900,[9021]=19
 end
 DQT.quests[98325].preparationOnly=true
 DQT.quests[2861].preparationOnly=true
+
+-- November 27: exact-ID additions and a formerly text-only acquisition gate.
+AddDungeonQuest("dire-maul-west",98685,{name="Libram of Binding",minLevel=54,questLevel=60,foreverXp=3300,
+    pickup=Location("Lorekeeper Lydros","Dire Maul"),
+    source="https://db.icy-veins.com/wow-forever/quests/98685",
+    objectives="Bring a Libram of Binding, a Pristine Black Diamond, two Large Brilliant Shards and an Arcane Crystal to Lorekeeper Lydros in the Athenaeum."})
+DQT.quests[98685].sourceURLs[#DQT.quests[98685].sourceURLs+1]="https://www.wowhead.com/forever/quest=98685/libram-of-binding"
+AddDungeonQuest("hall-of-thanes",96391,{name="Underground Map",faction="Alliance",minLevel=9,questLevel=15,foreverXp=1050,
+    pickup=Location("Dark Iron Map","Dun Morogh","77.6, 61.5"),
+    turnIn=Location("Earthseer Farsen","Dun Morogh","64.8, 58.4"),preparationOnly=true,
+    source="https://db.icy-veins.com/wow-forever/quests/96391",
+    objectives="Loot a Dark Iron Map from the Dark Iron dwarves near Helm's Bed Lake, then deliver it to Earthseer Farsen."})
+DQT.quests[96391].pickupType="drop"
+DQT.quests[96391].sourceURLs[#DQT.quests[96391].sourceURLs+1]="https://www.wowhead.com/forever/quest=96393/old-ironforge-incursion"
+local incursion=DQT.quests[96393]
+incursion.followUpOf=96391
+incursion.prerequisites={{questID=96391,relationship="required",note="Complete Underground Map with Earthseer Farsen first."}}
+incursion.confidence="verifiedSource"
+incursion.verification.prerequisites="2026-11-27: Underground Map's exact quest ID and follow-up are corroborated by Forever quest pages and acquisition reports. Earlier outdoor quests are not imposed as additional gates."
+incursion.sourceURLs[#incursion.sourceURLs+1]="https://db.icy-veins.com/wow-forever/quests/96391"
+-- Explicit individual Forever rewards, including amounts that matched a fallback.
+-- Player observations and the unresolved Agamaggan's Blood conflict are retained.
+for id,xp in pairs({
+    [5729]=110,
+    [3369]=2000,
+    [3370]=2000,
+    [1491]=2650,
+    [1740]=5100,
+    [95646]=6150,
+    [1198]=5700,
+    [2948]=2750,
+    [2950]=2750,
+    [1100]=1350,
+    [1838]=3650,
+    [2199]=2450,
+    [2361]=5600,
+    [2340]=1850,
+    [2341]=5600,
+    [2279]=5250,
+    [2439]=420,
+    [2280]=5250,
+    [2440]=420,
+    [723]=2350,
+    [724]=3150,
+    [725]=1550,
+    [726]=2350,
+    [762]=4650,
+    [95663]=550,
+    [95682]=6950,
+    [95737]=1250,
+    [95809]=6150,
+    [95111]=1000,
+    [92458]=9400,
+    [92489]=9400,
+    [2937]=8450,
+    [2992]=1050,
+    [2993]=2100,
+    [2994]=7350,
+    [3444]=4900,
+    [3906]=5100,
+    [4083]=5650,
+    [4121]=7750,
+    [4122]=6200,
+    [4262]=5100,
+    [4361]=6400,
+    [4734]=8300,
+    [4735]=9950,
+    [4743]=9950,
+    [4765]=6600,
+    [4787]=5900,
+    [4941]=6600,
+    [5002]=6400,
+    [5124]=8300,
+    [5162]=6600,
+    [5213]=6600,
+    [5341]=15700,
+    [5342]=8300,
+    [5343]=15700,
+    [5344]=8300,
+    [5382]=15700,
+    [5384]=19700,
+    [5464]=8300,
+    [5465]=4950,
+    [5531]=1650,
+    [5861]=4950,
+    [5862]=6600,
+    [6569]=6600,
+    [6570]=4950,
+    [7509]=9950,
+    [7604]=6600,
+    [7644]=8300,
+    [7646]=3300,
+    [7761]=6600,
+    [8946]=6600,
+    [8947]=6600,
+    [8960]=1650,
+    [8961]=6600,
+    [8970]=6600,
+    [8994]=6600,
+    [8995]=9950,
+    [9032]=1650,
+    [94982]=11500,
+    [94972]=11050,
+    [94984]=11050,
+    [96771]=11500,
+}) do
+    local quest=DQT.quests[id]
+    local url="https://db.icy-veins.com/wow-forever/quests/"..id
+    quest.foreverXp,quest.xpPublished,quest.xpSource=xp,true,url
+    quest.xpGuide,quest.xpEstimate,quest.xpOutdated=nil,nil,nil
+    local found=false
+    for _,source in ipairs(quest.sourceURLs) do if source==url then found=true end end
+    if not found then quest.sourceURLs[#quest.sourceURLs+1]=url end
+    quest.verification.xp="Explicit reward in the individual Forever quest record."
+    quest.verification.xpReview="2026-11-27: exact-ID Forever reward reviewed. Actual payout varies with character level and modifiers."
+end
+for id,contact in pairs({
+    [94972]=Location("Tran'gul","Riverglades","59.5, 44.0"),
+    [94975]=Location("Da'grosh","Riverglades","33.4, 38.0"),
+}) do
+    local quest=DQT.quests[id]
+    quest.pickup,quest.turnIn=contact,contact
+    quest.objectives=quest.objectives:gsub("Commander Aggro'gosh",contact.name)
+    quest.verification.pickup="2026-11-27: named giver and coordinates in the individual Forever record, corroborated by acquisition reports."
+    quest.verification.turnIn=quest.verification.pickup
+    quest.sourceURLs[#quest.sourceURLs+1]="https://db.icy-veins.com/wow-forever/quests/"..id
+end
+AddDungeonQuest("uldaman",720,{name="A Sign of Hope",faction="Alliance",minLevel=35,questLevel=35,foreverXp=1350,
+    pickup=Location("Crumpled Map","Badlands","53.0, 33.9"),turnIn=Location("Prospector Ryedol","Badlands","53.4, 43.4"),
+    preparationOnly=true,source="https://db.icy-veins.com/wow-forever/quests/720",
+    objectives="Read the Crumpled Map at the excavation and tell Prospector Ryedol that Hammertoe Grez is alive."})
+DQT.quests[720].pickupType="object"
+for id,parent in pairs({[721]=720,[3528]=4787,[92458]=92432,[92456]=92432}) do
+    local quest=DQT.quests[id]
+    quest.followUpOf=parent
+    quest.prerequisites={{questID=parent,relationship="required",note="Complete "..DQT.quests[parent].name.." first."}}
+    quest.verification.prerequisites="2026-11-27: named acquisition step corroborated by Forever quest records and quest walkthroughs."
+end
+for id,parent in pairs({[2924]=2925,[2930]=2931,[2865]=2864}) do
+    local quest=DQT.quests[id]
+    quest.followUpOf=parent
+    quest.prerequisites={{questID=parent,relationship="breadcrumb",note="Optional introduction: "..DQT.quests[parent].name.."."}}
+end
+local trevan=Location("Trevan Rol","Silverpine Forest","43.4, 41.0")
+trevan.subzone="The Sepulcher"
+DQT.quests[95036].turnIn=trevan
+DQT.quests[95111].pickup=trevan
+local negotiations=DQT.quests[97287]
+negotiations.turnIn=Location("Image of Archmage Modera","Silverpine Forest","68.5, 45.0")
+negotiations.turnIn.subzone="outside the City of Dalaran sewer entrance"
+negotiations.objectives="Take the Arcane Mote to the Image of Archmage Modera outside the sewer entrance. This turn-in does not grant Horde access to the outdoor city."
+negotiations.verification.conflict=nil
+negotiations.verification.turnIn="2026-11-27: current quest text and launch acquisition reports place the Horde turn-in at Modera's image, outside the instance."
+negotiations.sourceURLs[#negotiations.sourceURLs+1]="https://www.wowhead.com/forever/quest=97287/shrewd-negotiations"
+for id,levels in pairs({
+    [971]={18,23},
+    [1160]={26,36},
+    [92753]={9,18},
+    [92819]={9,18},
+    [95036]={20,25},
+    [95042]={20,25},
+    [95111]={20,25},
+    [93680]={30,33},
+    [92434]={30,34},
+    [92432]={30,33},
+    [350]={16,31},
+    [2745]={16,31},
+    [2746]={16,31},
+    [434]={16,31},
+    [394]={16,31},
+    [395]={16,31},
+    [396]={16,31},
+    [6628]={26,30},
+    [1394]={26,36},
+    [1706]={20,30},
+    [1708]={20,29},
+    [1709]={20,30},
+    [1710]={20,30},
+    [1711]={20,30},
+    [99156]={10,13},
+}) do
+    local quest=DQT.quests[id]
+    quest.minLevel,quest.questLevel=levels[1],levels[2]
+    quest.questLevelUnverified=nil
+    quest.verification.level="2026-11-27: minimum and quest levels in the individual Forever record."
+    local url="https://db.icy-veins.com/wow-forever/quests/"..id
+    local found=false
+    for _,source in ipairs(quest.sourceURLs) do if source==url then found=true end end
+    if not found then quest.sourceURLs[#quest.sourceURLs+1]=url end
+end
